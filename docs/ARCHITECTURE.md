@@ -28,6 +28,18 @@ Core bleibt unten. Kein Code in Core darf konkrete Klassen aus Storage, Backpack
 - `api.gui`: gemeinsame Screen-/Widget-Bausteine
 - `config`: gemeinsame Konfigurationsmuster
 
+## Erster Core-Slice
+
+Der erste Code-Slice legt absichtlich nur kleine, stabile API-Bausteine an:
+
+- `ItemTransferView`, `ItemTransferTarget` und `ItemTransferAccess` als gemeinsame Grundlage fuer Storage, Backpack und Maschinen.
+- `TransferMode`, damit Simulation und echte Ausfuehrung von Anfang an getrennt sind.
+- `ResourceAmount`, um grosse Item-Mengen jenseits normaler Stack-Groessen sauber zu modellieren.
+- `ItemFilter` und `ConfiguredItemFilter` als Basis fuer Allow-/Deny-Listen.
+- `UpgradeType`, `UpgradeSlot` und `Upgradeable` als gemeinsames Upgrade-Modell.
+
+Noch nicht enthalten sind Block-Registrierung, GUI-Code, Netzwerkpakete oder Datenpersistenz. Diese folgen erst, sobald klar ist, welches konkrete Modul sie zuerst braucht.
+
 ## Storage-Vision
 
 Lumungus Storage soll Komfort aus AE2-artigen Systemen mit einer einfachen Bedienung verbinden:

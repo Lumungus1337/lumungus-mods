@@ -49,9 +49,11 @@ Jedes Modul ist ein eigenes Gradle-Subprojekt mit eigener `fabric.mod.json`. Dad
 ./gradlew build
 ```
 
-Interne Modul-Abhaengigkeiten verwenden Looms `namedElements`-Konfiguration. Das ist wichtig, damit Subprojekte im Entwicklungs-Namespace korrekt gegeneinander kompilieren.
+Die Module erzeugen getrennte installierbare JARs. Runtime-Abhaengigkeiten werden in den jeweiligen `fabric.mod.json`-Dateien deklariert. Konkrete Java-Abhaengigkeiten zwischen den Modulen werden erst aktiviert, sobald ein Modul Core-API-Typen wirklich importiert; fuer 26.x muss diese Stelle mit Looms aktueller Multi-Project-Empfehlung gegengeprueft werden.
 
-Vor dem ersten produktiven Build muessen die Fabric-Werte in `gradle.properties` gegen die offizielle Fabric-Develop-Seite geprueft werden. Das Repository ist bewusst strukturell vorbereitet; Gameplay-Implementierung folgt in separaten Schritten.
+Quellen-JARs sind im Initialstand deaktiviert, weil die 26.2-Identitaets-Mappings kein klassisches `named`-Namespace-Remapping fuer `remapSourcesJar` bereitstellen.
+
+Fuer Minecraft 26.x wird keine Yarn-Mapping-Abhaengigkeit mehr eingetragen. Die 26.x-Linie setzt auf Mojang/unobfuscated Namen; die Fabric-Werte in `gradle.properties` sollten trotzdem regelmaessig gegen die offizielle Fabric-Develop-Seite geprueft werden.
 
 ## Versionierung und Releases
 
@@ -72,7 +74,7 @@ Meine Empfehlung fuer die aktuelle Zielrichtung: MIT oder LGPL-3.0. MIT ist maxi
 
 ## Entwicklungsnotizen
 
-- Java-Ziel: 21
+- Java-Ziel: 25
 - Mod Loader: Fabric
 - Minecraft-Ziel: 26.2
 - Paketwurzel: `dev.lumungus`

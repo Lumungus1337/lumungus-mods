@@ -1,3 +1,1 @@
-dependencies {
-    implementation project(path: ":modules:lumungus-core", configuration: "namedElements")
-}
+// Runtime dependency on Lumungus Core is declared in fabric.mod.json.

@@ -25,9 +25,11 @@ Thumbs.db
 local.properties
 .env
 .env.*
+work/
 
 # Packaged outputs
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.zip
 *.tar
 *.tar.gz

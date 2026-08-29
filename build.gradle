@@ -1,6 +1,5 @@
 plugins {
-    id "fabric-loom" version "${loom_version}" apply false
-    id "maven-publish" apply false
+    id "net.fabricmc.fabric-loom" version "${loom_version}" apply false
 }
 
 allprojects {
@@ -8,7 +7,28 @@ allprojects {
     version = mod_version
 }
 
-subprojects {
+configure(project(":lumungus-core")) {
+    configureLumungusModule(project)
+}
+
+configure(project(":lumungus-storage")) {
+    configureLumungusModule(project)
+}
+
+configure(project(":lumungus-backpack")) {
+    configureLumungusModule(project)
+}
+
+configure(project(":lumungus-machines")) {
+    configureLumungusModule(project)
+}
+
+configure(project(":lumungus-integration")) {
+    configureLumungusModule(project)
+}
+
+void configureLumungusModule(Project moduleProject) {
+    moduleProject.with {
     apply plugin: "fabric-loom"
     apply plugin: "java-library"
     apply plugin: "maven-publish"
@@ -19,9 +39,8 @@ subprojects {
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
+            languageVersion = JavaLanguageVersion.of(25)
         }
-        withSourcesJar()
     }
 
     loom {
@@ -37,14 +56,14 @@ subprojects {
 
     dependencies {
         minecraft "com.mojang:minecraft:${minecraft_version}"
-        mappings loom.officialMojangMappings()
-        modImplementation "net.fabricmc:fabric-loader:${loader_version}"
-        modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+        mappings "net.fabricmc:intermediary:${intermediary_version}:v2"
+        implementation "net.fabricmc:fabric-loader:${loader_version}"
+        implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
     }
 
     tasks.withType(JavaCompile).configureEach {
         options.encoding = "UTF-8"
-        options.release = 21
+        options.release = 25
     }
 
     processResources {
@@ -68,5 +87,6 @@ subprojects {
                 from components.java
             }
         }
+    }
     }
 }
