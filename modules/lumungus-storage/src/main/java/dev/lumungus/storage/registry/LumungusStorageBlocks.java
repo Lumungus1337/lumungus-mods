@@ -1,7 +1,9 @@
 package dev.lumungus.storage.registry;
 
 import dev.lumungus.storage.LumungusStorage;
-import dev.lumungus.storage.block.RetroStorageBlock;
+import dev.lumungus.storage.block.CraftingTerminalBlock;
+import dev.lumungus.storage.block.StorageControllerBlock;
+import java.util.function.Function;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -17,12 +19,12 @@ import net.minecraft.world.level.material.MapColor;
 public final class LumungusStorageBlocks {
     public static final Block STORAGE_CONTROLLER = registerBlockWithItem(
             "storage_controller",
-            "message.lumungus_storage.storage_controller.pending"
+            StorageControllerBlock::new
     );
 
     public static final Block CRAFTING_TERMINAL = registerBlockWithItem(
             "crafting_terminal",
-            "message.lumungus_storage.crafting_terminal.pending"
+            CraftingTerminalBlock::new
     );
 
     private LumungusStorageBlocks() {
@@ -32,18 +34,17 @@ public final class LumungusStorageBlocks {
         LumungusStorage.LOGGER.info("Registered Lumungus Storage blocks");
     }
 
-    private static Block registerBlockWithItem(String path, String statusTranslationKey) {
+    private static Block registerBlockWithItem(String path, Function<BlockBehaviour.Properties, Block> factory) {
         Identifier id = Identifier.fromNamespaceAndPath(LumungusStorage.MOD_ID, path);
         ResourceKey<Block> blockKey = ResourceKey.create(Registries.BLOCK, id);
         ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, id);
 
-        Block block = new RetroStorageBlock(
+        Block block = factory.apply(
                 BlockBehaviour.Properties.of()
                         .setId(blockKey)
                         .mapColor(MapColor.METAL)
                         .strength(2.5F, 6.0F)
-                        .sound(SoundType.METAL),
-                statusTranslationKey
+                        .sound(SoundType.METAL)
         );
 
         Registry.register(BuiltInRegistries.BLOCK, blockKey, block);

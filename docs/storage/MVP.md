@@ -16,10 +16,16 @@ Die Storage-Bloecke sollen wie Computertechnik aus den 90er Jahren wirken:
 
 Der erste Slice nutzt bewusst Vanilla-Texturen, damit die IDs und Ressourcenstruktur sofort stabil sind. Eigene Texturen koennen nachgezogen werden, ohne die Registrierungslogik anzufassen.
 
+## Aktueller technischer Stand
+
+- Controller und Crafting Terminal besitzen eigene, persistente Block-Entities.
+- Jeder Controller verwaltet eine dauerhafte Netzwerk-ID.
+- Controller und Terminals finden sich in einem begrenzten Radius von acht Bloecken; ein Terminal verbindet sich mit dem naechsten Controller.
+- Das Crafting Terminal oeffnet ein voll funktionsfaehiges 3x3-Crafting-Raster mit Spielerinventar.
+- Crafting funktioniert auch ohne Controller lokal; die Netzwerkverbindung wird dem Spieler beim Oeffnen angezeigt.
+
 ## Naechster technischer Schritt
 
-1. Block-Entities fuer Controller und Crafting Terminal.
-2. Controller-Netzwerkscan in begrenztem Radius.
-3. Einfaches Terminal-Menue mit Spielerinventar und 3x3-Crafting-Raster.
-4. Storage-Provider-API-Anbindung ueber Lumungus Core.
-5. Erste Storage Cell oder Drive Bay als echter Massenspeicher.
+1. Storage-Provider-API-Anbindung ueber Lumungus Core.
+2. Erste Storage Cell oder Drive Bay als echter Massenspeicher.
+3. Netzwerkbestand im Crafting Terminal anzeigen und fuer Rezepte verwenden.

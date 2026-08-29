@@ -1,7 +1,8 @@
 {
   "block.lumungus_storage.storage_controller": "Storage Controller",
   "block.lumungus_storage.crafting_terminal": "Crafting Terminal",
-  "message.lumungus_storage.block_pending": "Dieser Lumungus-Storage-Block wartet noch auf seine Netzwerklogik.",
-  "message.lumungus_storage.storage_controller.pending": "Storage Controller: Netzwerksuche und Geraeteverknuepfung kommen als Naechstes.",
-  "message.lumungus_storage.crafting_terminal.pending": "Crafting Terminal: Storage-Suche und Crafting-Raster kommen als Naechstes."
+  "container.lumungus_storage.crafting_terminal": "Lumungus Crafting Terminal",
+  "message.lumungus_storage.storage_controller.status": "Storage-Netzwerk %1$s: %2$s Terminal(s) verbunden.",
+  "message.lumungus_storage.crafting_terminal.connected": "Crafting Terminal mit Storage Controller verbunden.",
+  "message.lumungus_storage.crafting_terminal.unlinked": "Kein Storage Controller in Reichweite; lokales Crafting bleibt verfuegbar."
 }
