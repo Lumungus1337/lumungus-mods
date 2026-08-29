@@ -52,6 +52,7 @@ Lumungus Storage soll Komfort aus AE2-artigen Systemen mit einer einfachen Bedie
 - Import-/Export-Komponenten
 - Such- und Sortierfunktionen
 - Request-Mengen
+- Schematic-Materialplanung mit automatischer Shulkerbox-Bestueckung und Build Clipboard
 - spaeter Autocrafting und Stock-Keeper
 
 Der erste spielbare Storage-Slice registriert `storage_controller` und `crafting_terminal` als echte Bloecke, Items und Block-Entities. Controller besitzen eine persistente Netzwerk-ID und verbinden Terminals in begrenzter Reichweite. Das Crafting Terminal bietet bereits ein voll funktionsfaehiges 3x3-Crafting-Raster; Netzwerk-Inventare und Massenspeicher folgen im naechsten Slice. Die visuelle Richtung ist 90er-Computertechnik: helle Gehaeuse, dunkle Fronten, gruene Monitorflaechen.
