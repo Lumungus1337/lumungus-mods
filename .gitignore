@@ -1,0 +1,33 @@
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Loom / Minecraft run output
+run/
+**/run/
+*.log
+crash-reports/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local configuration
+local.properties
+.env
+.env.*
+
+# Packaged outputs
+*.jar
+*.zip
+*.tar
+*.tar.gz

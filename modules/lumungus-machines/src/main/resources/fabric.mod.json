@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "lumungus_machines",
+  "version": "${version}",
+  "name": "Lumungus Machines",
+  "description": "Automation and machine systems for the Lumungus Fabric mod family.",
+  "authors": [
+    "Lumungus"
+  ],
+  "license": "UNDECIDED",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.lumungus.machines.LumungusMachines"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*",
+    "lumungus_core": "${version}"
+  }
+}

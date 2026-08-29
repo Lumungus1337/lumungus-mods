@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(path: ":modules:lumungus-core", configuration: "namedElements")
+    implementation project(path: ":modules:lumungus-storage", configuration: "namedElements")
+    implementation project(path: ":modules:lumungus-backpack", configuration: "namedElements")
+    implementation project(path: ":modules:lumungus-machines", configuration: "namedElements")
+}

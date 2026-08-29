@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "lumungus_integration",
+  "version": "${version}",
+  "name": "Lumungus Integration",
+  "description": "Optional integrations across Lumungus modules and supported external mods.",
+  "authors": [
+    "Lumungus"
+  ],
+  "license": "UNDECIDED",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.lumungus.integration.LumungusIntegration"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*",
+    "lumungus_core": "${version}"
+  },
+  "suggests": {
+    "lumungus_storage": "${version}",
+    "lumungus_backpack": "${version}",
+    "lumungus_machines": "${version}"
+  }
+}

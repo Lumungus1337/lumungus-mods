@@ -1,3 +1,79 @@
-# lumungus-mods
+# Lumungus Mods
 
-Repository is being initialized with the Lumungus monorepo scaffold.
+Lumungus Mods ist als modulare Fabric-Modreihe fuer Minecraft 26.2 geplant. Das Repository ist als Monorepo aufgebaut: Gemeinsame APIs und Komponenten leben in Lumungus Core, die eigentlichen Gameplay-Module bauen darauf auf und koennen spaeter getrennt als JARs gebaut, getestet und veroeffentlicht werden.
+
+## Architektur
+
+```text
+lumungus-mods
+|-- modules
+|   |-- lumungus-core
+|   |-- lumungus-storage
+|   |-- lumungus-backpack
+|   |-- lumungus-machines
+|   `-- lumungus-integration
+`-- docs
+```
+
+Lumungus Core ist die gemeinsame Basisschicht. Core soll moeglichst wenig direkten Gameplay-Content enthalten und stattdessen wiederverwendbare Infrastruktur bereitstellen:
+
+- Inventar- und Item-Transfer-APIs
+- Filter- und Upgrade-Systeme
+- Netzwerk- und Persistenz-Helfer
+- gemeinsame GUI-Bausteine
+- Such- und Mengenparser
+- Server/Client-Synchronisation
+- gemeinsame Konfiguration und Datenmodell-Konventionen
+
+Die Gameplay-Module haengen von Core ab, aber Core soll nicht von den Gameplay-Modulen wissen. So bleiben Updates und getrennte Releases beherrschbar.
+
+## Module
+
+| Modul | Rolle | Status |
+|---|---|---|
+| `lumungus-core` | Gemeinsame APIs, Basistypen und technische Infrastruktur | angelegt |
+| `lumungus-storage` | Eigenes Storage-Netzwerk, Terminals, Drives, Import/Export, spaeter Autocrafting | angelegt |
+| `lumungus-backpack` | Modularer Rucksack mit Upgrade-Slots und spaeter Jetpack-Upgrade | angelegt |
+| `lumungus-machines` | Maschinen- und Automationsmodule | angelegt |
+| `lumungus-integration` | Cross-Mod-Integration zwischen Lumungus-Modulen und optional externen Mods | angelegt |
+
+RailQuarry wird noch nicht migriert. Es ist als zukuenftiges Modul oder Feature innerhalb `lumungus-machines` dokumentiert, sobald die Core-APIs stabil genug sind.
+
+## Build-Strategie
+
+Jedes Modul ist ein eigenes Gradle-Subprojekt mit eigener `fabric.mod.json`. Dadurch kann jedes Modul spaeter eine eigene remapped JAR erzeugen:
+
+```powershell
+./gradlew :modules:lumungus-core:build
+./gradlew :modules:lumungus-storage:build
+./gradlew build
+```
+
+Interne Modul-Abhaengigkeiten verwenden Looms `namedElements`-Konfiguration. Das ist wichtig, damit Subprojekte im Entwicklungs-Namespace korrekt gegeneinander kompilieren.
+
+Vor dem ersten produktiven Build muessen die Fabric-Werte in `gradle.properties` gegen die offizielle Fabric-Develop-Seite geprueft werden. Das Repository ist bewusst strukturell vorbereitet; Gameplay-Implementierung folgt in separaten Schritten.
+
+## Versionierung und Releases
+
+Vorgeschlagene Strategie:
+
+- Gemeinsame Versionslinie fuer die Modreihe: `0.1.0`, `0.2.0`, `1.0.0`.
+- Snapshot-Versionen waehrend Entwicklung: `0.1.0-SNAPSHOT`.
+- Tags pro Gesamtstand: `v0.1.0`.
+- Optional zusaetzliche Modul-Tags, falls Releases auseinanderlaufen: `core-v0.1.0`, `storage-v0.1.0`.
+- Breaking Changes in Core erhoehen mindestens die Minor-Version, nach `1.0.0` die Major-Version.
+- Jedes Release sollte getrennte Artefakte fuer installierbare Module enthalten.
+
+## Lizenz
+
+Noch nicht final entschieden. Siehe [docs/LICENSE_DECISION.md](docs/LICENSE_DECISION.md).
+
+Meine Empfehlung fuer die aktuelle Zielrichtung: MIT oder LGPL-3.0. MIT ist maximal einfach fuer Addons und Modpacks; LGPL-3.0 schuetzt gemeinsame Bibliotheksverbesserungen etwas staerker. Wenn Assets, Texturen und Modelle spaeter dazukommen, sollten Code- und Asset-Lizenz getrennt betrachtet werden.
+
+## Entwicklungsnotizen
+
+- Java-Ziel: 21
+- Mod Loader: Fabric
+- Minecraft-Ziel: 26.2
+- Paketwurzel: `dev.lumungus`
+- Mod-IDs: `lumungus_core`, `lumungus_storage`, `lumungus_backpack`, `lumungus_machines`, `lumungus_integration`

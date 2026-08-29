@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "lumungus_backpack",
+  "version": "${version}",
+  "name": "Lumungus Backpack",
+  "description": "Upgradeable backpacks for the Lumungus Fabric mod family.",
+  "authors": [
+    "Lumungus"
+  ],
+  "license": "UNDECIDED",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.lumungus.backpack.LumungusBackpack"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*",
+    "lumungus_core": "${version}"
+  }
+}
