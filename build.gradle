@@ -23,6 +23,10 @@ configure(project(":lumungus-machines")) {
     configureLumungusModule(project)
 }
 
+configure(project(":lumungus-autotrader")) {
+    configureLumungusModule(project)
+}
+
 configure(project(":lumungus-integration")) {
     configureLumungusModule(project)
 }

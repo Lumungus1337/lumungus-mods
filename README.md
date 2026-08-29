@@ -11,6 +11,7 @@ lumungus-mods
 |   |-- lumungus-storage
 |   |-- lumungus-backpack
 |   |-- lumungus-machines
+|   |-- lumungus-autotrader
 |   `-- lumungus-integration
 `-- docs
 ```
@@ -35,9 +36,12 @@ Die Gameplay-Module haengen von Core ab, aber Core soll nicht von den Gameplay-M
 | `lumungus-storage` | Eigenes Storage-Netzwerk, Terminals, Drives, Import/Export, spaeter Autocrafting | angelegt |
 | `lumungus-backpack` | Modularer Rucksack mit Upgrade-Slots und spaeter Jetpack-Upgrade | angelegt |
 | `lumungus-machines` | Maschinen- und Automationsmodule | angelegt |
+| `lumungus-autotrader` | Automatisierte Handelsablaeufe, Trading-Terminals und spaetere Storage-Anbindung | angelegt |
 | `lumungus-integration` | Cross-Mod-Integration zwischen Lumungus-Modulen und optional externen Mods | angelegt |
 
 RailQuarry wird noch nicht migriert. Es ist als zukuenftiges Modul oder Feature innerhalb `lumungus-machines` dokumentiert, sobald die Core-APIs stabil genug sind.
+
+Autotrader wird ebenfalls noch nicht migriert, ist aber als eigenes Modul im Monorepo angelegt. Es soll optisch und spielerisch zur Lumungus-Linie passen: 90er-Computertechnik, klare Terminals, dunkle Frontplatten und gruene Statusanzeigen.
 
 ## Build-Strategie
 
@@ -78,4 +82,4 @@ Meine Empfehlung fuer die aktuelle Zielrichtung: MIT oder LGPL-3.0. MIT ist maxi
 - Mod Loader: Fabric
 - Minecraft-Ziel: 26.2
 - Paketwurzel: `dev.lumungus`
-- Mod-IDs: `lumungus_core`, `lumungus_storage`, `lumungus_backpack`, `lumungus_machines`, `lumungus_integration`
+- Mod-IDs: `lumungus_core`, `lumungus_storage`, `lumungus_backpack`, `lumungus_machines`, `lumungus_autotrader`, `lumungus_integration`

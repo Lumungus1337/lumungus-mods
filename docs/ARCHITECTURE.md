@@ -12,6 +12,7 @@ lumungus-integration
        +-- lumungus-storage
        +-- lumungus-backpack
        +-- lumungus-machines
+       +-- lumungus-autotrader
                 |
                 v
         lumungus-core
@@ -68,6 +69,12 @@ Lumungus Backpack startet als erweiterbarer Rucksack:
 ## Machines-Vision
 
 Lumungus Machines nimmt spaeter Automationsbloecke auf. RailQuarry wird hier als geplantes zukuenftiges Feature dokumentiert, aber im Initialstand nicht migriert.
+
+## Autotrader-Vision
+
+Lumungus Autotrader wird als eigenes Modul gefuehrt. Es soll automatisierte Handelsablaeufe, Trading-Terminals und spaetere Storage-Anbindung aufnehmen. Eine bestehende Autotrader-Implementierung wird im Initialstand noch nicht migriert; zuerst wird das Modul als Teil der Lumungus-Architektur dokumentiert und buildbar gemacht.
+
+Optisch gehoert Autotrader in dieselbe Linie wie Storage, Machines und RailQuarry: 90er-Computertechnik, helle Gehaeuse, dunkle Frontplatten, gruene Monitore, Status-LEDs und eine klare Werkstatt-/Terminal-Anmutung.
 
 ## Integration-Vision
 
