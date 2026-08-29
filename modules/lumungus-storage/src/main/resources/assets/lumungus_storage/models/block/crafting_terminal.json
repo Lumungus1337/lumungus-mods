@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "minecraft:block/light_gray_concrete",
+    "down": "minecraft:block/smooth_stone",
+    "up": "minecraft:block/green_stained_glass",
+    "north": "minecraft:block/green_stained_glass",
+    "south": "minecraft:block/light_gray_concrete",
+    "west": "minecraft:block/iron_block",
+    "east": "minecraft:block/iron_block"
+  }
+}

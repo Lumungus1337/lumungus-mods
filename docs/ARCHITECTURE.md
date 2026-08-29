@@ -44,12 +44,16 @@ Noch nicht enthalten sind Block-Registrierung, GUI-Code, Netzwerkpakete oder Dat
 
 Lumungus Storage soll Komfort aus AE2-artigen Systemen mit einer einfachen Bedienung verbinden:
 
+- Storage Controller als Netzwerkzentrum
 - Storage-Terminal
+- Crafting Terminal mit 3x3-Crafting-Funktion
 - Drives und Cells
 - Import-/Export-Komponenten
 - Such- und Sortierfunktionen
 - Request-Mengen
 - spaeter Autocrafting und Stock-Keeper
+
+Der erste Storage-Slice registriert `storage_controller` und `crafting_terminal` als echte Bloecke und Items. Beide sind noch ohne Block-Entity und GUI, reagieren aber bereits auf Rechtsklick mit einer Statusmeldung. Die visuelle Richtung ist 90er-Computertechnik: helle Gehaeuse, dunkle Fronten, gruene Monitorflaechen.
 
 ## Backpack-Vision
 
