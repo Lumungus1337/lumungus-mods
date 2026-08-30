@@ -11,7 +11,7 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
 - Testpaket: `build/uat/lumungus-storage-0.1.0-uat.3.zip`
-- Abnahmestatus: `AUTOMATED_PASS`, visueller Client- und Multiplayer-UAT noch offen; siehe [UAT_RESULTS_0.1.0-uat.3.md](UAT_RESULTS_0.1.0-uat.3.md)
+- Abnahmestatus: `AUTOMATED_CLIENT_PASS`, manueller Interaktions- und Multiplayer-UAT noch offen; siehe [UAT_RESULTS_0.1.0-uat.3.md](UAT_RESULTS_0.1.0-uat.3.md)
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
 
@@ -28,6 +28,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | JEI-Transfer | `PASS` | Der Lumungus-Transferknopf befuellt das 3x3-Raster serverseitig aus dem Netzwerk. |
 | Automatisierte Logiktests | `PASS` | Elf JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
 | Server-GameTests | `PASS` | Vier reale GameTests pruefen stabile Bay-Zuordnung, verlustfreien Besitzerwechsel, partielles Shift-Crafting und atomaren JEI-Fehltransfer. |
+| Client-GameTest | `PASS` | Ein echter Fabric-Testclient baut ein Netzwerk auf, synchronisiert fuenf Materialtypen, oeffnet das Terminal mit JEI und erzeugt einen visuell geprueften Screenshot. |
 
 ## Testaufbau
 

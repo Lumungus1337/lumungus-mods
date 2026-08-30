@@ -1,8 +1,8 @@
 # UAT Results 0.1.0-uat.3
 
-Gesamtstatus: `AUTOMATED_PASS`
+Gesamtstatus: `AUTOMATED_CLIENT_PASS`
 
-Der Coding- und automatisierte Server-UAT ist bestanden. Visuelle Client- und Multiplayer-Schritte bleiben vor einer oeffentlichen Freigabe offen.
+Der Coding-, Server- und automatisierte Client-UAT ist bestanden. Manuelle Interaktions- und Multiplayer-Schritte bleiben vor einer oeffentlichen Freigabe offen.
 
 ## Build
 
@@ -11,6 +11,7 @@ Der Coding- und automatisierte Server-UAT ist bestanden. Visuelle Client- und Mu
 - Ergebnis: `PASS`
 - JUnit: 11 von 11 Tests bestanden
 - Server-GameTests: 4 von 4 Tests bestanden
+- Client-GameTests: 1 von 1 Test bestanden
 - Bundle: `build/uat/lumungus-storage-0.1.0-uat.3.zip`
 
 `storageUatBundle` ist jetzt an die Core- und Storage-Checks gekoppelt. Ein Kandidat mit roten Tests kann nicht mehr erfolgreich paketiert werden.
@@ -24,13 +25,24 @@ Der Coding- und automatisierte Server-UAT ist bestanden. Visuelle Client- und Mu
 - `UAT-19/UAT-20`: Ein Terminal ohne erreichbaren Controller verursacht beim Broadcast keine NullPointerException mehr.
 - `PERF-01`: Netzwerkzustand wird in einem Durchlauf zusammengefasst und pro Spieltick gecacht. Persistente Bay-Links vermeiden verschachtelte Vollscans bei jedem Zugriff.
 
-## Client-Preflight
+## Automatisierter Client-UAT
 
-Der Fabric-Client lud Minecraft 26.2, Fabric API, JEI, Lumungus Core und Lumungus Storage `0.1.0-uat.3` bis zum fertigen Resource-Reload. Beim anschliessenden automatisierten Aktivieren des OpenGL-Fensters stuerzten sowohl Temurin als auch Zulu nativ in `glfw.dll` ab. Der Absturz trat ausserhalb der JVM und erst bei der Desktop-Automation auf; deshalb wurde kein visueller Client-UAT als bestanden gewertet.
+Der offizielle Fabric Client GameTest startet Minecraft 26.2 mit Fabric API, JEI, Lumungus Core und Lumungus Storage `0.1.0-uat.3`. Er erstellt selbststaendig eine Einzelspielerwelt, baut Controller, Drive Bay und Crafting Terminal auf, setzt eine 16k Cell ein und befuellt das Netzwerk mit fuenf Materialtypen. Anschliessend oeffnet er das echte Terminal serverseitig, wartet auf die vollstaendige Client-Synchronisation und erzeugt einen Screenshot.
+
+- Kommando: `./gradlew :lumungus-storage:runClientGameTest`
+- Ergebnis: `PASS`
+- Screenshot-Serie: `modules/lumungus-storage/build/run/clientGameTest/screenshots/*lumungus-storage-terminal-uat3-*.png`
+- Geprueft: Clientstart, Weltbeitritt, Block-/Menue-Registrierung, Netzwerk-Synchronisation, Terminal-Rendering und gleichzeitige JEI-Darstellung
+
+Der erste visuelle Lauf zeigte zu eng stehende Mengenangaben. Das Ressourcenraster wurde auf sieben Spalten mit groesserem Abstand umgestellt; Mengen ab 1.000 werden kompakt mit `K` dargestellt. Der abschliessende Lauf zeigt getrennte Materialfelder, korrekte Summen und keine ueberlappenden Bedienelemente. Da einzelne GPU-Readbacks unter Minecraft 26.2 sporadisch unvollstaendige Glyphen enthalten, erzeugt der Test fuenf zeitversetzte Bilder fuer die visuelle Kontrolle.
+
+![Geprueftes Crafting Terminal mit JEI](images/lumungus-storage-terminal-uat3.png)
+
+Die fruehere externe Desktop-Automation bleibt wegen eines nativen `glfw.dll`-Absturzes ungeeignet. Der Client GameTest umgeht diese externe Fensteraktivierung und beendet sich reproduzierbar selbst.
 
 ## Noch offen
 
-- Visuelle Kontrolle des 90er-Computer-Looks, Suche, Sortierung und Seitenwechsel
+- Manuelle Bedienung von Suche, Sortierung und Seitenwechsel
 - Manueller JEI-Button-Transfer im Client
 - Speichern, kompletter Client-Neustart und erneutes Laden der Testwelt
 - Gleichzeitiger Zugriff mit zwei echten Spielern

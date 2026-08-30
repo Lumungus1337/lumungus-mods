@@ -19,7 +19,7 @@ configure(project(":lumungus-storage")) {
             createSourceSet = true
             modId = "lumungus_storage_gametest"
             enableGameTests = true
-            enableClientGameTests = false
+            enableClientGameTests = true
             eula = true
         }
     }

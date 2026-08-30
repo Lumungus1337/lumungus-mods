@@ -17,9 +17,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 public final class LumungusCraftingTerminalScreen extends AbstractContainerScreen<LumungusCraftingMenu> {
-    private static final int NETWORK_COLUMNS = 9;
+    private static final int NETWORK_COLUMNS = 7;
     private static final int NETWORK_ROWS = 4;
     private static final int NETWORK_PAGE_SIZE = NETWORK_COLUMNS * NETWORK_ROWS;
+    private static final int NETWORK_SLOT_SIZE = 18;
+    private static final int NETWORK_COLUMN_STEP = 22;
     private static final int NETWORK_X = 8;
     private static final int NETWORK_Y = 44;
     private static final int DEPOSIT_X = 174;
@@ -103,7 +105,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
 
         for (int row = 0; row < NETWORK_ROWS; row++) {
             for (int column = 0; column < NETWORK_COLUMNS; column++) {
-                int x = left + NETWORK_X + column * 18;
+                int x = left + NETWORK_X + column * NETWORK_COLUMN_STEP;
                 int y = top + NETWORK_Y + row * 18;
                 boolean hovered = isPointInside(mouseX, mouseY, x, y, 18, 18);
                 graphics.fill(
@@ -182,7 +184,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
                 break;
             }
             ResourceAmount resource = resources.get(resourceIndex);
-            int x = NETWORK_X + visibleIndex % NETWORK_COLUMNS * 18 + 1;
+            int x = NETWORK_X + visibleIndex % NETWORK_COLUMNS * NETWORK_COLUMN_STEP + 1;
             int y = NETWORK_Y + visibleIndex / NETWORK_COLUMNS * 18 + 1;
             graphics.item(resource.stack(), x, y);
             graphics.itemDecorations(font, resource.stack(), x, y, formatAmount(resource.amount()));
@@ -302,7 +304,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
                 mouseY,
                 leftPos + NETWORK_X,
                 topPos + NETWORK_Y,
-                NETWORK_COLUMNS * 18,
+                NETWORK_COLUMNS * NETWORK_COLUMN_STEP,
                 NETWORK_ROWS * 18
         )) {
             int pageCount = Math.max(1, (filteredResources().size() + NETWORK_PAGE_SIZE - 1)
@@ -341,11 +343,14 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         int relativeY = (int) mouseY - topPos - NETWORK_Y;
         if (relativeX < 0
                 || relativeY < 0
-                || relativeX >= NETWORK_COLUMNS * 18
+                || relativeX >= NETWORK_COLUMNS * NETWORK_COLUMN_STEP
                 || relativeY >= NETWORK_ROWS * 18) {
             return null;
         }
-        int column = relativeX / 18;
+        int column = relativeX / NETWORK_COLUMN_STEP;
+        if (relativeX % NETWORK_COLUMN_STEP >= NETWORK_SLOT_SIZE) {
+            return null;
+        }
         int row = relativeY / 18;
         int resourceIndex = page * NETWORK_PAGE_SIZE + row * NETWORK_COLUMNS + column;
         List<ResourceAmount> resources = filteredResources();
@@ -404,7 +409,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         if (amount >= 1_000_000) {
             return amount / 1_000_000 + "M";
         }
-        if (amount >= 10_000) {
+        if (amount >= 1_000) {
             return amount / 1_000 + "K";
         }
         return Long.toString(amount);
