@@ -4,8 +4,11 @@ import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
 import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -14,11 +17,47 @@ import net.minecraft.world.level.block.Block;
 /** Discovers loaded Lumungus network nodes without forcing chunks to load. */
 public final class StorageNetworkTopology {
     private static final int MAX_VISITED_NODES = 65_536;
+    private static final Map<Level, LevelCache> CACHES = new WeakHashMap<>();
 
     private StorageNetworkTopology() {
     }
 
     public static Set<BlockPos> connectedNodes(Level level, BlockPos origin) {
+        synchronized (CACHES) {
+            LevelCache cache = CACHES.computeIfAbsent(level, ignored -> new LevelCache());
+            Set<BlockPos> cached = cache.componentsByNode.get(origin);
+            if (cached != null) {
+                cache.hits++;
+                return cached;
+            }
+
+            Set<BlockPos> discovered = discoverConnectedNodes(level, origin);
+            cache.misses++;
+            for (BlockPos node : discovered) {
+                cache.componentsByNode.put(node, discovered);
+            }
+            return discovered;
+        }
+    }
+
+    public static void invalidate(Level level) {
+        synchronized (CACHES) {
+            CACHES.remove(level);
+        }
+    }
+
+    public static CacheStats cacheStats(Level level) {
+        synchronized (CACHES) {
+            LevelCache cache = CACHES.get(level);
+            return cache == null ? new CacheStats(0, 0, 0) : new CacheStats(
+                    cache.hits,
+                    cache.misses,
+                    cache.componentsByNode.size()
+            );
+        }
+    }
+
+    private static Set<BlockPos> discoverConnectedNodes(Level level, BlockPos origin) {
         LinkedHashSet<BlockPos> visited = new LinkedHashSet<>();
         if (!level.isLoaded(origin) || !isNetworkNode(level, origin)) {
             return Set.of();
@@ -83,5 +122,14 @@ public final class StorageNetworkTopology {
         return Math.abs(first.getX() - (long) second.getX()) <= radius
                 && Math.abs(first.getY() - (long) second.getY()) <= radius
                 && Math.abs(first.getZ() - (long) second.getZ()) <= radius;
+    }
+
+    public record CacheStats(long hits, long misses, int cachedNodes) {
+    }
+
+    private static final class LevelCache {
+        private final Map<BlockPos, Set<BlockPos>> componentsByNode = new HashMap<>();
+        private long hits;
+        private long misses;
     }
 }

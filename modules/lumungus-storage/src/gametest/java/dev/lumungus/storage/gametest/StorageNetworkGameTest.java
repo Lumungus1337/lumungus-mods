@@ -7,6 +7,7 @@ import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
+import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import java.lang.reflect.Method;
@@ -102,10 +103,24 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
                 InventoryConnectorBlockEntity.class
         );
 
+        StorageNetworkTopology.invalidate(context.getLevel());
+        BlockPos absoluteControllerPos = context.absolutePos(CABLE_CONTROLLER);
+        StorageNetworkTopology.connectedNodes(context.getLevel(), absoluteControllerPos);
+        StorageNetworkTopology.connectedNodes(context.getLevel(), absoluteControllerPos);
+        StorageNetworkTopology.CacheStats warmCache = StorageNetworkTopology.cacheStats(context.getLevel());
+        context.assertValueEqual(warmCache.misses(), 1L, "Topology cache misses");
+        context.assertValueEqual(warmCache.hits(), 1L, "Topology cache hits");
+        context.assertValueEqual(warmCache.cachedNodes(), 11, "Cached topology nodes");
+
         context.assertTrue(connector.refreshControllerLink(), "Cable did not link the distant connector");
         context.assertValueEqual(controller.count(new ItemStack(Items.IRON_INGOT)), 37L, "Cable inventory count");
 
         context.setBlock(new BlockPos(6, 1, 6), Blocks.AIR);
+        context.assertValueEqual(
+                StorageNetworkTopology.cacheStats(context.getLevel()).cachedNodes(),
+                0,
+                "Invalidated topology nodes"
+        );
         context.assertTrue(!connector.refreshControllerLink(), "Broken cable left the distant connector linked");
         context.assertValueEqual(controller.count(new ItemStack(Items.IRON_INGOT)), 0L, "Disconnected inventory count");
         context.assertValueEqual(chest.getItem(0).getCount(), 37, "Disconnected chest contents");

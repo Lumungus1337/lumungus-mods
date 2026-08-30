@@ -4,6 +4,7 @@ import dev.lumungus.storage.LumungusStorage;
 import dev.lumungus.storage.block.CraftingTerminalBlock;
 import dev.lumungus.storage.block.DriveBayBlock;
 import dev.lumungus.storage.block.InventoryConnectorBlock;
+import dev.lumungus.storage.block.InventoryCableBlock;
 import dev.lumungus.storage.block.StorageControllerBlock;
 import java.util.function.Function;
 import net.minecraft.core.Registry;
@@ -41,7 +42,7 @@ public final class LumungusStorageBlocks {
 
     public static final Block INVENTORY_CABLE = registerBlockWithItem(
             "inventory_cable",
-            Block::new
+            InventoryCableBlock::new
     );
 
     private LumungusStorageBlocks() {

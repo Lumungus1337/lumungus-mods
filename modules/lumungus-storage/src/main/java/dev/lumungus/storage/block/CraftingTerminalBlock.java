@@ -4,8 +4,10 @@ import com.mojang.serialization.MapCodec;
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
+import dev.lumungus.storage.network.StorageNetworkTopology;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -32,6 +34,23 @@ public final class CraftingTerminalBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new CraftingTerminalBlockEntity(pos, state);
+    }
+
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        StorageNetworkTopology.invalidate(level);
+    }
+
+    @Override
+    protected void affectNeighborsAfterRemoval(
+            BlockState state,
+            ServerLevel level,
+            BlockPos pos,
+            boolean movedByPiston
+    ) {
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        StorageNetworkTopology.invalidate(level);
     }
 
     @Override
