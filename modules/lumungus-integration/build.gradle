@@ -1,1 +1,10 @@
-// Runtime dependencies on Lumungus modules are declared in fabric.mod.json.
+dependencies {
+    implementation project(":lumungus-core")
+
+    testImplementation "org.junit.jupiter:junit-jupiter:${junit_version}"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junit_version}"
+}
+
+tasks.named("test") {
+    useJUnitPlatform()
+}

@@ -45,6 +45,7 @@ Seit dem ersten Entwicklungsschritt nach UAT.3 kann der Controller physische Inv
 - Alle Netzwerktransaktionen und Rezeptentscheidungen werden serverseitig validiert und anschliessend an den Client synchronisiert.
 - Installiertes JEI kann Rezepte ueber den eigenen Lumungus-Transfer-Handler in das Raster legen. Der Server ermittelt das Rezept erneut und vertraut keinen vom Client gelieferten Zutatenmengen.
 - Netzwerk, Cell-Inhalte und Bestandsmengen bleiben nach Speichern und Neustart erhalten.
+- `lumungus-integration` besitzt nun einen strikt nur lesenden Snapshot- und Vergleichskern fuer den Tom's-Uebergang. Er vergleicht Endpunkte, Slots und jede Itemvariante inklusive Komponenten und wurde unter anderem mit 7.000.000 Items getestet.
 
 ### JEI-Kompatibilitaet
 
@@ -52,13 +53,14 @@ JEI bleibt eine optionale Client-Mod und wird von Lumungus Storage nur zur Compi
 
 ## Naechster technischer Schritt
 
-1. Echtes Chunk-Unload/-Reload mit einem persistierten Testnetz absichern und die weltweite Chunk-Invalidierung anschliessend auf betroffene Chunks beziehungsweise Komponenten verfeinern.
-2. In `lumungus-integration` mit der nur lesenden Bestandsaufnahme fuer den Tom's-Migrationsassistenten beginnen und Bestandsvergleiche ohne Blockumbau bereitstellen.
-3. In `lumungus-integration` den Tom's-Migrationsassistenten implementieren: Bestand zunaechst nur lesend vergleichen, danach Kabel, Trims und Connectoren protokolliert in Lumungus-Bloecke konvertieren und erneut validieren. Kein Lageritem wird dabei umgelagert.
-4. Einen grossen Bestands- und Performance-UAT mit vielen Inventaren sowie einen echten Test an einer Sicherung des bestehenden Lagers durchfuehren. Abnahmekriterium ist, dass die Welt anschliessend ohne Tom's denselben Bestand ueber Lumungus anzeigt.
+1. Den konkreten Tom's-Adapter nur lesend anbinden und einen Dry-Run-Bericht fuer erkannte, unterstuetzte und unbekannte Netzwerkbloecke erzeugen.
+2. Echtes Chunk-Unload/-Reload mit einem persistierten Testnetz absichern und die weltweite Chunk-Invalidierung anschliessend auf betroffene Chunks beziehungsweise Komponenten verfeinern.
+3. Nach erfolgreichem Dry Run die protokollierte Konvertierung von Kabeln, Trims und Connectoren mit Journal und Rollback implementieren. Kein Lageritem wird dabei umgelagert.
+4. Einen grossen Bestands- und Performance-UAT sowie einen echten Test an einer Sicherung des bestehenden Lagers durchfuehren. Abnahmekriterium ist, dass die Welt anschliessend ohne Tom's denselben Bestand ueber Lumungus anzeigt.
 5. Erst danach Produktionsauftraege, Autocrafter, Autosteinsaege, Auto-Braustand und Schematic-Logistik auf dem physischen Netzwerk aufbauen.
 
 Die verbindliche Entscheidung und die Migrationsregeln stehen in [PHYSICAL_INVENTORY_NETWORK.md](PHYSICAL_INVENTORY_NETWORK.md).
+Der detaillierte read-only Vergleichsablauf steht in [TOMS_MIGRATION.md](TOMS_MIGRATION.md).
 
 ## Geplante Build Logistics
 

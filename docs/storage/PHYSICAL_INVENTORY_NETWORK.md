@@ -73,12 +73,14 @@ Der Bestandsindex aggregiert nach Item und Komponenten, speichert aber weiterhin
 ### Slice 3: Tom's-Uebergang
 
 - temporaere Compile-/Runtime-Integration in `lumungus-integration`
-- read-only Snapshot des vorhandenen Tom's-Netzes
+- read-only Snapshot und komponentensicherer Bestandsvergleich (Vergleichskern implementiert)
 - Dry Run mit Liste aller erkannten, konvertierbaren und nicht unterstuetzten Netzwerkbloecke
 - protokollierte Ersetzung von Tom's Connectoren, Kabeln, Trims und Terminals
 - Wiederaufnahme und Rollback ueber ein persistentes Migrationsjournal
 - Bestands- und Topologievergleich vor und nach der Konvertierung
 - Kompatibilitaetstest gegen die konkret eingesetzte Tom's-Version
+
+Der genaue Sicherheitsablauf und der aktuelle Stand sind in [TOMS_MIGRATION.md](TOMS_MIGRATION.md) dokumentiert.
 
 ### Slice 4: Abnahme
 
