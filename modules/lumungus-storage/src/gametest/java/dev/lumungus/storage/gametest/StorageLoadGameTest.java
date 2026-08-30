@@ -3,10 +3,12 @@ package dev.lumungus.storage.gametest;
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.core.api.storage.StorageSnapshot;
 import dev.lumungus.storage.LumungusStorage;
+import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
@@ -175,24 +177,31 @@ public final class StorageLoadGameTest implements CustomTestMethodInvoker {
         long expectedTotal = 0;
         long expectedCobblestone = 0;
         int inventoryIndex = 0;
+        List<BlockPos> connectorPositions = new ArrayList<>();
         for (int x = FIRST_COLUMN; x <= LAST_COLUMN; x++) {
+            BlockPos northConnectorPos = new BlockPos(x, 1, 6);
+            BlockPos southConnectorPos = new BlockPos(x, 1, 8);
+            BlockPos upperConnectorPos = new BlockPos(x, 2, 7);
+            connectorPositions.add(northConnectorPos);
+            connectorPositions.add(southConnectorPos);
+            connectorPositions.add(upperConnectorPos);
             InventoryFillResult north = addInventory(
                     context,
-                    new BlockPos(x, 1, 6),
+                    northConnectorPos,
                     new BlockPos(x, 1, 5),
                     inventoryIndex++,
                     TEST_ITEMS
             );
             InventoryFillResult south = addInventory(
                     context,
-                    new BlockPos(x, 1, 8),
+                    southConnectorPos,
                     new BlockPos(x, 1, 9),
                     inventoryIndex++,
                     TEST_ITEMS
             );
             InventoryFillResult upper = addInventory(
                     context,
-                    new BlockPos(x, 2, 7),
+                    upperConnectorPos,
                     new BlockPos(x, 3, 7),
                     inventoryIndex++,
                     TEST_ITEMS
@@ -207,7 +216,23 @@ public final class StorageLoadGameTest implements CustomTestMethodInvoker {
         );
         StorageNetworkTopology.invalidate(context.getLevel());
         StorageControllerBlockEntity.NetworkStatus status = controller.refreshNetwork();
-        context.assertValueEqual(status.linkedInventoryConnectors(), 36, "Linked load-test connectors");
+        List<String> missingConnectors = connectorPositions.stream()
+                .map(pos -> context.getBlockEntity(pos, InventoryConnectorBlockEntity.class))
+                .filter(connector -> !connector.isLinkedTo(controller))
+                .map(connector -> connector.getBlockPos().toShortString()
+                        + " loaded=" + context.getLevel().isLoaded(connector.getBlockPos())
+                        + " reachesController=" + StorageNetworkTopology.connectedNodes(
+                                context.getLevel(),
+                                connector.getBlockPos()
+                        ).contains(controller.getBlockPos()))
+                .toList();
+        context.assertTrue(
+                status.linkedInventoryConnectors() == 36,
+                "Linked load-test connectors: expected 36, actual "
+                        + status.linkedInventoryConnectors()
+                        + ", missing "
+                        + missingConnectors
+        );
         context.assertValueEqual(status.linkedDriveBays(), 0, "Load-test Drive Bays");
 
         StorageSnapshot initial = controller.snapshot();

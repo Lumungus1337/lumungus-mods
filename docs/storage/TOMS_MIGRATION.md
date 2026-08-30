@@ -38,10 +38,12 @@ Automatisierte Tests decken ab:
 
 ## Naechster Slice
 
-Der versionsrobuste Blockkatalog fuer Tom's `2.4.1` ist vorbereitet. Er ordnet Controller, Terminals, Trims, Kabel und Kabel-Connectoren passenden Lumungus-Bloecken zu. Unbekannte Bloecke und noch nicht abgebildete Funktionsbloecke blockieren die Migration; ein Filing Cabinet wird wegen moeglicher eigener Inhalte gesondert als blockierend gemeldet.
+Der versionsrobuste Blockkatalog wurde gegen Tom's Storage Fabric `26.2-2.11.3` geprueft. Er ordnet Controller, Terminals, Trims, Kabel und Kabel-Connectoren passenden Lumungus-Bloecken zu. Unbekannte Bloecke und noch nicht abgebildete Funktionsbloecke blockieren die Migration; ein Filing Cabinet wird wegen moeglicher eigener Inhalte gesondert als blockierend gemeldet.
 
 Der Welt-Scanner kann inzwischen eine physisch zusammenhaengende Tom's-Komponente ab einem Startblock nur lesend erfassen. Er laedt keine Chunks nach, besitzt ein hartes Sicherheitslimit und verweigert die Freigabe bei unbekannten Bloecken, ungeladenen Grenzen oder einem abgebrochenen Scan. Fuer ein vollstaendig erfasstes Netz sammelt er angrenzende Fabric-Inventare, dedupliziert mehrfach beruehrte Inventare sowie Doppeltruhen und erzeugt den komponentensicheren Bestandssnapshot.
 
-Der serverseitige Diagnosebefehl `/lumungus migration scan <x> <y> <z>` fuehrt den Nur-Lese-Scan an einem Tom's-Netzblock aus. Er meldet Blockanzahl, konvertierbare Bloecke, Blocker und bei einem vollstaendigen lokalen Netz Inventaranzahl, Slots, Gesamtmenge sowie Itemtypen. Fernconnectoren werden erkannt und blockieren die Freigabe, solange ihre entfernten Teilnetze noch nicht versionssicher verfolgt werden koennen.
+Der serverseitige Diagnosebefehl `/lumungus migration scan <x> <y> <z>` fuehrt den Nur-Lese-Scan an einem Tom's-Netzblock aus. Er meldet Blockanzahl, konvertierbare Bloecke, Blocker und bei einem vollstaendigen lokalen Netz Inventaranzahl, Slots, Gesamtmenge sowie Itemtypen. Die optionale Direktintegration erkennt bei Tom's `2.11.3`, ob ein Kabel-Connector tatsaechlich einen Fernkanal verwendet. Gewoehnliche Kabel-Connectoren duerfen den lokalen Snapshot passieren; konfigurierte Fernkanaele bleiben bis zur vollstaendigen Teilnetz-Zusammenfuehrung gesperrt.
 
-Als Naechstes wird die konkrete Tom's-Version fuer Minecraft 26.2 als optionale Entwicklungsabhaengigkeit festgelegt und deren Kanalregister nur lesend angebunden. Schreibende Konvertierung, Journal und Rollback bleiben gesperrt, bis der vollstaendige Bericht am Welt-Backup erfolgreich abgenommen wurde.
+Tom's `26.2-2.11.3` ist als optionale Compile- und lokale Testabhaengigkeit festgelegt und wird nicht in das Lumungus-JAR eingebettet. Ein echter Fabric-GameTest startet beide Mods gemeinsam und prueft den Nur-Lese-Zugriff auf Kanal-ID und Laufzeitstatus eines realen Tom's-Connectors.
+
+Als Naechstes werden aktive entfernte Connector-Positionen dimensionsuebergreifend gesammelt und ihre Teilnetze in einen gemeinsamen Dry Run aufgenommen. Schreibende Konvertierung, Journal und Rollback bleiben gesperrt, bis der vollstaendige Bericht am Welt-Backup erfolgreich abgenommen wurde.

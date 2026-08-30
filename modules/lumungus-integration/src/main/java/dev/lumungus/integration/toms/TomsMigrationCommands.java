@@ -36,18 +36,20 @@ public final class TomsMigrationCommands {
     private static int scan(CommandSourceStack source, BlockPos start) {
         ServerLevel level = source.getLevel();
         MinecraftTomsInventoryWorldView world = new MinecraftTomsInventoryWorldView(level);
-        TomsDryRunReport report = TomsReadOnlyNetworkScanner.scan(world, start, MAX_SCAN_NODES);
-        if (report.blocks().isEmpty()) {
+        TomsDryRunReport initialReport = TomsReadOnlyNetworkScanner.scan(world, start, MAX_SCAN_NODES);
+        if (initialReport.blocks().isEmpty()) {
             source.sendFailure(Component.translatable("command.lumungus_integration.migration.not_toms"));
             return 0;
         }
 
         source.sendSuccess(() -> Component.translatable(
                 "command.lumungus_integration.migration.blocks",
-                report.blocks().size(),
-                report.convertibleCount(),
-                report.blockingCount()
+                initialReport.blocks().size(),
+                initialReport.convertibleCount(),
+                initialReport.blockingCount()
         ), false);
+
+        TomsDryRunReport report = initialReport;
 
         if (report.unloadedBoundary()) {
             source.sendFailure(Component.translatable("command.lumungus_integration.migration.unloaded"));
@@ -59,7 +61,12 @@ public final class TomsMigrationCommands {
             ));
         }
         if (report.remoteConnectionsRequireScan()) {
-            source.sendFailure(Component.translatable("command.lumungus_integration.migration.remote_pending"));
+            TomsRemoteConnectorStatus remoteStatus = TomsRemoteConnectorInspector.inspect(level, report);
+            if (remoteStatus == TomsRemoteConnectorStatus.NONE_CONFIGURED) {
+                report = report.withRemoteConnectionsResolved();
+            } else {
+                source.sendFailure(Component.translatable(remoteStatus.messageKey()));
+            }
         }
         report.blocks().stream()
                 .filter(block -> block.plan().disposition() != TomsMigrationDisposition.CONVERTIBLE)

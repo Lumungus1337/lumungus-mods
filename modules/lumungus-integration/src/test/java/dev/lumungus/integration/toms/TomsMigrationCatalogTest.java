@@ -9,7 +9,7 @@ import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 
 final class TomsMigrationCatalogTest {
-    private static final Set<String> REGISTERED_BLOCKS_2_4_1 = Set.of(
+    private static final Set<String> REGISTERED_BLOCKS_2_11_3 = Set.of(
             "inventory_connector", "storage_terminal", "crafting_terminal", "open_crate", "trim",
             "painted_trim", "level_emitter", "inventory_cable", "inventory_cable_framed",
             "basic_inventory_hopper", "inventory_interface", "filing_cabinet", "inventory_cable_connector",
@@ -17,9 +17,9 @@ final class TomsMigrationCatalogTest {
     );
 
     @Test
-    void categorizesEveryBlockRegisteredByToms241() {
-        assertEquals(REGISTERED_BLOCKS_2_4_1.size(), TomsMigrationCatalog.knownPlans().size());
-        for (String path : REGISTERED_BLOCKS_2_4_1) {
+    void categorizesEveryBlockRegisteredByToms2113() {
+        assertEquals(REGISTERED_BLOCKS_2_11_3.size(), TomsMigrationCatalog.knownPlans().size());
+        for (String path : REGISTERED_BLOCKS_2_11_3) {
             assertTrue(TomsMigrationCatalog.planFor(toms(path)).isPresent(), path);
         }
     }

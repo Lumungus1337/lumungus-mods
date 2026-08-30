@@ -1,5 +1,19 @@
+repositories {
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
 dependencies {
     implementation project(":lumungus-core")
+
+    // Optional runtime integration. The Tom's jar is never bundled into Lumungus Integration.
+    compileOnly "maven.modrinth:XZNI4Cpy:${toms_storage_modrinth_version}"
+    localRuntime "maven.modrinth:XZNI4Cpy:${toms_storage_modrinth_version}"
 
     testImplementation "org.junit.jupiter:junit-jupiter:${junit_version}"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junit_version}"

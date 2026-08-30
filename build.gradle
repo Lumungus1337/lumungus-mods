@@ -39,6 +39,15 @@ configure(project(":lumungus-autotrader")) {
 
 configure(project(":lumungus-integration")) {
     configureLumungusModule(project)
+
+    fabricApi {
+        configureTests {
+            createSourceSet = true
+            modId = "lumungus_integration_gametest"
+            enableGameTests = true
+            eula = true
+        }
+    }
 }
 
 void configureLumungusModule(Project moduleProject) {

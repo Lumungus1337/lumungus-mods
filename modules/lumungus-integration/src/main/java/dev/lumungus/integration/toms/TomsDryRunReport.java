@@ -33,4 +33,8 @@ public record TomsDryRunReport(
                 && !nodeLimitReached
                 && !remoteConnectionsRequireScan;
     }
+
+    public TomsDryRunReport withRemoteConnectionsResolved() {
+        return new TomsDryRunReport(start, blocks, unloadedBoundary, nodeLimitReached, false);
+    }
 }
