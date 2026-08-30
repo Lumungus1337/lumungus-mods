@@ -11,7 +11,10 @@ import dev.lumungus.storage.item.StorageCellItem;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -21,9 +24,13 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 public final class DriveBayBlockEntity extends BlockEntity implements StorageAccess, StorageProvider {
     private static final String CELL_KEY = "cell";
+    private static final String CONTROLLER_POS_KEY = "controller_pos";
+    private static final String NETWORK_ID_KEY = "network_id";
     private static final StorageCapacity EMPTY_CAPACITY = new StorageCapacity(0, 0);
 
     private ItemStack cell = ItemStack.EMPTY;
+    private BlockPos controllerPos;
+    private UUID networkId;
 
     public DriveBayBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusStorageBlockEntities.DRIVE_BAY, pos, state);
@@ -35,6 +42,45 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
 
     public ItemStack cell() {
         return cell.copy();
+    }
+
+    public boolean refreshControllerLink() {
+        if (level == null || level.isClientSide()) {
+            return false;
+        }
+        if (hasValidControllerLink()) {
+            return true;
+        }
+        if (controllerPos != null && !level.isLoaded(controllerPos)) {
+            return false;
+        }
+
+        List<BlockPos> controllerPositions = new ArrayList<>();
+        int radius = StorageControllerBlockEntity.SCAN_RADIUS;
+        BlockPos min = worldPosition.offset(-radius, -radius, -radius);
+        BlockPos max = worldPosition.offset(radius, radius, radius);
+        for (BlockPos candidate : BlockPos.betweenClosed(min, max)) {
+            if (level.getBlockEntity(candidate) instanceof StorageControllerBlockEntity controller) {
+                controllerPositions.add(controller.getBlockPos());
+            }
+        }
+
+        BlockPos ownerPos = StorageControllerOwnership.ownerOf(worldPosition, controllerPositions, radius)
+                .orElse(null);
+        if (ownerPos == null
+                || !(level.getBlockEntity(ownerPos) instanceof StorageControllerBlockEntity controller)) {
+            clearControllerLink();
+            return false;
+        }
+        linkTo(controller);
+        return true;
+    }
+
+    public boolean isLinkedTo(StorageControllerBlockEntity controller) {
+        return controllerPos != null
+                && networkId != null
+                && controllerPos.equals(controller.getBlockPos())
+                && networkId.equals(controller.getNetworkId());
     }
 
     public ItemStack insertCell(ItemStack candidate, TransferMode mode) {
@@ -130,6 +176,8 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         cell = input.read(CELL_KEY, ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
+        controllerPos = input.read(CONTROLLER_POS_KEY, BlockPos.CODEC).orElse(null);
+        networkId = input.read(NETWORK_ID_KEY, UUIDUtil.CODEC).orElse(null);
         if (!cell.isEmpty() && !cell.is(LumungusStorageItems.STORAGE_CELL_16K)) {
             cell = ItemStack.EMPTY;
         }
@@ -139,6 +187,33 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.store(CELL_KEY, ItemStack.OPTIONAL_CODEC, cell);
+        output.storeNullable(CONTROLLER_POS_KEY, BlockPos.CODEC, controllerPos);
+        output.storeNullable(NETWORK_ID_KEY, UUIDUtil.CODEC, networkId);
+    }
+
+    private boolean hasValidControllerLink() {
+        return controllerPos != null
+                && networkId != null
+                && level.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller
+                && networkId.equals(controller.getNetworkId());
+    }
+
+    private void linkTo(StorageControllerBlockEntity controller) {
+        BlockPos newControllerPos = controller.getBlockPos().immutable();
+        UUID newNetworkId = controller.getNetworkId();
+        if (!newControllerPos.equals(controllerPos) || !newNetworkId.equals(networkId)) {
+            controllerPos = newControllerPos;
+            networkId = newNetworkId;
+            setChanged();
+        }
+    }
+
+    private void clearControllerLink() {
+        if (controllerPos != null || networkId != null) {
+            controllerPos = null;
+            networkId = null;
+            setChanged();
+        }
     }
 
     private StorageCellData cellData() {

@@ -1,12 +1,8 @@
 package dev.lumungus.storage.data;
 
+import dev.lumungus.storage.test.MinecraftTestBootstrap;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -19,8 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class StorageCellDataTest {
     @BeforeAll
     static void bootstrapMinecraftRegistries() {
-        SharedConstants.tryDetectVersion();
-        Bootstrap.bootStrap();
+        MinecraftTestBootstrap.initialize();
     }
 
     @Test
@@ -77,10 +72,6 @@ final class StorageCellDataTest {
     }
 
     private static ItemStack stack(Item item, int count) {
-        return new ItemStack(
-                Holder.direct(item, DataComponentMap.EMPTY),
-                count,
-                DataComponentPatch.EMPTY
-        );
+        return MinecraftTestBootstrap.stack(item, count);
     }
 }

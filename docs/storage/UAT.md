@@ -4,14 +4,14 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.1`
+- Version: `0.1.0-uat.3`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.1.zip`
-- Abnahmestatus: `BLOCKED`, siehe [UAT_RESULTS_0.1.0-uat.1.md](UAT_RESULTS_0.1.0-uat.1.md)
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.3.zip`
+- Abnahmestatus: `AUTOMATED_PASS`, visueller Client- und Multiplayer-UAT noch offen; siehe [UAT_RESULTS_0.1.0-uat.3.md](UAT_RESULTS_0.1.0-uat.3.md)
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
 
@@ -26,7 +26,8 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | Terminal | `PASS` | Oeffnen, Suche, Sortierung, Cursor-Einlagerung und Stapelentnahme funktionieren. |
 | Netzwerk-Crafting | `PASS` | Ein Rezept nutzt einen Stamm aus dem Netzwerk und erzeugt vier Bretter. |
 | JEI-Transfer | `PASS` | Der Lumungus-Transferknopf befuellt das 3x3-Raster serverseitig aus dem Netzwerk. |
-| Automatisierte Speichertests | `PASS` | Vier JUnit-Tests pruefen Merge, Komponentenvarianten, Gesamtkapazitaet und maximale Stapelentnahme. |
+| Automatisierte Logiktests | `PASS` | Elf JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
+| Server-GameTests | `PASS` | Vier reale GameTests pruefen stabile Bay-Zuordnung, verlustfreien Besitzerwechsel, partielles Shift-Crafting und atomaren JEI-Fehltransfer. |
 
 ## Testaufbau
 
@@ -65,7 +66,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.1`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.3`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|

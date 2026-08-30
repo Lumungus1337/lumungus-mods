@@ -169,13 +169,16 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         }
 
         StorageControllerBlockEntity controller = linkedController();
-        List<ResourceAmount> resources = controller == null ? List.of() : controller.storedResources();
-        StorageSnapshot snapshot = controller == null
-                ? new StorageSnapshot(0, 0)
-                : controller.snapshot();
-        StorageCapacity capacity = controller == null
-                ? new StorageCapacity(0, 0)
-                : controller.capacity();
+        StorageControllerBlockEntity.NetworkState networkState = controller == null
+                ? new StorageControllerBlockEntity.NetworkState(
+                        List.of(),
+                        new StorageSnapshot(0, 0),
+                        new StorageCapacity(0, 0)
+                )
+                : controller.networkState();
+        List<ResourceAmount> resources = networkState.resources();
+        StorageSnapshot snapshot = networkState.snapshot();
+        StorageCapacity capacity = networkState.capacity();
         int fingerprint = Objects.hash(resources, snapshot, capacity);
         if (fingerprint == lastSnapshotFingerprint) {
             return;
@@ -229,8 +232,13 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
             return;
         }
 
-        returnCraftGridItems(controller);
+        List<ItemStack> previousGrid = snapshotCraftGrid();
         List<PoolEntry> pool = createAvailablePool(controller);
+        for (ItemStack stack : previousGrid) {
+            if (!stack.isEmpty()) {
+                addToPool(pool, stack, stack.getCount());
+            }
+        }
         RecipePlacement placement = null;
         int requestedCrafts = maxTransfer ? MAX_RECIPE_TRANSFER : 1;
         for (int crafts = requestedCrafts; crafts >= 1; crafts--) {
@@ -244,10 +252,10 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
             player.sendSystemMessage(Component.translatable(
                     "message.lumungus_storage.crafting_terminal.missing_ingredients"
             ));
-            slotsChanged(craftSlots);
             return;
         }
 
+        returnCraftGridItems(controller);
         List<AcquiredSlot> acquiredSlots = new ArrayList<>();
         for (PlannedSlot plannedSlot : placement.slots()) {
             int remaining = removeFromPlayerInventory(plannedSlot.stack(), plannedSlot.stack().getCount());
@@ -262,6 +270,9 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
                 player.sendSystemMessage(Component.translatable(
                         "message.lumungus_storage.crafting_terminal.missing_ingredients"
                 ));
+                restoreCraftGrid(controller, previousGrid);
+                slotsChanged(craftSlots);
+                broadcastChanges();
                 return;
             }
             acquiredSlots.add(new AcquiredSlot(plannedSlot.stack(), fromPlayer, fromNetwork.getCount()));
@@ -304,7 +315,15 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
             if (!moveItemStackTo(stack, PLAYER_INVENTORY_SLOT_START, PLAYER_INVENTORY_SLOT_END, true)) {
                 return ItemStack.EMPTY;
             }
+            ItemStack resultRemainder = stack.copy();
             slot.onQuickCraft(stack, original);
+            slot.onTake(player, stack);
+            ItemStack unhandledRemainder = placeOrReturnResultRemainder(slot, resultRemainder);
+            if (!unhandledRemainder.isEmpty()) {
+                player.drop(unhandledRemainder, false);
+            }
+            broadcastChanges();
+            return original;
         } else {
             StorageControllerBlockEntity controller = linkedController();
             if (controller != null) {
@@ -333,6 +352,14 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         return original;
     }
 
+    static ItemStack placeOrReturnResultRemainder(Slot slot, ItemStack remainder) {
+        if (!remainder.isEmpty() && !slot.hasItem()) {
+            slot.setByPlayer(remainder);
+            return ItemStack.EMPTY;
+        }
+        return remainder.copy();
+    }
+
     @Override
     public boolean canTakeItemForPickAll(ItemStack stack, Slot slot) {
         return slot.container != resultSlots && super.canTakeItemForPickAll(stack, slot);
@@ -359,12 +386,13 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
     }
 
     private StorageControllerBlockEntity linkedController() {
-        return access.evaluate((level, pos) -> {
+        Optional<StorageControllerBlockEntity> linked = access.evaluate((level, pos) -> {
             if (level.getBlockEntity(pos) instanceof CraftingTerminalBlockEntity terminal) {
-                return terminal.linkedController();
+                return Optional.ofNullable(terminal.linkedController());
             }
-            return null;
-        }, null);
+            return Optional.<StorageControllerBlockEntity>empty();
+        }, Optional.<StorageControllerBlockEntity>empty());
+        return linked.orElse(null);
     }
 
     private void extractToCursor(
@@ -464,6 +492,44 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         resultSlots.setItem(0, ItemStack.EMPTY);
     }
 
+    private List<ItemStack> snapshotCraftGrid() {
+        List<ItemStack> snapshot = new ArrayList<>(RECIPE_SLOT_COUNT);
+        for (int index = 0; index < RECIPE_SLOT_COUNT; index++) {
+            snapshot.add(craftSlots.getItem(index).copy());
+        }
+        return snapshot;
+    }
+
+    private void restoreCraftGrid(
+            StorageControllerBlockEntity controller,
+            List<ItemStack> previousGrid
+    ) {
+        for (int index = 0; index < previousGrid.size(); index++) {
+            ItemStack expected = previousGrid.get(index);
+            if (expected.isEmpty()) {
+                continue;
+            }
+
+            int remaining = removeFromPlayerInventory(expected, expected.getCount());
+            ItemStack restored = expected.copyWithCount(expected.getCount() - remaining);
+            if (remaining > 0) {
+                ItemStack fromNetwork = controller.extract(expected, remaining, TransferMode.EXECUTE);
+                if (!fromNetwork.isEmpty()) {
+                    if (restored.isEmpty()) {
+                        restored = fromNetwork.copy();
+                    } else {
+                        restored.grow(fromNetwork.getCount());
+                    }
+                    remaining -= fromNetwork.getCount();
+                }
+            }
+            if (remaining > 0) {
+                player.drop(expected.copyWithCount(remaining), false);
+            }
+            craftSlots.setItem(index, restored);
+        }
+    }
+
     private List<PoolEntry> createAvailablePool(StorageControllerBlockEntity controller) {
         List<PoolEntry> pool = new ArrayList<>();
         Inventory inventory = player.getInventory();
@@ -492,42 +558,41 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
     }
 
     private RecipePlacement planRecipe(CraftingRecipe recipe, List<PoolEntry> available, int crafts) {
-        List<PoolEntry> pool = new ArrayList<>(available);
         List<PlannedIngredient> ingredients = recipeIngredients(recipe);
-        List<PlannedSlot> plannedSlots = new ArrayList<>();
-        for (PlannedIngredient plannedIngredient : ingredients) {
-            int matchIndex = -1;
-            for (int index = 0; index < pool.size(); index++) {
-                PoolEntry candidate = pool.get(index);
-                if (candidate.amount() >= crafts
-                        && candidate.stack().getMaxStackSize() >= crafts
-                        && plannedIngredient.ingredient().test(candidate.stack())) {
-                    matchIndex = index;
-                    break;
-                }
-            }
-            if (matchIndex < 0) {
-                return null;
-            }
-
-            PoolEntry selected = pool.get(matchIndex);
-            pool.set(matchIndex, new PoolEntry(selected.stack(), selected.amount() - crafts));
-            plannedSlots.add(new PlannedSlot(
-                    plannedIngredient.slot(),
-                    selected.stack().copyWithCount(crafts)
-            ));
+        List<RecipeIngredientPlanner.IngredientSlot> plannerIngredients = ingredients.stream()
+                .map(ingredient -> new RecipeIngredientPlanner.IngredientSlot(
+                        ingredient.slot(),
+                        ingredient.ingredient()
+                ))
+                .toList();
+        List<RecipeIngredientPlanner.AvailableResource> plannerResources = available.stream()
+                .map(resource -> new RecipeIngredientPlanner.AvailableResource(
+                        resource.stack(),
+                        resource.amount()
+                ))
+                .toList();
+        Optional<List<RecipeIngredientPlanner.PlannedSlot>> planned = RecipeIngredientPlanner.plan(
+                plannerIngredients,
+                plannerResources,
+                crafts
+        );
+        if (planned.isEmpty()) {
+            return null;
         }
+
         List<ItemStack> grid = new ArrayList<>(RECIPE_SLOT_COUNT);
         for (int index = 0; index < RECIPE_SLOT_COUNT; index++) {
             grid.add(ItemStack.EMPTY);
         }
-        for (PlannedSlot plannedSlot : plannedSlots) {
+        for (RecipeIngredientPlanner.PlannedSlot plannedSlot : planned.get()) {
             grid.set(plannedSlot.slot(), plannedSlot.stack());
         }
         if (!recipe.matches(CraftingInput.of(3, 3, grid), player.level())) {
             return null;
         }
-        return new RecipePlacement(List.copyOf(plannedSlots));
+        return new RecipePlacement(planned.get().stream()
+                .map(plannedSlot -> new PlannedSlot(plannedSlot.slot(), plannedSlot.stack()))
+                .toList());
     }
 
     private void rollbackAcquiredIngredients(

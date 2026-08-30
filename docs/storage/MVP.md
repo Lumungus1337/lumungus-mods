@@ -41,7 +41,7 @@ JEI bleibt eine optionale Client-Mod und wird von Lumungus Storage nur zur Compi
 
 ## Naechster technischer Schritt
 
-1. Den Release Candidate `0.1.0-uat.1` anhand von [UAT.md](UAT.md) mit einem zweiten Spieler und den dokumentierten Grenzfaellen abnehmen.
+1. Den automatisiert geprueften Release Candidate `0.1.0-uat.3` anhand von [UAT.md](UAT.md) noch visuell im Client und mit einem zweiten Spieler abnehmen.
 2. UAT-Abweichungen beheben und den ersten freigegebenen Storage-Build erstellen.
 3. Danach Produktionsauftraege, Autocrafter, Autosteinsaege und Auto-Braustand als naechsten vertikalen Slice planen.
 

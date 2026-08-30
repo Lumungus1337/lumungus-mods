@@ -25,6 +25,8 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
     private static final String NETWORK_ID_KEY = "network_id";
 
     private UUID networkId = UUID.randomUUID();
+    private long cachedNetworkStateTick = Long.MIN_VALUE;
+    private NetworkState cachedNetworkState;
 
     public StorageControllerBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusStorageBlockEntities.STORAGE_CONTROLLER, pos, state);
@@ -53,7 +55,9 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
                     && terminal.refreshControllerLink()
                     && terminal.isLinkedTo(this)) {
                 linkedTerminals++;
-            } else if (level.getBlockEntity(candidate) instanceof DriveBayBlockEntity) {
+            } else if (level.getBlockEntity(candidate) instanceof DriveBayBlockEntity driveBay
+                    && driveBay.refreshControllerLink()
+                    && driveBay.isLinkedTo(this)) {
                 linkedDriveBays++;
             }
         }
@@ -68,31 +72,47 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
 
     @Override
     public StorageCapacity capacity() {
-        long maxTotal = 0;
-        int maxTypes = 0;
-        for (DriveBayBlockEntity driveBay : driveBays()) {
-            maxTotal += driveBay.capacity().maxTotalAmount();
-            maxTypes += driveBay.capacity().maxDistinctTypes();
-        }
-        return new StorageCapacity(maxTotal, maxTypes);
+        return networkState().capacity();
     }
 
     @Override
     public StorageSnapshot snapshot() {
-        List<ResourceAmount> resources = storedResources();
-        long total = resources.stream().mapToLong(ResourceAmount::amount).sum();
-        return new StorageSnapshot(total, resources.size());
+        return networkState().snapshot();
     }
 
     @Override
     public List<ResourceAmount> storedResources() {
+        return networkState().resources();
+    }
+
+    public NetworkState networkState() {
+        long gameTime = level == null ? Long.MIN_VALUE : level.getGameTime();
+        if (cachedNetworkState != null && cachedNetworkStateTick == gameTime) {
+            return cachedNetworkState;
+        }
+
+        List<DriveBayBlockEntity> driveBays = driveBays();
         List<ResourceAmount> aggregated = new ArrayList<>();
-        for (DriveBayBlockEntity driveBay : driveBays()) {
+        long maxTotal = 0;
+        int maxTypes = 0;
+        for (DriveBayBlockEntity driveBay : driveBays) {
+            StorageCapacity driveCapacity = driveBay.capacity();
+            maxTotal += driveCapacity.maxTotalAmount();
+            maxTypes += driveCapacity.maxDistinctTypes();
             for (ResourceAmount resource : driveBay.storedResources()) {
                 mergeResource(aggregated, resource);
             }
         }
-        return List.copyOf(aggregated);
+        List<ResourceAmount> resources = List.copyOf(aggregated);
+        long total = resources.stream().mapToLong(ResourceAmount::amount).sum();
+        NetworkState state = new NetworkState(
+                resources,
+                new StorageSnapshot(total, resources.size()),
+                new StorageCapacity(maxTotal, maxTypes)
+        );
+        cachedNetworkState = state;
+        cachedNetworkStateTick = gameTime;
+        return state;
     }
 
     @Override
@@ -115,6 +135,9 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
             if (remainder.isEmpty()) {
                 break;
             }
+        }
+        if (mode == TransferMode.EXECUTE && remainder.getCount() != stack.getCount()) {
+            invalidateNetworkState();
         }
         return remainder;
     }
@@ -140,6 +163,9 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
                 break;
             }
         }
+        if (mode == TransferMode.EXECUTE && !result.isEmpty()) {
+            invalidateNetworkState();
+        }
         return result;
     }
 
@@ -152,7 +178,9 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
         BlockPos min = worldPosition.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS);
         BlockPos max = worldPosition.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS);
         for (BlockPos candidate : BlockPos.betweenClosed(min, max)) {
-            if (level.getBlockEntity(candidate) instanceof DriveBayBlockEntity driveBay) {
+            if (level.getBlockEntity(candidate) instanceof DriveBayBlockEntity driveBay
+                    && driveBay.refreshControllerLink()
+                    && driveBay.isLinkedTo(this)) {
                 driveBays.add(driveBay);
             }
         }
@@ -171,6 +199,11 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
         aggregated.add(candidate);
     }
 
+    private void invalidateNetworkState() {
+        cachedNetworkStateTick = Long.MIN_VALUE;
+        cachedNetworkState = null;
+    }
+
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
@@ -184,5 +217,20 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
     }
 
     public record NetworkStatus(int linkedTerminals, int linkedDriveBays) {
+    }
+
+    public record NetworkState(
+            List<ResourceAmount> resources,
+            StorageSnapshot snapshot,
+            StorageCapacity capacity
+    ) {
+        public NetworkState {
+            resources = List.copyOf(resources);
+        }
+
+        @Override
+        public List<ResourceAmount> resources() {
+            return resources;
+        }
     }
 }

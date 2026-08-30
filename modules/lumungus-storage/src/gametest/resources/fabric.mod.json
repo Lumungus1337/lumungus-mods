@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "lumungus_storage_gametest",
+  "version": "1.0.0",
+  "name": "Lumungus Storage Game Tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.lumungus.storage.gametest.StorageNetworkGameTest"
+    ]
+  }
+}

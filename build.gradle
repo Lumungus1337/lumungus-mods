@@ -13,6 +13,16 @@ configure(project(":lumungus-core")) {
 
 configure(project(":lumungus-storage")) {
     configureLumungusModule(project)
+
+    fabricApi {
+        configureTests {
+            createSourceSet = true
+            modId = "lumungus_storage_gametest"
+            enableGameTests = true
+            enableClientGameTests = false
+            eula = true
+        }
+    }
 }
 
 configure(project(":lumungus-backpack")) {
@@ -99,7 +109,9 @@ tasks.register("storageUatBundle", Zip) {
     description = "Builds the Lumungus Storage UAT bundle with Core, Storage, and the test checklist."
     dependsOn(
         ":lumungus-core:jar",
-        ":lumungus-storage:jar"
+        ":lumungus-core:check",
+        ":lumungus-storage:jar",
+        ":lumungus-storage:check"
     )
 
     archiveFileName = "lumungus-storage-${project.version}.zip"
