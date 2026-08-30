@@ -1,0 +1,171 @@
+package dev.lumungus.storage.gametest;
+
+import dev.lumungus.core.api.inventory.TransferMode;
+import dev.lumungus.core.api.storage.StorageSnapshot;
+import dev.lumungus.storage.LumungusStorage;
+import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
+import dev.lumungus.storage.network.StorageNetworkTopology;
+import dev.lumungus.storage.registry.LumungusStorageBlocks;
+import java.lang.reflect.Method;
+import java.util.List;
+import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+
+public final class StorageLoadGameTest implements CustomTestMethodInvoker {
+    private static final BlockPos CONTROLLER_POS = new BlockPos(1, 1, 7);
+    private static final int FIRST_COLUMN = 2;
+    private static final int LAST_COLUMN = 13;
+    private static final int FILLED_SLOTS_PER_CHEST = 26;
+    private static final int SCAN_ITERATIONS = 30;
+    private static final long MAX_SCAN_TIME_MILLIS = 10_000;
+    private static final List<Item> TEST_ITEMS = List.of(
+            Items.COBBLESTONE,
+            Items.DIRT,
+            Items.OAK_LOG,
+            Items.IRON_INGOT,
+            Items.GOLD_INGOT,
+            Items.REDSTONE,
+            Items.COAL,
+            Items.DIAMOND,
+            Items.SAND,
+            Items.GRAVEL,
+            Items.STONE,
+            Items.GLASS
+    );
+
+    @GameTest
+    public void scansDensePhysicalWarehouseWithoutCells(GameTestHelper context) {
+        context.setBlock(CONTROLLER_POS, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        for (int x = FIRST_COLUMN; x <= LAST_COLUMN; x++) {
+            context.setBlock(new BlockPos(x, 1, 7), LumungusStorageBlocks.INVENTORY_CABLE);
+        }
+
+        long expectedTotal = 0;
+        long expectedCobblestone = 0;
+        int inventoryIndex = 0;
+        for (int x = FIRST_COLUMN; x <= LAST_COLUMN; x++) {
+            InventoryFillResult north = addInventory(
+                    context,
+                    new BlockPos(x, 1, 6),
+                    new BlockPos(x, 1, 5),
+                    inventoryIndex++
+            );
+            InventoryFillResult south = addInventory(
+                    context,
+                    new BlockPos(x, 1, 8),
+                    new BlockPos(x, 1, 9),
+                    inventoryIndex++
+            );
+            InventoryFillResult upper = addInventory(
+                    context,
+                    new BlockPos(x, 2, 7),
+                    new BlockPos(x, 3, 7),
+                    inventoryIndex++
+            );
+            expectedTotal += north.total() + south.total() + upper.total();
+            expectedCobblestone += north.cobblestone() + south.cobblestone() + upper.cobblestone();
+        }
+
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                CONTROLLER_POS,
+                StorageControllerBlockEntity.class
+        );
+        StorageNetworkTopology.invalidate(context.getLevel());
+        StorageControllerBlockEntity.NetworkStatus status = controller.refreshNetwork();
+        context.assertValueEqual(status.linkedInventoryConnectors(), 36, "Linked load-test connectors");
+        context.assertValueEqual(status.linkedDriveBays(), 0, "Load-test Drive Bays");
+
+        StorageSnapshot initial = controller.snapshot();
+        context.assertValueEqual(initial.storedTotalAmount(), expectedTotal, "Initial warehouse item total");
+        context.assertValueEqual(initial.storedDistinctTypes(), TEST_ITEMS.size(), "Warehouse item types");
+        long physicalCapacity = controller.capacity().maxTotalAmount();
+        context.assertTrue(
+                physicalCapacity >= expectedTotal + 36L * 64,
+                "Warehouse did not expose the guaranteed physical free space: " + physicalCapacity
+        );
+
+        long started = System.nanoTime();
+        for (int iteration = 0; iteration < SCAN_ITERATIONS; iteration++) {
+            long scannedTotal = 0;
+            for (Item item : TEST_ITEMS) {
+                scannedTotal += controller.count(new ItemStack(item));
+            }
+            context.assertValueEqual(scannedTotal, expectedTotal, "Repeated warehouse scan");
+        }
+        long elapsedMillis = (System.nanoTime() - started) / 1_000_000;
+        context.assertTrue(
+                elapsedMillis < MAX_SCAN_TIME_MILLIS,
+                "Warehouse scans exceeded " + MAX_SCAN_TIME_MILLIS + " ms: " + elapsedMillis + " ms"
+        );
+
+        StorageNetworkTopology.CacheStats cacheStats = StorageNetworkTopology.cacheStats(context.getLevel());
+        context.assertValueEqual(cacheStats.misses(), 1L, "Warehouse topology cache misses");
+        context.assertTrue(
+                cacheStats.hits() >= (long) SCAN_ITERATIONS * TEST_ITEMS.size(),
+                "Warehouse topology cache was not reused"
+        );
+
+        ItemStack insertRemainder = controller.insert(new ItemStack(Items.NETHER_STAR, 36), TransferMode.EXECUTE);
+        context.assertTrue(insertRemainder.isEmpty(), "Warehouse did not use its distributed free slots");
+        context.assertValueEqual(controller.count(new ItemStack(Items.NETHER_STAR)), 36L, "Inserted nether stars");
+
+        ItemStack extracted = controller.extract(
+                new ItemStack(Items.COBBLESTONE),
+                64,
+                TransferMode.EXECUTE
+        );
+        context.assertValueEqual(extracted.getCount(), 64, "Warehouse extraction amount");
+        context.assertValueEqual(
+                controller.count(new ItemStack(Items.COBBLESTONE)),
+                expectedCobblestone - 64,
+                "Remaining warehouse cobblestone"
+        );
+
+        LumungusStorage.LOGGER.info(
+                "Physical warehouse load test: {} inventories, {} items / {} capacity, {} types, {} full scans in {} ms",
+                36,
+                expectedTotal,
+                physicalCapacity,
+                TEST_ITEMS.size(),
+                SCAN_ITERATIONS,
+                elapsedMillis
+        );
+        context.succeed();
+    }
+
+    private static InventoryFillResult addInventory(
+            GameTestHelper context,
+            BlockPos connectorPos,
+            BlockPos chestPos,
+            int inventoryIndex
+    ) {
+        context.setBlock(connectorPos, LumungusStorageBlocks.INVENTORY_CONNECTOR);
+        context.setBlock(chestPos, Blocks.CHEST);
+        ChestBlockEntity chest = context.getBlockEntity(chestPos, ChestBlockEntity.class);
+
+        long cobblestone = 0;
+        for (int slot = 0; slot < FILLED_SLOTS_PER_CHEST; slot++) {
+            Item item = TEST_ITEMS.get((inventoryIndex + slot) % TEST_ITEMS.size());
+            chest.setItem(slot, new ItemStack(item, 64));
+            if (item == Items.COBBLESTONE) {
+                cobblestone += 64;
+            }
+        }
+        return new InventoryFillResult(FILLED_SLOTS_PER_CHEST * 64L, cobblestone);
+    }
+
+    @Override
+    public void invokeTestMethod(GameTestHelper context, Method method) throws ReflectiveOperationException {
+        method.invoke(this, context);
+    }
+
+    private record InventoryFillResult(long total, long cobblestone) {
+    }
+}

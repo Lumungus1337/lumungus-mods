@@ -6,7 +6,8 @@
   "environment": "*",
   "entrypoints": {
     "fabric-gametest": [
-      "dev.lumungus.storage.gametest.StorageNetworkGameTest"
+      "dev.lumungus.storage.gametest.StorageNetworkGameTest",
+      "dev.lumungus.storage.gametest.StorageLoadGameTest"
     ],
     "fabric-client-gametest": [
       "dev.lumungus.storage.gametest.StorageClientGameTest"
