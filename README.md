@@ -33,7 +33,7 @@ Die Gameplay-Module haengen von Core ab, aber Core soll nicht von den Gameplay-M
 | Modul | Rolle | Status |
 |---|---|---|
 | `lumungus-core` | Gemeinsame APIs, Basistypen und technische Infrastruktur | angelegt |
-| `lumungus-storage` | Eigenes Storage-Netzwerk, Terminals, Drives, Import/Export, spaeter Autocrafting | `0.1.0-uat.3` UAT Candidate |
+| `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.3` UAT Candidate; physische Inventare als naechster Slice |
 | `lumungus-backpack` | Modularer Rucksack mit Upgrade-Slots und spaeter Jetpack-Upgrade | angelegt |
 | `lumungus-machines` | Maschinen- und Automationsmodule | angelegt |
 | `lumungus-autotrader` | Automatisierte Handelsablaeufe, Trading-Terminals und spaetere Storage-Anbindung | angelegt |
@@ -42,6 +42,8 @@ Die Gameplay-Module haengen von Core ab, aber Core soll nicht von den Gameplay-M
 RailQuarry wird noch nicht migriert. Es ist als zukuenftiges Modul oder Feature innerhalb `lumungus-machines` dokumentiert, sobald die Core-APIs stabil genug sind.
 
 Autotrader wird ebenfalls noch nicht migriert, ist aber als eigenes Modul im Monorepo angelegt. Es soll optisch und spielerisch zur Lumungus-Linie passen: 90er-Computertechnik, klare Terminals, dunkle Frontplatten und gruene Statusanzeigen.
+
+Lumungus Storage verlangt keine Migration vorhandener Lagerbestaende in digitale Cells. Bestehende Kisten, Faesser, Shulkerboxen und kompatible Mod-Inventare bleiben die primaeren Speicherorte. Fuer bestehende Tom's-Simple-Storage-Anlagen ist ein einmaliger Migrationsassistent in `lumungus-integration` vorgesehen: Er uebernimmt das vorhandene Kabel-/Connector-Netz als Lumungus-Netz, ohne Items umzupacken. Nach erfolgreicher Validierung kann Tom's vollstaendig entfernt werden.
 
 ## Build-Strategie
 

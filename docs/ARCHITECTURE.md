@@ -43,19 +43,22 @@ Noch nicht enthalten sind Block-Registrierung, GUI-Code, Netzwerkpakete oder Dat
 
 ## Storage-Vision
 
-Lumungus Storage soll Komfort aus AE2-artigen Systemen mit einer einfachen Bedienung verbinden:
+Lumungus Storage soll den physischen Lageransatz von Tom's Simple Storage mit spaeteren Automationsfunktionen verbinden. Vorhandene Items bleiben in ihren Kisten und Faessern; eine Migration in Cells darf nie Voraussetzung sein.
 
 - Storage Controller als Netzwerkzentrum
+- native Inventar-Connectoren, Kabel und verkleidbare Trims
+- Kisten, Faesser, Shulkerboxen und kompatible Mod-Inventare als primaerer Speicher
 - Storage-Terminal
 - Crafting Terminal mit 3x3-Crafting-Funktion
-- Drives und Cells
+- einmaliger Migrationsassistent fuer bestehende Tom's-Simple-Storage-Netzwerke
+- Drives und Cells nur als optionaler Massenspeicher
 - Import-/Export-Komponenten
 - Such- und Sortierfunktionen
 - Request-Mengen
 - Schematic-Materialplanung mit automatischer Shulkerbox-Bestueckung und Build Clipboard
 - spaeter Autocrafting und Stock-Keeper
 
-Der erste spielbare Storage-Slice registriert `storage_controller` und `crafting_terminal` als echte Bloecke, Items und Block-Entities. Controller besitzen eine persistente Netzwerk-ID und verbinden Terminals in begrenzter Reichweite. Das Crafting Terminal bietet bereits ein voll funktionsfaehiges 3x3-Crafting-Raster; Netzwerk-Inventare und Massenspeicher folgen im naechsten Slice. Die visuelle Richtung ist 90er-Computertechnik: helle Gehaeuse, dunkle Fronten, gruene Monitorflaechen.
+Der erste spielbare Storage-Slice registriert `storage_controller`, `crafting_terminal` und den bisherigen Cell-Prototyp als echte Bloecke, Items und Block-Entities. Der naechste Slice ersetzt die Cell-zentrierte Discovery durch allgemeine Storage-Endpunkte. `lumungus-integration` erkennt bei der einmaligen Migration ein installiertes Tom's Simple Storage, vergleicht dessen Inventarbestand und ersetzt dessen Netzwerkbloecke durch Lumungus-Gegenstuecke. Tom's ist danach weder Pflichtabhaengigkeit noch dauerhaftes zweites Storage-System. Details und Sicherheitsregeln stehen in [storage/PHYSICAL_INVENTORY_NETWORK.md](storage/PHYSICAL_INVENTORY_NETWORK.md).
 
 ## Backpack-Vision
 

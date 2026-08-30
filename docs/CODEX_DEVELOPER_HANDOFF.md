@@ -32,7 +32,7 @@ Architektur:
 - modules/lumungus-core
   Gemeinsame APIs und technische Basisschicht.
 - modules/lumungus-storage
-  Controller, Drive Bays, Storage Cells, Crafting Terminal und spaeter Autocrafting.
+  Controller, physische Kisten-/Fass-Netzwerke, Crafting Terminal, optionale Storage Cells und spaeter Autocrafting.
 - modules/lumungus-backpack
   Geplanter modularer Rucksack mit spaeterem Jetpack-Upgrade.
 - modules/lumungus-machines
@@ -46,6 +46,7 @@ Wichtige Dokumente:
 - README.md
 - docs/ARCHITECTURE.md
 - docs/storage/MVP.md
+- docs/storage/PHYSICAL_INVENTORY_NETWORK.md
 - docs/storage/UAT.md
 - docs/storage/UAT_RESULTS_0.1.0-uat.2.md
 - docs/machines/MVP.md
@@ -62,6 +63,8 @@ Aktueller Storage-Stand:
 - Eigener JEI-Rezepttransfer; der Server loest und validiert die Rezept-ID erneut
 - `0.1.0-uat.2` wurde am Build-Gate abgelehnt; alle Anforderungen fuer den naechsten Kandidaten stehen in `docs/storage/UAT_RESULTS_0.1.0-uat.2.md`.
 - Zielversion des naechsten UAT-Kandidaten: 0.1.0-uat.3
+- Wichtige Korrektur der Zielarchitektur: Cells sind nur optional. Primaerer Speicher sind bestehende Kisten, Faesser, Shulkerboxen und kompatible Mod-Inventare.
+- Hoechste Prioritaet ist der verlustfreie Tom's-Uebergang: `lumungus-integration` soll den alten Bestand lesend vergleichen und danach Tom's-Kabel, Trims und Connectoren in Lumungus-Gegenstuecke konvertieren. Die Items bleiben in ihren bisherigen Inventaren; nach erfolgreicher Validierung muss die Welt ohne Tom's funktionieren.
 
 Aufgabenteilung:
 - Du bist fuer Coding, Bugfixes, Refactoring und passende automatisierte Tests verantwortlich.

@@ -2,10 +2,12 @@
 
 ## Erste Bloecke
 
-- Storage Controller: Zentrum eines Storage-Netzwerks. Er soll spaeter angeschlossene Inventare, Drives und Terminals finden und eine gemeinsame Netzwerk-ID verwalten.
+- Storage Controller: Zentrum eines Storage-Netzwerks. Er findet angeschlossene physische Inventare, optionale Drives und Terminals und verwaltet eine gemeinsame Netzwerk-ID.
 - Crafting Terminal: Spieleroberflaeche fuer Suche, Einlagerung, Entnahme und manuelles Crafting aus Netzwerkbestaenden.
-- Drive Bay: Nimmt eine herausnehmbare 16k Storage Cell auf und stellt deren Inhalt dem Netzwerk bereit.
-- 16k Storage Cell: Speichert insgesamt 16.384 Items aus maximal 64 unterschiedlichen Itemtypen inklusive ihrer Komponenten.
+- Inventory Connector: Bindet angrenzende Kisten, Faesser, Shulkerboxen und kompatible Mod-Inventare ein, ohne deren Inhalte zu verschieben.
+- Inventory Cable/Trim: Verbindet Controller, Terminals und Connectoren ueber groessere Lageranlagen.
+- Drive Bay und 16k Storage Cell: Bereits implementierter Prototyp, der als optionaler Massenspeicher erhalten bleiben kann, aber nicht mehr Voraussetzung fuer das Netzwerk ist.
+- Tom's Migration Assistant: Einmalige Integration, die vorhandene Tom's-Kabel, Trims und Connectoren durch Lumungus-Gegenstuecke ersetzt. Die angeschlossenen Inventare und ihre Items bleiben unberuehrt; danach kann Tom's entfernt werden.
 
 ## Stilrichtung
 
@@ -19,6 +21,8 @@ Die Storage-Bloecke sollen wie Computertechnik aus den 90er Jahren wirken:
 Der erste Slice nutzt bewusst Vanilla-Texturen, damit die IDs und Ressourcenstruktur sofort stabil sind. Eigene Texturen koennen nachgezogen werden, ohne die Registrierungslogik anzufassen.
 
 ## Aktueller technischer Stand
+
+Der UAT.3-Prototyp ist noch Cell-zentriert. Diese Implementierung bleibt als gepruefte Zwischenstufe erhalten, bildet aber nicht mehr die Zielarchitektur.
 
 - Controller und Crafting Terminal besitzen eigene, persistente Block-Entities.
 - Jeder Controller verwaltet eine dauerhafte Netzwerk-ID.
@@ -41,9 +45,13 @@ JEI bleibt eine optionale Client-Mod und wird von Lumungus Storage nur zur Compi
 
 ## Naechster technischer Schritt
 
-1. Den automatisiert geprueften Release Candidate `0.1.0-uat.3` anhand von [UAT.md](UAT.md) noch visuell im Client und mit einem zweiten Spieler abnehmen.
-2. UAT-Abweichungen beheben und den ersten freigegebenen Storage-Build erstellen.
-3. Danach Produktionsauftraege, Autocrafter, Autosteinsaege und Auto-Braustand als naechsten vertikalen Slice planen.
+1. Eine allgemeine Storage-Endpunkt-API und einen sicheren Adapter fuer physische Blockinventare implementieren.
+2. Native Inventory Connectoren und Kabel/Trims mit Topologie-Cache, Doppeltruhen-Deduplizierung und GameTests bauen.
+3. In `lumungus-integration` den Tom's-Migrationsassistenten implementieren: Bestand zunaechst nur lesend vergleichen, danach Kabel, Trims und Connectoren protokolliert in Lumungus-Bloecke konvertieren und erneut validieren. Kein Lageritem wird dabei umgelagert.
+4. Einen grossen Bestands- und Performance-UAT mit vielen Inventaren sowie einen echten Test an einer Sicherung des bestehenden Lagers durchfuehren. Abnahmekriterium ist, dass die Welt anschliessend ohne Tom's denselben Bestand ueber Lumungus anzeigt.
+5. Erst danach Produktionsauftraege, Autocrafter, Autosteinsaege, Auto-Braustand und Schematic-Logistik auf dem physischen Netzwerk aufbauen.
+
+Die verbindliche Entscheidung und die Migrationsregeln stehen in [PHYSICAL_INVENTORY_NETWORK.md](PHYSICAL_INVENTORY_NETWORK.md).
 
 ## Geplante Build Logistics
 
