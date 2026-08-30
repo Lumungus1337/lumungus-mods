@@ -23,10 +23,10 @@ public final class TomsReadOnlyNetworkScanner {
             throw new IllegalArgumentException("Node limit must be positive");
         }
         if (!world.isLoaded(start)) {
-            return new TomsDryRunReport(start, List.of(), true, false);
+            return new TomsDryRunReport(start, List.of(), true, false, false);
         }
         if (TomsMigrationCatalog.planFor(world.blockId(start)).isEmpty()) {
-            return new TomsDryRunReport(start, List.of(), false, false);
+            return new TomsDryRunReport(start, List.of(), false, false, false);
         }
 
         Queue<BlockPos> pending = new ArrayDeque<>();
@@ -34,6 +34,7 @@ public final class TomsReadOnlyNetworkScanner {
         List<TomsDryRunBlock> discovered = new ArrayList<>();
         boolean unloadedBoundary = false;
         boolean nodeLimitReached = false;
+        boolean remoteConnectionsRequireScan = false;
         pending.add(start.immutable());
 
         while (!pending.isEmpty()) {
@@ -55,6 +56,11 @@ public final class TomsReadOnlyNetworkScanner {
                 continue;
             }
             discovered.add(new TomsDryRunBlock(current, plan));
+            String path = plan.sourceId().getPath();
+            if (path.equals("inventory_cable_connector")
+                    || path.equals("inventory_cable_connector_framed")) {
+                remoteConnectionsRequireScan = true;
+            }
 
             for (Direction direction : Direction.values()) {
                 BlockPos neighbor = current.relative(direction).immutable();
@@ -69,6 +75,12 @@ public final class TomsReadOnlyNetworkScanner {
             }
         }
 
-        return new TomsDryRunReport(start, discovered, unloadedBoundary, nodeLimitReached);
+        return new TomsDryRunReport(
+                start,
+                discovered,
+                unloadedBoundary,
+                nodeLimitReached,
+                remoteConnectionsRequireScan
+        );
     }
 }

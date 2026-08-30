@@ -1,5 +1,6 @@
 package dev.lumungus.integration;
 
+import dev.lumungus.integration.toms.TomsMigrationCommands;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ public final class LumungusIntegration implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        TomsMigrationCommands.register();
         LOGGER.info("Initializing Lumungus Integration");
     }
 }

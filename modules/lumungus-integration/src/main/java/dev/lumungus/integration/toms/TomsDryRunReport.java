@@ -8,7 +8,8 @@ public record TomsDryRunReport(
         BlockPos start,
         List<TomsDryRunBlock> blocks,
         boolean unloadedBoundary,
-        boolean nodeLimitReached
+        boolean nodeLimitReached,
+        boolean remoteConnectionsRequireScan
 ) {
     public TomsDryRunReport {
         start = Objects.requireNonNull(start, "start").immutable();
@@ -26,6 +27,10 @@ public record TomsDryRunReport(
     }
 
     public boolean safeForInventorySnapshot() {
-        return !blocks.isEmpty() && blockingCount() == 0 && !unloadedBoundary && !nodeLimitReached;
+        return !blocks.isEmpty()
+                && blockingCount() == 0
+                && !unloadedBoundary
+                && !nodeLimitReached
+                && !remoteConnectionsRequireScan;
     }
 }

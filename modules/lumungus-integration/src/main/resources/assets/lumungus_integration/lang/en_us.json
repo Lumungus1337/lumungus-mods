@@ -1,0 +1,11 @@
+{
+  "command.lumungus_integration.migration.not_toms": "No loaded Tom's network block was found at that position.",
+  "command.lumungus_integration.migration.blocks": "Tom's dry run: %1$s network blocks, %2$s convertible and %3$s blocking.",
+  "command.lumungus_integration.migration.unloaded": "Scan stopped: the network touches an unloaded area. All affected chunks must be loaded.",
+  "command.lumungus_integration.migration.limit": "Scan stopped: the safety limit of %1$s network blocks was reached.",
+  "command.lumungus_integration.migration.remote_pending": "Scan stopped: at least one Tom's remote connector was found. Remote network components are not fully discovered yet.",
+  "command.lumungus_integration.migration.blocker": "Blocker at %1$s: %2$s (%3$s)",
+  "command.lumungus_integration.migration.blocked": "No inventory snapshot was created because the network scan was not fully approved.",
+  "command.lumungus_integration.migration.inventory": "Inventory: %1$s endpoints, %2$s slots, %3$s items and %4$s item types.",
+  "command.lumungus_integration.migration.read_only_complete": "Read-only dry run complete. No blocks or items were changed."
+}

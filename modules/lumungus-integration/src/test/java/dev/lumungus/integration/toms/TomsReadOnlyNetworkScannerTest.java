@@ -70,6 +70,18 @@ final class TomsReadOnlyNetworkScannerTest {
         assertFalse(report.safeForInventorySnapshot());
     }
 
+    @Test
+    void refusesApprovalUntilRemoteConnectorsAreFollowed() {
+        FakeWorld world = new FakeWorld();
+        world.put(0, "inventory_connector");
+        world.put(1, "inventory_cable_connector");
+
+        TomsDryRunReport report = TomsReadOnlyNetworkScanner.scan(world, pos(0), 100);
+
+        assertTrue(report.remoteConnectionsRequireScan());
+        assertFalse(report.safeForInventorySnapshot());
+    }
+
     private static BlockPos pos(int x) {
         return new BlockPos(x, 0, 0);
     }

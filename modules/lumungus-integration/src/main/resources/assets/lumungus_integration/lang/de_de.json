@@ -1,0 +1,11 @@
+{
+  "command.lumungus_integration.migration.not_toms": "An dieser Position wurde kein geladener Tom's-Netzwerkblock gefunden.",
+  "command.lumungus_integration.migration.blocks": "Tom's Dry Run: %1$s Netzwerkbloecke, davon %2$s konvertierbar und %3$s blockierend.",
+  "command.lumungus_integration.migration.unloaded": "Scan gestoppt: Das Netzwerk beruehrt einen ungeladenen Bereich. Alle betroffenen Chunks muessen geladen sein.",
+  "command.lumungus_integration.migration.limit": "Scan gestoppt: Das Sicherheitslimit von %1$s Netzwerkbloecken wurde erreicht.",
+  "command.lumungus_integration.migration.remote_pending": "Scan gestoppt: Mindestens ein Tom's-Fernconnector wurde gefunden. Entfernte Teilnetze sind noch nicht vollstaendig erfasst.",
+  "command.lumungus_integration.migration.blocker": "Blocker bei %1$s: %2$s (%3$s)",
+  "command.lumungus_integration.migration.blocked": "Kein Bestandssnapshot erstellt, weil der Netzscan nicht vollstaendig freigegeben ist.",
+  "command.lumungus_integration.migration.inventory": "Bestand: %1$s Inventare, %2$s Slots, %3$s Items und %4$s Itemtypen.",
+  "command.lumungus_integration.migration.read_only_complete": "Nur-Lese-Dry-Run abgeschlossen. Es wurden keine Bloecke oder Items veraendert."
+}
