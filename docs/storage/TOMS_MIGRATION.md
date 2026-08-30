@@ -40,4 +40,6 @@ Automatisierte Tests decken ab:
 
 Der versionsrobuste Blockkatalog fuer Tom's `2.4.1` ist vorbereitet. Er ordnet Controller, Terminals, Trims, Kabel und Kabel-Connectoren passenden Lumungus-Bloecken zu. Unbekannte Bloecke und noch nicht abgebildete Funktionsbloecke blockieren die Migration; ein Filing Cabinet wird wegen moeglicher eigener Inhalte gesondert als blockierend gemeldet.
 
-Als Naechstes liest der konkrete Welt-Scanner diese IDs und Positionen nur lesend ein und erzeugt daraus den sichtbaren Dry-Run-Bericht. Schreibende Konvertierung, Journal und Rollback bleiben gesperrt, bis dieser Bericht am Welt-Backup erfolgreich abgenommen wurde.
+Der Welt-Scanner kann inzwischen eine physisch zusammenhaengende Tom's-Komponente ab einem Startblock nur lesend erfassen. Er laedt keine Chunks nach, besitzt ein hartes Sicherheitslimit und verweigert die Freigabe bei unbekannten Bloecken, ungeladenen Grenzen oder einem abgebrochenen Scan. Fuer ein vollstaendig erfasstes Netz sammelt er angrenzende Fabric-Inventare, dedupliziert mehrfach beruehrte Inventare sowie Doppeltruhen und erzeugt den komponentensicheren Bestandssnapshot.
+
+Als Naechstes wird der Scan ueber einen serverseitigen Diagnosebefehl ausloesbar und als gut lesbarer Dry-Run-Bericht ausgegeben. Danach werden Tom's Fernverbindungen gesondert erfasst; sie duerfen nicht durch die rein physische Nachbarschaftssuche uebersehen werden. Schreibende Konvertierung, Journal und Rollback bleiben gesperrt, bis dieser Bericht am Welt-Backup erfolgreich abgenommen wurde.

@@ -47,6 +47,7 @@ Seit dem ersten Entwicklungsschritt nach UAT.3 kann der Controller physische Inv
 - Installiertes JEI kann Rezepte ueber den eigenen Lumungus-Transfer-Handler in das Raster legen. Der Server ermittelt das Rezept erneut und vertraut keinen vom Client gelieferten Zutatenmengen.
 - Netzwerk, Cell-Inhalte und Bestandsmengen bleiben nach Speichern und Neustart erhalten.
 - `lumungus-integration` besitzt nun einen strikt nur lesenden Snapshot- und Vergleichskern fuer den Tom's-Uebergang. Er vergleicht Endpunkte, Slots und jede Itemvariante inklusive Komponenten und wurde unter anderem mit 7.000.000 Items getestet.
+- Der Tom's-Weltscanner erfasst geladene, physisch verbundene Netzwerkbloecke mit Sicherheitslimit und sammelt angrenzende Lagerinventare dedupliziert in einen Read-only-Snapshot. Unbekannte Bloecke, ungeladene Grenzen oder Teilscans verhindern eine Freigabe.
 
 ### JEI-Kompatibilitaet
 
@@ -54,7 +55,7 @@ JEI bleibt eine optionale Client-Mod und wird von Lumungus Storage nur zur Compi
 
 ## Naechster technischer Schritt
 
-1. Den konkreten Tom's-Adapter nur lesend anbinden und einen Dry-Run-Bericht fuer erkannte, unterstuetzte und unbekannte Netzwerkbloecke erzeugen.
+1. Den Tom's-Weltscanner ueber einen serverseitigen Diagnosebefehl ausloesbar machen, einen lesbaren Dry-Run-Bericht erzeugen und Fernverbindungen gesondert erfassen.
 2. Echtes Chunk-Unload/-Reload mit einem persistierten Testnetz absichern und die weltweite Chunk-Invalidierung anschliessend auf betroffene Chunks beziehungsweise Komponenten verfeinern.
 3. Nach erfolgreichem Dry Run die protokollierte Konvertierung von Kabeln, Trims und Connectoren mit Journal und Rollback implementieren. Kein Lageritem wird dabei umgelagert.
 4. Einen grossen Bestands- und Performance-UAT sowie einen echten Test an einer Sicherung des bestehenden Lagers durchfuehren. Abnahmekriterium ist, dass die Welt anschliessend ohne Tom's denselben Bestand ueber Lumungus anzeigt.
