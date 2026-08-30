@@ -30,7 +30,8 @@ Seit dem ersten Entwicklungsschritt nach UAT.3 kann der Controller physische Inv
 - Drive Bays im selben Radius werden vom Controller zu einem gemeinsamen Netzwerkbestand zusammengefasst.
 - Der erste native Inventory Connector bindet alle direkt angrenzenden Fabric-kompatiblen Item-Inventare ein. Damit funktionieren insbesondere Vanilla-Kisten ohne Umlagerung ihrer Inhalte.
 - Das erste native Inventory Cable verbindet Controller, Terminals, Drive Bays und Inventory Connectoren auch ausserhalb des Acht-Block-Radius. Die Suche besucht ausschliesslich bereits geladene Chunks und erzwingt kein Chunk-Laden.
-- Zusammenhaengende Kabelkomponenten werden pro Welt zwischengespeichert. Platzieren oder Entfernen eines Netzwerkblocks sowie Chunk-Laden und -Entladen invalidieren den Cache automatisch.
+- Zusammenhaengende Kabelkomponenten werden pro Welt zwischengespeichert. Platzieren oder Entfernen eines Netzwerkblocks invalidiert nur die direkt betroffenen Komponenten; Chunk-Laden und -Entladen leeren den Welt-Cache sicherheitshalber vollstaendig.
+- Kabelnetze koennen geladene Chunk-Grenzen ueberqueren. Trennen und erneutes Verbinden aktualisiert die sichtbaren Bestaende, ohne Items aus den angeschlossenen Inventaren zu bewegen.
 - Mehrere Connectoren am selben Inventar werden dedupliziert; auch beide Haelften einer Doppeltruhe erhalten einen gemeinsamen Endpunkt-Schluessel.
 - Lesen, Einlagern und Entnehmen laufen transaktional ueber Fabric Transfer API. Simulationen veraendern den Bestand nicht und Item-Komponenten wie eigene Namen bleiben erhalten.
 - Gefuellte Storage Cells behalten ihren gesamten Inhalt beim Herausnehmen und Wiedereinsetzen.
@@ -50,8 +51,8 @@ JEI bleibt eine optionale Client-Mod und wird von Lumungus Storage nur zur Compi
 
 ## Naechster technischer Schritt
 
-1. Netzwerkaufteilung, Zusammenfuehrung und Verbindungen ueber Chunk-Grenzen mit groesseren GameTests absichern.
-2. Die Cache-Invalidierung von der aktuellen weltweiten Variante auf betroffene Komponenten beziehungsweise Chunks verfeinern; danach dekorative Trims ergaenzen.
+1. Echtes Chunk-Unload/-Reload mit einem persistierten Testnetz absichern und die weltweite Chunk-Invalidierung anschliessend auf betroffene Chunks beziehungsweise Komponenten verfeinern.
+2. Einen synthetischen Lasttest mit vielen Kabeln, Connectoren und physischen Inventaren aufbauen; danach dekorative Trims ergaenzen.
 3. In `lumungus-integration` den Tom's-Migrationsassistenten implementieren: Bestand zunaechst nur lesend vergleichen, danach Kabel, Trims und Connectoren protokolliert in Lumungus-Bloecke konvertieren und erneut validieren. Kein Lageritem wird dabei umgelagert.
 4. Einen grossen Bestands- und Performance-UAT mit vielen Inventaren sowie einen echten Test an einer Sicherung des bestehenden Lagers durchfuehren. Abnahmekriterium ist, dass die Welt anschliessend ohne Tom's denselben Bestand ueber Lumungus anzeigt.
 5. Erst danach Produktionsauftraege, Autocrafter, Autosteinsaege, Auto-Braustand und Schematic-Logistik auf dem physischen Netzwerk aufbauen.

@@ -39,7 +39,7 @@ public final class DriveBayBlock extends BaseEntityBlock {
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        StorageNetworkTopology.invalidate(level);
+        StorageNetworkTopology.invalidateAround(level, pos);
     }
 
     @Override
@@ -50,7 +50,7 @@ public final class DriveBayBlock extends BaseEntityBlock {
             boolean movedByPiston
     ) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-        StorageNetworkTopology.invalidate(level);
+        StorageNetworkTopology.invalidateAround(level, pos);
     }
 
     @Override

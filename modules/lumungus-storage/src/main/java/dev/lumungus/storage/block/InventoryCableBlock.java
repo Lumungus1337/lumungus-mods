@@ -16,7 +16,7 @@ public final class InventoryCableBlock extends Block {
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        StorageNetworkTopology.invalidate(level);
+        StorageNetworkTopology.invalidateAround(level, pos);
     }
 
     @Override
@@ -27,6 +27,6 @@ public final class InventoryCableBlock extends Block {
             boolean movedByPiston
     ) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-        StorageNetworkTopology.invalidate(level);
+        StorageNetworkTopology.invalidateAround(level, pos);
     }
 }

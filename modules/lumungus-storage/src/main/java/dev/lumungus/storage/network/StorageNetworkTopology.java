@@ -5,6 +5,7 @@ import dev.lumungus.storage.registry.LumungusStorageBlocks;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +47,24 @@ public final class StorageNetworkTopology {
         }
     }
 
+    public static void invalidateAround(Level level, BlockPos changedPos) {
+        synchronized (CACHES) {
+            LevelCache cache = CACHES.get(level);
+            if (cache == null) {
+                return;
+            }
+
+            Set<Set<BlockPos>> affectedComponents = Collections.newSetFromMap(new IdentityHashMap<>());
+            addCachedComponent(cache, changedPos, affectedComponents);
+            for (Direction direction : Direction.values()) {
+                addCachedComponent(cache, changedPos.relative(direction), affectedComponents);
+            }
+            for (Set<BlockPos> component : affectedComponents) {
+                component.forEach(cache.componentsByNode::remove);
+            }
+        }
+    }
+
     public static CacheStats cacheStats(Level level) {
         synchronized (CACHES) {
             LevelCache cache = CACHES.get(level);
@@ -81,6 +100,17 @@ public final class StorageNetworkTopology {
             }
         }
         return Collections.unmodifiableSet(visited);
+    }
+
+    private static void addCachedComponent(
+            LevelCache cache,
+            BlockPos pos,
+            Set<Set<BlockPos>> affectedComponents
+    ) {
+        Set<BlockPos> component = cache.componentsByNode.get(pos);
+        if (component != null) {
+            affectedComponents.add(component);
+        }
     }
 
     public static Set<BlockPos> reachableNodes(Level level, BlockPos origin, int fallbackRadius) {

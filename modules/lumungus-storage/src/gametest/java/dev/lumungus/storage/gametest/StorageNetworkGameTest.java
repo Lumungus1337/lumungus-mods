@@ -26,6 +26,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.Blocks;
 
@@ -45,6 +46,96 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     private static final BlockPos DEVICE_CABLE_CONTROLLER = new BlockPos(1, 1, 9);
     private static final BlockPos DISTANT_DRIVE_BAY = new BlockPos(11, 1, 9);
     private static final BlockPos DISTANT_TERMINAL = new BlockPos(10, 1, 10);
+
+    @GameTest
+    public void topologyCacheInvalidatesOnlyTheChangedComponent(GameTestHelper context) {
+        BlockPos firstStart = new BlockPos(1, 1, 13);
+        BlockPos secondStart = new BlockPos(8, 1, 13);
+        for (int offset = 0; offset < 3; offset++) {
+            context.setBlock(firstStart.offset(offset, 0, 0), LumungusStorageBlocks.INVENTORY_CABLE);
+            context.setBlock(secondStart.offset(offset, 0, 0), LumungusStorageBlocks.INVENTORY_CABLE);
+        }
+
+        StorageNetworkTopology.invalidate(context.getLevel());
+        BlockPos absoluteFirst = context.absolutePos(firstStart);
+        BlockPos absoluteSecond = context.absolutePos(secondStart);
+        StorageNetworkTopology.connectedNodes(context.getLevel(), absoluteFirst);
+        StorageNetworkTopology.connectedNodes(context.getLevel(), absoluteSecond);
+        context.assertValueEqual(
+                StorageNetworkTopology.cacheStats(context.getLevel()).cachedNodes(),
+                6,
+                "Two cached cable components"
+        );
+
+        context.setBlock(firstStart.offset(3, 0, 0), LumungusStorageBlocks.INVENTORY_CABLE);
+        context.assertValueEqual(
+                StorageNetworkTopology.cacheStats(context.getLevel()).cachedNodes(),
+                3,
+                "Unaffected cached component"
+        );
+        long hitsBefore = StorageNetworkTopology.cacheStats(context.getLevel()).hits();
+        StorageNetworkTopology.connectedNodes(context.getLevel(), absoluteSecond);
+        context.assertValueEqual(
+                StorageNetworkTopology.cacheStats(context.getLevel()).hits(),
+                hitsBefore + 1,
+                "Unaffected component cache hit"
+        );
+        StorageNetworkTopology.connectedNodes(context.getLevel(), absoluteFirst);
+        context.assertValueEqual(
+                StorageNetworkTopology.cacheStats(context.getLevel()).cachedNodes(),
+                7,
+                "Rebuilt changed component"
+        );
+        context.succeed();
+    }
+
+    @GameTest
+    public void cableNetworkCrossesALoadedChunkBoundary(GameTestHelper context) {
+        BlockPos anchor = context.absolutePos(new BlockPos(8, 1, 8));
+        int boundaryX = Math.floorDiv(anchor.getX(), 16) * 16 + 16;
+        BlockPos controllerPos = new BlockPos(boundaryX - 3, anchor.getY(), anchor.getZ());
+        BlockPos connectorPos = new BlockPos(boundaryX + 2, anchor.getY(), anchor.getZ());
+        BlockPos chestPos = new BlockPos(boundaryX + 3, anchor.getY(), anchor.getZ());
+        context.assertTrue(
+                context.getLevel().isLoaded(controllerPos) && context.getLevel().isLoaded(chestPos),
+                "Both chunk-boundary test sides must be loaded"
+        );
+
+        context.getLevel().setBlockAndUpdate(
+                controllerPos,
+                LumungusStorageBlocks.STORAGE_CONTROLLER.defaultBlockState()
+        );
+        for (int x = boundaryX - 2; x <= boundaryX + 1; x++) {
+            BlockPos cablePos = new BlockPos(x, anchor.getY(), anchor.getZ());
+            context.getLevel().setBlockAndUpdate(
+                    cablePos,
+                    LumungusStorageBlocks.INVENTORY_CABLE.defaultBlockState()
+            );
+        }
+        context.getLevel().setBlockAndUpdate(
+                connectorPos,
+                LumungusStorageBlocks.INVENTORY_CONNECTOR.defaultBlockState()
+        );
+        context.getLevel().setBlockAndUpdate(chestPos, Blocks.CHEST.defaultBlockState());
+
+        context.assertTrue(
+                !new ChunkPos(controllerPos.getX() >> 4, controllerPos.getZ() >> 4).equals(
+                        new ChunkPos(connectorPos.getX() >> 4, connectorPos.getZ() >> 4)
+                ),
+                "Controller and connector unexpectedly share one chunk"
+        );
+        ChestBlockEntity chest = (ChestBlockEntity) context.getLevel().getBlockEntity(chestPos);
+        StorageControllerBlockEntity controller =
+                (StorageControllerBlockEntity) context.getLevel().getBlockEntity(controllerPos);
+        InventoryConnectorBlockEntity connector =
+                (InventoryConnectorBlockEntity) context.getLevel().getBlockEntity(connectorPos);
+        context.assertTrue(chest != null && controller != null && connector != null, "Chunk-boundary blocks missing");
+        chest.setItem(0, new ItemStack(Items.REDSTONE, 23));
+
+        context.assertTrue(connector.refreshControllerLink(), "Connector did not link across the chunk boundary");
+        context.assertValueEqual(controller.count(new ItemStack(Items.REDSTONE)), 23L, "Cross-chunk item count");
+        context.succeed();
+    }
 
     @GameTest
     public void cableLinksDistantDriveBayAndCraftingTerminal(GameTestHelper context) {
@@ -124,6 +215,10 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.assertTrue(!connector.refreshControllerLink(), "Broken cable left the distant connector linked");
         context.assertValueEqual(controller.count(new ItemStack(Items.IRON_INGOT)), 0L, "Disconnected inventory count");
         context.assertValueEqual(chest.getItem(0).getCount(), 37, "Disconnected chest contents");
+
+        context.setBlock(new BlockPos(6, 1, 6), LumungusStorageBlocks.INVENTORY_CABLE);
+        context.assertTrue(connector.refreshControllerLink(), "Restored cable did not merge the network");
+        context.assertValueEqual(controller.count(new ItemStack(Items.IRON_INGOT)), 37L, "Reconnected inventory count");
         context.succeed();
     }
 
