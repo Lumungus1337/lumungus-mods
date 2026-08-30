@@ -1,8 +1,23 @@
 {
   "block.lumungus_storage.storage_controller": "Storage Controller",
   "block.lumungus_storage.crafting_terminal": "Crafting Terminal",
+  "block.lumungus_storage.drive_bay": "Drive Bay",
+  "item.lumungus_storage.storage_cell_16k": "16k Storage Cell",
   "container.lumungus_storage.crafting_terminal": "Lumungus Crafting Terminal",
-  "message.lumungus_storage.storage_controller.status": "Storage network %1$s: %2$s terminal(s) connected.",
+  "tooltip.lumungus_storage.storage_cell_16k.items": "Items: %1$s / %2$s",
+  "tooltip.lumungus_storage.storage_cell_16k.types": "Types: %1$s / %2$s",
+  "message.lumungus_storage.storage_controller.status": "Storage network %1$s: %2$s terminal(s), %3$s Drive Bay(s), %4$s / %5$s items.",
   "message.lumungus_storage.crafting_terminal.connected": "Crafting Terminal connected to a Storage Controller.",
-  "message.lumungus_storage.crafting_terminal.unlinked": "No Storage Controller in range; local crafting remains available."
+  "message.lumungus_storage.crafting_terminal.unlinked": "No Storage Controller in range; local crafting remains available.",
+  "message.lumungus_storage.crafting_terminal.inserted": "%1$s item(s) added to the storage network.",
+  "message.lumungus_storage.crafting_terminal.full": "Storage network is full; %1$s item(s) added.",
+  "message.lumungus_storage.crafting_terminal.empty": "The storage network is empty.",
+  "message.lumungus_storage.crafting_terminal.extracted": "Removed %1$s x %2$s from the storage network.",
+  "message.lumungus_storage.drive_bay.cell_inserted": "16k Storage Cell inserted.",
+  "message.lumungus_storage.drive_bay.cell_removed": "Storage Cell removed with its contents.",
+  "message.lumungus_storage.drive_bay.no_cell": "Insert a 16k Storage Cell first.",
+  "message.lumungus_storage.drive_bay.inserted": "%1$s item(s) added to the Storage Cell.",
+  "message.lumungus_storage.drive_bay.full": "Storage Cell is full; %1$s item(s) added.",
+  "message.lumungus_storage.drive_bay.empty": "The Storage Cell is empty.",
+  "message.lumungus_storage.drive_bay.extracted": "Removed %1$s x %2$s from the Storage Cell."
 }

@@ -6,7 +6,8 @@ repositories {
 }
 
 dependencies {
+    implementation project(":lumungus-core")
+
     // Development-only: validates optional JEI recipe transfer without bundling JEI.
     localRuntime "mezz.jei:jei-${minecraft_version}-fabric:${jei_version}@jar"
-    localRuntime project(":lumungus-core")
 }

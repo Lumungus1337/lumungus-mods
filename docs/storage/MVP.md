@@ -4,6 +4,8 @@
 
 - Storage Controller: Zentrum eines Storage-Netzwerks. Er soll spaeter angeschlossene Inventare, Drives und Terminals finden und eine gemeinsame Netzwerk-ID verwalten.
 - Crafting Terminal: Spieleroberflaeche fuer Suche, Einlagerung, Entnahme und manuelles Crafting aus Netzwerkbestaenden.
+- Drive Bay: Nimmt eine herausnehmbare 16k Storage Cell auf und stellt deren Inhalt dem Netzwerk bereit.
+- 16k Storage Cell: Speichert insgesamt 16.384 Items aus maximal 64 unterschiedlichen Itemtypen inklusive ihrer Komponenten.
 
 ## Stilrichtung
 
@@ -21,6 +23,11 @@ Der erste Slice nutzt bewusst Vanilla-Texturen, damit die IDs und Ressourcenstru
 - Controller und Crafting Terminal besitzen eigene, persistente Block-Entities.
 - Jeder Controller verwaltet eine dauerhafte Netzwerk-ID.
 - Controller und Terminals finden sich in einem begrenzten Radius von acht Bloecken; ein Terminal verbindet sich mit dem naechsten Controller.
+- Drive Bays im selben Radius werden vom Controller zu einem gemeinsamen Netzwerkbestand zusammengefasst.
+- Gefuellte Storage Cells behalten ihren gesamten Inhalt beim Herausnehmen und Wiedereinsetzen.
+- Items koennen direkt an einer Drive Bay oder ueber ein verbundenes Crafting Terminal eingelagert werden.
+- Ein leerer Rechtsklick entnimmt an der Drive Bay einen Stapel. Schleichen und Rechtsklick nimmt die Storage Cell heraus.
+- Schleichen und Rechtsklick auf das Crafting Terminal entnimmt einen Stapel aus dem gesamten Netzwerk.
 - Das Crafting Terminal oeffnet ein voll funktionsfaehiges 3x3-Crafting-Raster mit Spielerinventar.
 - Installiertes JEI kann Rezepte ueber seinen Transfer-Button direkt in dieses 3x3-Raster legen.
 - Crafting funktioniert auch ohne Controller lokal; die Netzwerkverbindung wird dem Spieler beim Oeffnen angezeigt.
@@ -33,9 +40,9 @@ Sobald das Terminal zusaetzliche Netzwerk-Slots erhaelt, wird ein eigener JEI-Tr
 
 ## Naechster technischer Schritt
 
-1. Storage-Provider-API-Anbindung ueber Lumungus Core.
-2. Erste Storage Cell oder Drive Bay als echter Massenspeicher.
-3. Netzwerkbestand im Crafting Terminal anzeigen und fuer Rezepte verwenden.
+1. Eigenes Terminal-Menue mit sichtbarer, durchsuchbarer Bestandsliste.
+2. Gezielt Items und Mengen aus dieser Liste entnehmen.
+3. Netzwerkbestand beim manuellen Crafting und beim JEI-Rezepttransfer verwenden.
 
 ## Geplante Build Logistics
 

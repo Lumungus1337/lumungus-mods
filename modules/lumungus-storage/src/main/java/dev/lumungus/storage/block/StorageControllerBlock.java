@@ -36,14 +36,19 @@ public final class StorageControllerBlock extends BaseEntityBlock {
             Level level,
             BlockPos pos,
             Player player,
-            BlockHitResult hit
+        BlockHitResult hit
     ) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StorageControllerBlockEntity controller) {
-            int linkedTerminals = controller.refreshNetwork();
+            StorageControllerBlockEntity.NetworkStatus status = controller.refreshNetwork();
+            long used = controller.snapshot().storedTotalAmount();
+            long capacity = controller.capacity().maxTotalAmount();
             player.sendSystemMessage(Component.translatable(
                     "message.lumungus_storage.storage_controller.status",
                     controller.getNetworkLabel(),
-                    linkedTerminals
+                    status.linkedTerminals(),
+                    status.linkedDriveBays(),
+                    used,
+                    capacity
             ));
         }
 

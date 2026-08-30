@@ -1,15 +1,25 @@
 package dev.lumungus.storage.block.entity;
 
+import dev.lumungus.core.api.inventory.TransferMode;
+import dev.lumungus.core.api.resource.ResourceAmount;
+import dev.lumungus.core.api.storage.StorageAccess;
+import dev.lumungus.core.api.storage.StorageCapacity;
+import dev.lumungus.core.api.storage.StorageProvider;
+import dev.lumungus.core.api.storage.StorageSnapshot;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-public final class StorageControllerBlockEntity extends BlockEntity {
+public final class StorageControllerBlockEntity extends BlockEntity implements StorageAccess, StorageProvider {
     public static final int SCAN_RADIUS = 8;
 
     private static final String NETWORK_ID_KEY = "network_id";
@@ -28,12 +38,13 @@ public final class StorageControllerBlockEntity extends BlockEntity {
         return networkId.toString().substring(0, 8).toUpperCase();
     }
 
-    public int refreshNetwork() {
+    public NetworkStatus refreshNetwork() {
         if (level == null || level.isClientSide()) {
-            return 0;
+            return new NetworkStatus(0, 0);
         }
 
         int linkedTerminals = 0;
+        int linkedDriveBays = 0;
         BlockPos min = worldPosition.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS);
         BlockPos max = worldPosition.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS);
 
@@ -42,10 +53,122 @@ public final class StorageControllerBlockEntity extends BlockEntity {
                     && terminal.refreshControllerLink()
                     && terminal.isLinkedTo(this)) {
                 linkedTerminals++;
+            } else if (level.getBlockEntity(candidate) instanceof DriveBayBlockEntity) {
+                linkedDriveBays++;
             }
         }
 
-        return linkedTerminals;
+        return new NetworkStatus(linkedTerminals, linkedDriveBays);
+    }
+
+    @Override
+    public StorageAccess storageAccess() {
+        return this;
+    }
+
+    @Override
+    public StorageCapacity capacity() {
+        long maxTotal = 0;
+        int maxTypes = 0;
+        for (DriveBayBlockEntity driveBay : driveBays()) {
+            maxTotal += driveBay.capacity().maxTotalAmount();
+            maxTypes += driveBay.capacity().maxDistinctTypes();
+        }
+        return new StorageCapacity(maxTotal, maxTypes);
+    }
+
+    @Override
+    public StorageSnapshot snapshot() {
+        List<ResourceAmount> resources = storedResources();
+        long total = resources.stream().mapToLong(ResourceAmount::amount).sum();
+        return new StorageSnapshot(total, resources.size());
+    }
+
+    @Override
+    public List<ResourceAmount> storedResources() {
+        List<ResourceAmount> aggregated = new ArrayList<>();
+        for (DriveBayBlockEntity driveBay : driveBays()) {
+            for (ResourceAmount resource : driveBay.storedResources()) {
+                mergeResource(aggregated, resource);
+            }
+        }
+        return List.copyOf(aggregated);
+    }
+
+    @Override
+    public long count(ItemStack template) {
+        return driveBays().stream().mapToLong(driveBay -> driveBay.count(template)).sum();
+    }
+
+    @Override
+    public ItemStack insert(ItemStack stack, TransferMode mode) {
+        if (stack.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+
+        List<DriveBayBlockEntity> ordered = new ArrayList<>(driveBays());
+        ordered.sort(Comparator.comparingInt(driveBay -> driveBay.contains(stack) ? 0 : 1));
+
+        ItemStack remainder = stack.copy();
+        for (DriveBayBlockEntity driveBay : ordered) {
+            remainder = driveBay.insert(remainder, mode);
+            if (remainder.isEmpty()) {
+                break;
+            }
+        }
+        return remainder;
+    }
+
+    @Override
+    public ItemStack extract(ItemStack template, long maxAmount, TransferMode mode) {
+        if (template.isEmpty() || maxAmount <= 0) {
+            return ItemStack.EMPTY;
+        }
+
+        long requested = Math.min(maxAmount, template.getMaxStackSize());
+        ItemStack result = ItemStack.EMPTY;
+        for (DriveBayBlockEntity driveBay : driveBays()) {
+            ItemStack part = driveBay.extract(template, requested - result.getCount(), mode);
+            if (!part.isEmpty()) {
+                if (result.isEmpty()) {
+                    result = part.copy();
+                } else {
+                    result.grow(part.getCount());
+                }
+            }
+            if (result.getCount() >= requested) {
+                break;
+            }
+        }
+        return result;
+    }
+
+    private List<DriveBayBlockEntity> driveBays() {
+        if (level == null || level.isClientSide()) {
+            return List.of();
+        }
+
+        List<DriveBayBlockEntity> driveBays = new ArrayList<>();
+        BlockPos min = worldPosition.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS);
+        BlockPos max = worldPosition.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS);
+        for (BlockPos candidate : BlockPos.betweenClosed(min, max)) {
+            if (level.getBlockEntity(candidate) instanceof DriveBayBlockEntity driveBay) {
+                driveBays.add(driveBay);
+            }
+        }
+        return driveBays;
+    }
+
+    private static void mergeResource(List<ResourceAmount> aggregated, ResourceAmount candidate) {
+        ItemStack candidateStack = candidate.stack();
+        for (int index = 0; index < aggregated.size(); index++) {
+            ResourceAmount current = aggregated.get(index);
+            if (ItemStack.isSameItemSameComponents(current.stack(), candidateStack)) {
+                aggregated.set(index, new ResourceAmount(candidateStack, current.amount() + candidate.amount()));
+                return;
+            }
+        }
+        aggregated.add(candidate);
     }
 
     @Override
@@ -58,5 +181,8 @@ public final class StorageControllerBlockEntity extends BlockEntity {
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.store(NETWORK_ID_KEY, UUIDUtil.CODEC, networkId);
+    }
+
+    public record NetworkStatus(int linkedTerminals, int linkedDriveBays) {
     }
 }

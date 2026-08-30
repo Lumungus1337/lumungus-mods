@@ -68,6 +68,17 @@ public final class CraftingTerminalBlockEntity extends BlockEntity implements Me
                 && networkId.equals(controller.getNetworkId());
     }
 
+    public StorageControllerBlockEntity linkedController() {
+        if (!refreshControllerLink() || level == null || controllerPos == null) {
+            return null;
+        }
+        if (level.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller
+                && isLinkedTo(controller)) {
+            return controller;
+        }
+        return null;
+    }
+
     private boolean hasValidControllerLink() {
         return controllerPos != null
                 && networkId != null

@@ -1,8 +1,23 @@
 {
   "block.lumungus_storage.storage_controller": "Storage Controller",
   "block.lumungus_storage.crafting_terminal": "Crafting Terminal",
+  "block.lumungus_storage.drive_bay": "Drive Bay",
+  "item.lumungus_storage.storage_cell_16k": "16k Storage Cell",
   "container.lumungus_storage.crafting_terminal": "Lumungus Crafting Terminal",
-  "message.lumungus_storage.storage_controller.status": "Storage-Netzwerk %1$s: %2$s Terminal(s) verbunden.",
+  "tooltip.lumungus_storage.storage_cell_16k.items": "Items: %1$s / %2$s",
+  "tooltip.lumungus_storage.storage_cell_16k.types": "Typen: %1$s / %2$s",
+  "message.lumungus_storage.storage_controller.status": "Storage-Netzwerk %1$s: %2$s Terminal(s), %3$s Drive Bay(s), %4$s / %5$s Items.",
   "message.lumungus_storage.crafting_terminal.connected": "Crafting Terminal mit Storage Controller verbunden.",
-  "message.lumungus_storage.crafting_terminal.unlinked": "Kein Storage Controller in Reichweite; lokales Crafting bleibt verfuegbar."
+  "message.lumungus_storage.crafting_terminal.unlinked": "Kein Storage Controller in Reichweite; lokales Crafting bleibt verfuegbar.",
+  "message.lumungus_storage.crafting_terminal.inserted": "%1$s Item(s) ins Storage-Netzwerk eingelagert.",
+  "message.lumungus_storage.crafting_terminal.full": "Storage-Netzwerk ist voll; %1$s Item(s) eingelagert.",
+  "message.lumungus_storage.crafting_terminal.empty": "Das Storage-Netzwerk ist leer.",
+  "message.lumungus_storage.crafting_terminal.extracted": "%1$s x %2$s aus dem Storage-Netzwerk entnommen.",
+  "message.lumungus_storage.drive_bay.cell_inserted": "16k Storage Cell eingesetzt.",
+  "message.lumungus_storage.drive_bay.cell_removed": "Storage Cell mit Inhalt entnommen.",
+  "message.lumungus_storage.drive_bay.no_cell": "Setze zuerst eine 16k Storage Cell ein.",
+  "message.lumungus_storage.drive_bay.inserted": "%1$s Item(s) in die Storage Cell eingelagert.",
+  "message.lumungus_storage.drive_bay.full": "Storage Cell ist voll; %1$s Item(s) eingelagert.",
+  "message.lumungus_storage.drive_bay.empty": "Die Storage Cell ist leer.",
+  "message.lumungus_storage.drive_bay.extracted": "%1$s x %2$s aus der Storage Cell entnommen."
 }

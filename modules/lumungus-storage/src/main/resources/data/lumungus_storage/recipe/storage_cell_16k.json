@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "minecraft:ender_pearl",
+    "I": "minecraft:iron_ingot",
+    "Q": "minecraft:quartz",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "IQI",
+    "RER",
+    "IQI"
+  ],
+  "result": {
+    "id": "lumungus_storage:storage_cell_16k"
+  }
+}

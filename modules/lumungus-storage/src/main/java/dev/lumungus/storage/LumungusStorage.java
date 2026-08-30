@@ -2,6 +2,8 @@ package dev.lumungus.storage;
 
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
+import dev.lumungus.storage.registry.LumungusStorageDataComponents;
+import dev.lumungus.storage.registry.LumungusStorageItems;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +14,8 @@ public final class LumungusStorage implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        LumungusStorageDataComponents.register();
+        LumungusStorageItems.register();
         LumungusStorageBlocks.register();
         LumungusStorageBlockEntities.register();
         LOGGER.info("Initializing Lumungus Storage");

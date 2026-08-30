@@ -2,6 +2,7 @@ package dev.lumungus.storage.registry;
 
 import dev.lumungus.storage.LumungusStorage;
 import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
+import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import java.util.Set;
 import net.minecraft.core.Registry;
@@ -24,6 +25,12 @@ public final class LumungusStorageBlockEntities {
             "crafting_terminal",
             CraftingTerminalBlockEntity::new,
             LumungusStorageBlocks.CRAFTING_TERMINAL
+    );
+
+    public static final BlockEntityType<DriveBayBlockEntity> DRIVE_BAY = register(
+            "drive_bay",
+            DriveBayBlockEntity::new,
+            LumungusStorageBlocks.DRIVE_BAY
     );
 
     private LumungusStorageBlockEntities() {
