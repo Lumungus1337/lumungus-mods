@@ -1,6 +1,7 @@
 package dev.lumungus.storage.block.entity;
 
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
+import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.UUID;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
@@ -40,10 +41,7 @@ public final class CraftingTerminalBlockEntity extends BlockEntity implements Ex
         StorageControllerBlockEntity nearestController = null;
         double nearestDistance = Double.MAX_VALUE;
         int radius = StorageControllerBlockEntity.SCAN_RADIUS;
-        BlockPos min = worldPosition.offset(-radius, -radius, -radius);
-        BlockPos max = worldPosition.offset(radius, radius, radius);
-
-        for (BlockPos candidate : BlockPos.betweenClosed(min, max)) {
+        for (BlockPos candidate : StorageNetworkTopology.reachableControllers(level, worldPosition, radius)) {
             if (level.getBlockEntity(candidate) instanceof StorageControllerBlockEntity controller) {
                 double distance = worldPosition.distSqr(candidate);
                 if (distance < nearestDistance) {
@@ -84,7 +82,13 @@ public final class CraftingTerminalBlockEntity extends BlockEntity implements Ex
         return controllerPos != null
                 && networkId != null
                 && level.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller
-                && networkId.equals(controller.getNetworkId());
+                && networkId.equals(controller.getNetworkId())
+                && StorageNetworkTopology.canReach(
+                        level,
+                        worldPosition,
+                        controllerPos,
+                        StorageControllerBlockEntity.SCAN_RADIUS
+                );
     }
 
     private void linkTo(StorageControllerBlockEntity controller) {

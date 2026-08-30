@@ -2,6 +2,7 @@ package dev.lumungus.storage.block.entity;
 
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
 import dev.lumungus.storage.inventory.PhysicalInventoryEndpoint;
+import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,17 +42,11 @@ public final class InventoryConnectorBlockEntity extends BlockEntity {
             return false;
         }
 
-        List<BlockPos> controllerPositions = new ArrayList<>();
         int radius = StorageControllerBlockEntity.SCAN_RADIUS;
-        BlockPos min = worldPosition.offset(-radius, -radius, -radius);
-        BlockPos max = worldPosition.offset(radius, radius, radius);
-        for (BlockPos candidate : BlockPos.betweenClosed(min, max)) {
-            if (level.getBlockEntity(candidate) instanceof StorageControllerBlockEntity controller) {
-                controllerPositions.add(controller.getBlockPos());
-            }
-        }
-
-        BlockPos ownerPos = StorageControllerOwnership.ownerOf(worldPosition, controllerPositions, radius)
+        BlockPos ownerPos = StorageControllerOwnership.ownerOf(
+                        worldPosition,
+                        StorageNetworkTopology.reachableControllers(level, worldPosition, radius)
+                )
                 .orElse(null);
         if (ownerPos == null
                 || !(level.getBlockEntity(ownerPos) instanceof StorageControllerBlockEntity controller)) {
@@ -108,7 +103,13 @@ public final class InventoryConnectorBlockEntity extends BlockEntity {
         return controllerPos != null
                 && networkId != null
                 && level.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller
-                && networkId.equals(controller.getNetworkId());
+                && networkId.equals(controller.getNetworkId())
+                && StorageNetworkTopology.canReach(
+                        level,
+                        worldPosition,
+                        controllerPos,
+                        StorageControllerBlockEntity.SCAN_RADIUS
+                );
     }
 
     private void linkTo(StorageControllerBlockEntity controller) {

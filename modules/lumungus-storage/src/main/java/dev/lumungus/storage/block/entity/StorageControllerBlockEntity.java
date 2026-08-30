@@ -6,6 +6,7 @@ import dev.lumungus.core.api.storage.StorageAccess;
 import dev.lumungus.core.api.storage.StorageCapacity;
 import dev.lumungus.core.api.storage.StorageProvider;
 import dev.lumungus.core.api.storage.StorageSnapshot;
+import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -50,10 +51,7 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
         int linkedTerminals = 0;
         int linkedDriveBays = 0;
         int linkedInventoryConnectors = 0;
-        BlockPos min = worldPosition.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS);
-        BlockPos max = worldPosition.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS);
-
-        for (BlockPos candidate : BlockPos.betweenClosed(min, max)) {
+        for (BlockPos candidate : StorageNetworkTopology.reachableNodes(level, worldPosition, SCAN_RADIUS)) {
             if (level.getBlockEntity(candidate) instanceof CraftingTerminalBlockEntity terminal
                     && terminal.refreshControllerLink()
                     && terminal.isLinkedTo(this)) {
@@ -183,9 +181,7 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
 
         List<StorageAccess> storageAccesses = new ArrayList<>();
         Map<BlockPos, StorageAccess> physicalInventories = new LinkedHashMap<>();
-        BlockPos min = worldPosition.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS);
-        BlockPos max = worldPosition.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS);
-        for (BlockPos candidate : BlockPos.betweenClosed(min, max)) {
+        for (BlockPos candidate : StorageNetworkTopology.reachableNodes(level, worldPosition, SCAN_RADIUS)) {
             if (level.getBlockEntity(candidate) instanceof DriveBayBlockEntity driveBay
                     && driveBay.refreshControllerLink()
                     && driveBay.isLinkedTo(this)) {

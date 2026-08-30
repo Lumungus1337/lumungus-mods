@@ -16,11 +16,20 @@ final class StorageControllerOwnership {
     ) {
         return controllerPositions.stream()
                 .filter(controllerPos -> insideScanCube(driveBayPos, controllerPos, scanRadius))
-                .min(Comparator
-                        .comparingLong((BlockPos controllerPos) -> distanceSquared(driveBayPos, controllerPos))
-                        .thenComparingInt(BlockPos::getY)
-                        .thenComparingInt(BlockPos::getZ)
-                        .thenComparingInt(BlockPos::getX));
+                .min(ownerComparator(driveBayPos));
+    }
+
+    static Optional<BlockPos> ownerOf(BlockPos networkNodePos, Collection<BlockPos> controllerPositions) {
+        return controllerPositions.stream()
+                .min(ownerComparator(networkNodePos));
+    }
+
+    private static Comparator<BlockPos> ownerComparator(BlockPos networkNodePos) {
+        return Comparator
+                .comparingLong((BlockPos controllerPos) -> distanceSquared(networkNodePos, controllerPos))
+                .thenComparingInt(BlockPos::getY)
+                .thenComparingInt(BlockPos::getZ)
+                .thenComparingInt(BlockPos::getX);
     }
 
     private static boolean insideScanCube(BlockPos first, BlockPos second, int scanRadius) {

@@ -29,6 +29,7 @@ Seit dem ersten Entwicklungsschritt nach UAT.3 kann der Controller physische Inv
 - Controller und Terminals finden sich in einem begrenzten Radius von acht Bloecken; ein Terminal verbindet sich mit dem naechsten Controller.
 - Drive Bays im selben Radius werden vom Controller zu einem gemeinsamen Netzwerkbestand zusammengefasst.
 - Der erste native Inventory Connector bindet alle direkt angrenzenden Fabric-kompatiblen Item-Inventare ein. Damit funktionieren insbesondere Vanilla-Kisten ohne Umlagerung ihrer Inhalte.
+- Das erste native Inventory Cable verbindet Controller, Terminals, Drive Bays und Inventory Connectoren auch ausserhalb des Acht-Block-Radius. Die Suche besucht ausschliesslich bereits geladene Chunks und erzwingt kein Chunk-Laden.
 - Mehrere Connectoren am selben Inventar werden dedupliziert; auch beide Haelften einer Doppeltruhe erhalten einen gemeinsamen Endpunkt-Schluessel.
 - Lesen, Einlagern und Entnehmen laufen transaktional ueber Fabric Transfer API. Simulationen veraendern den Bestand nicht und Item-Komponenten wie eigene Namen bleiben erhalten.
 - Gefuellte Storage Cells behalten ihren gesamten Inhalt beim Herausnehmen und Wiedereinsetzen.
@@ -48,8 +49,8 @@ JEI bleibt eine optionale Client-Mod und wird von Lumungus Storage nur zur Compi
 
 ## Naechster technischer Schritt
 
-1. Inventory Cable/Trim als echte zusammenhaengende Netzwerktopologie implementieren, damit Controller, Terminals und Connectoren nicht mehr nur innerhalb des aktuellen Acht-Block-Radius arbeiten.
-2. Den Topologie-Cache mit Aenderungserkennung, Chunk-Grenzen, Doppeltruhen-Deduplizierung und weiteren GameTests absichern.
+1. Den aktuellen geladenen Kabelgraphen durch einen Topologie-Cache ersetzen, der nur bei Block- und Chunk-Aenderungen neu aufgebaut wird.
+2. Aenderungserkennung, Chunk-Grenzen, Netzwerkaufteilung und Zusammenfuehrung mit weiteren GameTests absichern; danach dekorative Trims ergaenzen.
 3. In `lumungus-integration` den Tom's-Migrationsassistenten implementieren: Bestand zunaechst nur lesend vergleichen, danach Kabel, Trims und Connectoren protokolliert in Lumungus-Bloecke konvertieren und erneut validieren. Kein Lageritem wird dabei umgelagert.
 4. Einen grossen Bestands- und Performance-UAT mit vielen Inventaren sowie einen echten Test an einer Sicherung des bestehenden Lagers durchfuehren. Abnahmekriterium ist, dass die Welt anschliessend ohne Tom's denselben Bestand ueber Lumungus anzeigt.
 5. Erst danach Produktionsauftraege, Autocrafter, Autosteinsaege, Auto-Braustand und Schematic-Logistik auf dem physischen Netzwerk aufbauen.

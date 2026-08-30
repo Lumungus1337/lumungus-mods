@@ -2,6 +2,7 @@ package dev.lumungus.storage.gametest;
 
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
+import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
 import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
@@ -37,6 +38,79 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     private static final BlockPos FIRST_INVENTORY_CONNECTOR = new BlockPos(6, 1, 3);
     private static final BlockPos CONNECTED_CHEST = new BlockPos(7, 1, 3);
     private static final BlockPos SECOND_INVENTORY_CONNECTOR = new BlockPos(8, 1, 3);
+    private static final BlockPos CABLE_CONTROLLER = new BlockPos(1, 1, 6);
+    private static final BlockPos DISTANT_CONNECTOR = new BlockPos(11, 1, 6);
+    private static final BlockPos DISTANT_CHEST = new BlockPos(12, 1, 6);
+    private static final BlockPos DEVICE_CABLE_CONTROLLER = new BlockPos(1, 1, 9);
+    private static final BlockPos DISTANT_DRIVE_BAY = new BlockPos(11, 1, 9);
+    private static final BlockPos DISTANT_TERMINAL = new BlockPos(10, 1, 10);
+
+    @GameTest
+    public void cableLinksDistantDriveBayAndCraftingTerminal(GameTestHelper context) {
+        context.setBlock(DEVICE_CABLE_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        for (int x = 2; x <= 10; x++) {
+            context.setBlock(new BlockPos(x, 1, 9), LumungusStorageBlocks.INVENTORY_CABLE);
+        }
+        context.setBlock(DISTANT_DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        context.setBlock(DISTANT_TERMINAL, LumungusStorageBlocks.CRAFTING_TERMINAL);
+
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                DEVICE_CABLE_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        DriveBayBlockEntity driveBay = context.getBlockEntity(DISTANT_DRIVE_BAY, DriveBayBlockEntity.class);
+        CraftingTerminalBlockEntity terminal = context.getBlockEntity(
+                DISTANT_TERMINAL,
+                CraftingTerminalBlockEntity.class
+        );
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+
+        context.assertTrue(driveBay.refreshControllerLink(), "Cable did not link the distant Drive Bay");
+        context.assertTrue(terminal.refreshControllerLink(), "Cable did not link the distant terminal");
+        context.assertTrue(terminal.linkedController() == controller, "Terminal linked to the wrong controller");
+        context.assertTrue(
+                controller.insert(new ItemStack(Items.GOLD_INGOT, 12), TransferMode.EXECUTE).isEmpty(),
+                "Controller could not insert into the distant Drive Bay"
+        );
+        context.assertValueEqual(controller.count(new ItemStack(Items.GOLD_INGOT)), 12L, "Distant Drive Bay count");
+
+        context.setBlock(new BlockPos(6, 1, 9), Blocks.AIR);
+        context.assertTrue(!driveBay.refreshControllerLink(), "Broken cable left the Drive Bay linked");
+        context.assertTrue(!terminal.refreshControllerLink(), "Broken cable left the terminal linked");
+        context.assertValueEqual(controller.count(new ItemStack(Items.GOLD_INGOT)), 0L, "Disconnected Drive Bay count");
+        context.assertValueEqual(driveBay.count(new ItemStack(Items.GOLD_INGOT)), 12L, "Drive Bay contents after split");
+        context.succeed();
+    }
+
+    @GameTest
+    public void cableConnectsAndDisconnectsADistantPhysicalInventory(GameTestHelper context) {
+        context.setBlock(CABLE_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        for (int x = 2; x <= 10; x++) {
+            context.setBlock(new BlockPos(x, 1, 6), LumungusStorageBlocks.INVENTORY_CABLE);
+        }
+        context.setBlock(DISTANT_CONNECTOR, LumungusStorageBlocks.INVENTORY_CONNECTOR);
+        context.setBlock(DISTANT_CHEST, Blocks.CHEST);
+
+        ChestBlockEntity chest = context.getBlockEntity(DISTANT_CHEST, ChestBlockEntity.class);
+        chest.setItem(0, new ItemStack(Items.IRON_INGOT, 37));
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                CABLE_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        InventoryConnectorBlockEntity connector = context.getBlockEntity(
+                DISTANT_CONNECTOR,
+                InventoryConnectorBlockEntity.class
+        );
+
+        context.assertTrue(connector.refreshControllerLink(), "Cable did not link the distant connector");
+        context.assertValueEqual(controller.count(new ItemStack(Items.IRON_INGOT)), 37L, "Cable inventory count");
+
+        context.setBlock(new BlockPos(6, 1, 6), Blocks.AIR);
+        context.assertTrue(!connector.refreshControllerLink(), "Broken cable left the distant connector linked");
+        context.assertValueEqual(controller.count(new ItemStack(Items.IRON_INGOT)), 0L, "Disconnected inventory count");
+        context.assertValueEqual(chest.getItem(0).getCount(), 37, "Disconnected chest contents");
+        context.succeed();
+    }
 
     @GameTest
     public void controllerUsesPhysicalChestWithoutCellsAndDeduplicatesConnectors(GameTestHelper context) {

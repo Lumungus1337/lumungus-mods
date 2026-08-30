@@ -39,6 +39,11 @@ public final class LumungusStorageBlocks {
             InventoryConnectorBlock::new
     );
 
+    public static final Block INVENTORY_CABLE = registerBlockWithItem(
+            "inventory_cable",
+            Block::new
+    );
+
     private LumungusStorageBlocks() {
     }
 

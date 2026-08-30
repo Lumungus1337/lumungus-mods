@@ -8,10 +8,10 @@ import dev.lumungus.core.api.storage.StorageProvider;
 import dev.lumungus.core.api.storage.StorageSnapshot;
 import dev.lumungus.storage.data.StorageCellData;
 import dev.lumungus.storage.item.StorageCellItem;
+import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
@@ -55,17 +55,11 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
             return false;
         }
 
-        List<BlockPos> controllerPositions = new ArrayList<>();
         int radius = StorageControllerBlockEntity.SCAN_RADIUS;
-        BlockPos min = worldPosition.offset(-radius, -radius, -radius);
-        BlockPos max = worldPosition.offset(radius, radius, radius);
-        for (BlockPos candidate : BlockPos.betweenClosed(min, max)) {
-            if (level.getBlockEntity(candidate) instanceof StorageControllerBlockEntity controller) {
-                controllerPositions.add(controller.getBlockPos());
-            }
-        }
-
-        BlockPos ownerPos = StorageControllerOwnership.ownerOf(worldPosition, controllerPositions, radius)
+        BlockPos ownerPos = StorageControllerOwnership.ownerOf(
+                        worldPosition,
+                        StorageNetworkTopology.reachableControllers(level, worldPosition, radius)
+                )
                 .orElse(null);
         if (ownerPos == null
                 || !(level.getBlockEntity(ownerPos) instanceof StorageControllerBlockEntity controller)) {
@@ -195,7 +189,13 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
         return controllerPos != null
                 && networkId != null
                 && level.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller
-                && networkId.equals(controller.getNetworkId());
+                && networkId.equals(controller.getNetworkId())
+                && StorageNetworkTopology.canReach(
+                        level,
+                        worldPosition,
+                        controllerPos,
+                        StorageControllerBlockEntity.SCAN_RADIUS
+                );
     }
 
     private void linkTo(StorageControllerBlockEntity controller) {
