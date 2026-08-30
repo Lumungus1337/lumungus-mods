@@ -45,11 +45,11 @@ Autotrader wird ebenfalls noch nicht migriert, ist aber als eigenes Modul im Mon
 
 ## Build-Strategie
 
-Jedes Modul ist ein eigenes Gradle-Subprojekt mit eigener `fabric.mod.json`. Dadurch kann jedes Modul spaeter eine eigene remapped JAR erzeugen:
+Jedes Modul ist ein eigenes Gradle-Subprojekt mit eigener `fabric.mod.json`. Dadurch kann jedes Modul eine eigene installierbare JAR erzeugen:
 
 ```powershell
-./gradlew :modules:lumungus-core:build
-./gradlew :modules:lumungus-storage:build
+./gradlew :lumungus-core:build
+./gradlew :lumungus-storage:build
 ./gradlew build
 ```
 
@@ -57,7 +57,7 @@ Die Module erzeugen getrennte installierbare JARs. Runtime-Abhaengigkeiten werde
 
 Quellen-JARs sind im Initialstand deaktiviert, weil die 26.2-Identitaets-Mappings kein klassisches `named`-Namespace-Remapping fuer `remapSourcesJar` bereitstellen.
 
-Fuer Minecraft 26.x wird keine Yarn-Mapping-Abhaengigkeit mehr eingetragen. Die 26.x-Linie setzt auf Mojang/unobfuscated Namen; die Fabric-Werte in `gradle.properties` sollten trotzdem regelmaessig gegen die offizielle Fabric-Develop-Seite geprueft werden.
+Fuer Minecraft 26.x wird keine Mapping-Abhaengigkeit mehr eingetragen. Die 26.x-Linie setzt auf offizielle, nicht verschleierte Namen; die Fabric-Werte in `gradle.properties` sollten trotzdem regelmaessig gegen die offizielle Fabric-Develop-Seite geprueft werden.
 
 ## Versionierung und Releases
 

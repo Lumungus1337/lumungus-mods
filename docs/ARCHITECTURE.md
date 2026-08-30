@@ -69,7 +69,11 @@ Lumungus Backpack startet als erweiterbarer Rucksack:
 
 ## Machines-Vision
 
-Lumungus Machines nimmt spaeter Automationsbloecke auf. RailQuarry wird hier als geplantes zukuenftiges Feature dokumentiert, aber im Initialstand nicht migriert.
+Lumungus Machines nimmt spaeter Automationsbloecke auf. Als erste Produktionsfamilie sind ein mengenbasierter Autocrafter, eine Autosteinsaege und ein Auto-Braustand geplant. Sie erhalten Produktionsauftraege mit Zielgegenstand und Zielmenge, loesen benoetigte Zwischenrezepte auf und melden fehlende Rohstoffe an Storage und Build Clipboard zurueck.
+
+Die gemeinsamen Auftrags- und Rezeptanbieter-Vertraege liegen in Core. Dadurch kann eine Schematic beispielsweise 120 Faesser anfordern, ohne konkrete Maschinenklassen zu kennen. Autocrafter koennen daraus die Kette Holzstaemme, Bretter, Holzstufen und Faesser planen. Details stehen in [machines/MVP.md](machines/MVP.md).
+
+RailQuarry wird hier weiterhin als geplantes zukuenftiges Feature dokumentiert, aber im Initialstand nicht migriert.
 
 ## Autotrader-Vision
 

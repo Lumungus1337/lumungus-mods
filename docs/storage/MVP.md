@@ -22,7 +22,14 @@ Der erste Slice nutzt bewusst Vanilla-Texturen, damit die IDs und Ressourcenstru
 - Jeder Controller verwaltet eine dauerhafte Netzwerk-ID.
 - Controller und Terminals finden sich in einem begrenzten Radius von acht Bloecken; ein Terminal verbindet sich mit dem naechsten Controller.
 - Das Crafting Terminal oeffnet ein voll funktionsfaehiges 3x3-Crafting-Raster mit Spielerinventar.
+- Installiertes JEI kann Rezepte ueber seinen Transfer-Button direkt in dieses 3x3-Raster legen.
 - Crafting funktioniert auch ohne Controller lokal; die Netzwerkverbindung wird dem Spieler beim Oeffnen angezeigt.
+
+### JEI-Kompatibilitaet
+
+JEI bleibt eine optionale Mod und wird nicht in Lumungus Storage eingebaut oder vorausgesetzt. Das Crafting Terminal verwendet bewusst den Vanilla-Menue-Typ und dessen Slotreihenfolge. JEIs eigener Crafting-Transfer-Handler kann deshalb Rezepte aus der JEI-Ansicht in das Terminal uebertragen. Die aktuelle JEI-Fabric-Version ist nur in der lokalen Entwicklungsumgebung aktiv, damit diese Kompatibilitaet bei weiteren Arbeiten getestet werden kann. Auf einem dedizierten Multiplayer-Server muss JEI auch serverseitig installiert sein, damit dessen Rezepttransfer funktioniert.
+
+Sobald das Terminal zusaetzliche Netzwerk-Slots erhaelt, wird ein eigener JEI-Transfer-Handler noetig. Dieser soll zuerst das Spielerinventar und danach den verbundenen Storage-Bestand verwenden; fehlende Zutaten werden weiterhin von JEI markiert.
 
 ## Naechster technischer Schritt
 
@@ -39,5 +46,6 @@ Dieses Feature gehoert zur spaeteren Roadmap und wird im aktuellen Slice noch ni
 - Vorhandene Baumaterialien automatisch auf eine oder mehrere Shulkerboxen verteilen und passend beschriften.
 - Fehlende Materialien getrennt ausweisen, damit sofort klar ist, was noch gefarmt oder hergestellt werden muss.
 - Fortschritt mit den Zustaenden `benoetigt`, `vorhanden`, `verpackt` und `fehlend` verfolgen.
+- Fehlende herstellbare Materialien als mengenbasierte Produktionsauftraege an Autocrafter, Autosteinsaege oder Auto-Braustand uebergeben.
 - Ein eigenes Lumungus Build Clipboard als tragbare Checkliste anbieten, funktional von Creates Clipboard inspiriert und optisch im 90er-Computerstil der Modreihe gestaltet.
 - Die Schematic-Unterstuetzung ueber Format-Adapter kapseln, damit spaeter mehrere gaengige Formate angebunden werden koennen.

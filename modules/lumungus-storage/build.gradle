@@ -1,1 +1,12 @@
-// Runtime dependency on Lumungus Core is declared in fabric.mod.json.
+repositories {
+    maven {
+        name = "Jared's Maven"
+        url = "https://maven.blamejared.com"
+    }
+}
+
+dependencies {
+    // Development-only: validates optional JEI recipe transfer without bundling JEI.
+    localRuntime "mezz.jei:jei-${minecraft_version}-fabric:${jei_version}@jar"
+    localRuntime project(":lumungus-core")
+}
