@@ -3,6 +3,7 @@ package dev.lumungus.storage.registry;
 import dev.lumungus.storage.LumungusStorage;
 import dev.lumungus.storage.block.CraftingTerminalBlock;
 import dev.lumungus.storage.block.DriveBayBlock;
+import dev.lumungus.storage.block.InventoryConnectorBlock;
 import dev.lumungus.storage.block.StorageControllerBlock;
 import java.util.function.Function;
 import net.minecraft.core.Registry;
@@ -31,6 +32,11 @@ public final class LumungusStorageBlocks {
     public static final Block DRIVE_BAY = registerBlockWithItem(
             "drive_bay",
             DriveBayBlock::new
+    );
+
+    public static final Block INVENTORY_CONNECTOR = registerBlockWithItem(
+            "inventory_connector",
+            InventoryConnectorBlock::new
     );
 
     private LumungusStorageBlocks() {

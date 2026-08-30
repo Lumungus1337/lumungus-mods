@@ -22,12 +22,15 @@ Der erste Slice nutzt bewusst Vanilla-Texturen, damit die IDs und Ressourcenstru
 
 ## Aktueller technischer Stand
 
-Der UAT.3-Prototyp ist noch Cell-zentriert. Diese Implementierung bleibt als gepruefte Zwischenstufe erhalten, bildet aber nicht mehr die Zielarchitektur.
+Seit dem ersten Entwicklungsschritt nach UAT.3 kann der Controller physische Inventare direkt verwenden. Storage Cells bleiben als optionaler Massenspeicher erhalten, sind fuer ein Netzwerk aber nicht mehr erforderlich.
 
 - Controller und Crafting Terminal besitzen eigene, persistente Block-Entities.
 - Jeder Controller verwaltet eine dauerhafte Netzwerk-ID.
 - Controller und Terminals finden sich in einem begrenzten Radius von acht Bloecken; ein Terminal verbindet sich mit dem naechsten Controller.
 - Drive Bays im selben Radius werden vom Controller zu einem gemeinsamen Netzwerkbestand zusammengefasst.
+- Der erste native Inventory Connector bindet alle direkt angrenzenden Fabric-kompatiblen Item-Inventare ein. Damit funktionieren insbesondere Vanilla-Kisten ohne Umlagerung ihrer Inhalte.
+- Mehrere Connectoren am selben Inventar werden dedupliziert; auch beide Haelften einer Doppeltruhe erhalten einen gemeinsamen Endpunkt-Schluessel.
+- Lesen, Einlagern und Entnehmen laufen transaktional ueber Fabric Transfer API. Simulationen veraendern den Bestand nicht und Item-Komponenten wie eigene Namen bleiben erhalten.
 - Gefuellte Storage Cells behalten ihren gesamten Inhalt beim Herausnehmen und Wiedereinsetzen.
 - Items koennen direkt an einer Drive Bay, per Schnellaktion am Terminal oder in der Terminaloberflaeche eingelagert werden.
 - Ein leerer Rechtsklick entnimmt an der Drive Bay einen Stapel. Schleichen und Rechtsklick nimmt die Storage Cell heraus.
@@ -45,8 +48,8 @@ JEI bleibt eine optionale Client-Mod und wird von Lumungus Storage nur zur Compi
 
 ## Naechster technischer Schritt
 
-1. Eine allgemeine Storage-Endpunkt-API und einen sicheren Adapter fuer physische Blockinventare implementieren.
-2. Native Inventory Connectoren und Kabel/Trims mit Topologie-Cache, Doppeltruhen-Deduplizierung und GameTests bauen.
+1. Inventory Cable/Trim als echte zusammenhaengende Netzwerktopologie implementieren, damit Controller, Terminals und Connectoren nicht mehr nur innerhalb des aktuellen Acht-Block-Radius arbeiten.
+2. Den Topologie-Cache mit Aenderungserkennung, Chunk-Grenzen, Doppeltruhen-Deduplizierung und weiteren GameTests absichern.
 3. In `lumungus-integration` den Tom's-Migrationsassistenten implementieren: Bestand zunaechst nur lesend vergleichen, danach Kabel, Trims und Connectoren protokolliert in Lumungus-Bloecke konvertieren und erneut validieren. Kein Lageritem wird dabei umgelagert.
 4. Einen grossen Bestands- und Performance-UAT mit vielen Inventaren sowie einen echten Test an einer Sicherung des bestehenden Lagers durchfuehren. Abnahmekriterium ist, dass die Welt anschliessend ohne Tom's denselben Bestand ueber Lumungus anzeigt.
 5. Erst danach Produktionsauftraege, Autocrafter, Autosteinsaege, Auto-Braustand und Schematic-Logistik auf dem physischen Netzwerk aufbauen.

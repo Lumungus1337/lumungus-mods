@@ -1,7 +1,7 @@
 package dev.lumungus.storage.block;
 
 import com.mojang.serialization.MapCodec;
-import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
+import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
@@ -13,10 +13,10 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
-public final class StorageControllerBlock extends BaseEntityBlock {
-    public static final MapCodec<StorageControllerBlock> CODEC = simpleCodec(StorageControllerBlock::new);
+public final class InventoryConnectorBlock extends BaseEntityBlock {
+    public static final MapCodec<InventoryConnectorBlock> CODEC = simpleCodec(InventoryConnectorBlock::new);
 
-    public StorageControllerBlock(BlockBehaviour.Properties properties) {
+    public InventoryConnectorBlock(BlockBehaviour.Properties properties) {
         super(properties);
     }
 
@@ -27,7 +27,7 @@ public final class StorageControllerBlock extends BaseEntityBlock {
 
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new StorageControllerBlockEntity(pos, state);
+        return new InventoryConnectorBlockEntity(pos, state);
     }
 
     @Override
@@ -36,23 +36,18 @@ public final class StorageControllerBlock extends BaseEntityBlock {
             Level level,
             BlockPos pos,
             Player player,
-        BlockHitResult hit
+            BlockHitResult hit
     ) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StorageControllerBlockEntity controller) {
-            StorageControllerBlockEntity.NetworkStatus status = controller.refreshNetwork();
-            long used = controller.snapshot().storedTotalAmount();
-            long capacity = controller.capacity().maxTotalAmount();
+        if (!level.isClientSide()
+                && level.getBlockEntity(pos) instanceof InventoryConnectorBlockEntity connector) {
+            int inventories = connector.endpoints().size();
             player.sendSystemMessage(Component.translatable(
-                    "message.lumungus_storage.storage_controller.status",
-                    controller.getNetworkLabel(),
-                    status.linkedTerminals(),
-                    status.linkedDriveBays(),
-                    status.linkedInventoryConnectors(),
-                    used,
-                    capacity
+                    connector.refreshControllerLink()
+                            ? "message.lumungus_storage.inventory_connector.connected"
+                            : "message.lumungus_storage.inventory_connector.no_controller",
+                    inventories
             ));
         }
-
         return InteractionResult.SUCCESS;
     }
 }

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "minecraft:chest",
+    "I": "minecraft:iron_ingot",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "IRI",
+    "ICI",
+    "IRI"
+  ],
+  "result": {
+    "id": "lumungus_storage:inventory_connector"
+  }
+}

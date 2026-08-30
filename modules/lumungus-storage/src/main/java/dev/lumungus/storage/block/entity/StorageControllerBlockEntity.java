@@ -9,7 +9,9 @@ import dev.lumungus.core.api.storage.StorageSnapshot;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
@@ -42,11 +44,12 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
 
     public NetworkStatus refreshNetwork() {
         if (level == null || level.isClientSide()) {
-            return new NetworkStatus(0, 0);
+            return new NetworkStatus(0, 0, 0);
         }
 
         int linkedTerminals = 0;
         int linkedDriveBays = 0;
+        int linkedInventoryConnectors = 0;
         BlockPos min = worldPosition.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS);
         BlockPos max = worldPosition.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS);
 
@@ -59,10 +62,14 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
                     && driveBay.refreshControllerLink()
                     && driveBay.isLinkedTo(this)) {
                 linkedDriveBays++;
+            } else if (level.getBlockEntity(candidate) instanceof InventoryConnectorBlockEntity connector
+                    && connector.refreshControllerLink()
+                    && connector.isLinkedTo(this)) {
+                linkedInventoryConnectors++;
             }
         }
 
-        return new NetworkStatus(linkedTerminals, linkedDriveBays);
+        return new NetworkStatus(linkedTerminals, linkedDriveBays, linkedInventoryConnectors);
     }
 
     @Override
@@ -91,15 +98,15 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
             return cachedNetworkState;
         }
 
-        List<DriveBayBlockEntity> driveBays = driveBays();
+        List<StorageAccess> storageAccesses = storageAccesses();
         List<ResourceAmount> aggregated = new ArrayList<>();
         long maxTotal = 0;
         int maxTypes = 0;
-        for (DriveBayBlockEntity driveBay : driveBays) {
-            StorageCapacity driveCapacity = driveBay.capacity();
-            maxTotal += driveCapacity.maxTotalAmount();
-            maxTypes += driveCapacity.maxDistinctTypes();
-            for (ResourceAmount resource : driveBay.storedResources()) {
+        for (StorageAccess storageAccess : storageAccesses) {
+            StorageCapacity accessCapacity = storageAccess.capacity();
+            maxTotal += accessCapacity.maxTotalAmount();
+            maxTypes += accessCapacity.maxDistinctTypes();
+            for (ResourceAmount resource : storageAccess.storedResources()) {
                 mergeResource(aggregated, resource);
             }
         }
@@ -117,7 +124,7 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
 
     @Override
     public long count(ItemStack template) {
-        return driveBays().stream().mapToLong(driveBay -> driveBay.count(template)).sum();
+        return storageAccesses().stream().mapToLong(access -> access.count(template)).sum();
     }
 
     @Override
@@ -126,12 +133,12 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
             return ItemStack.EMPTY;
         }
 
-        List<DriveBayBlockEntity> ordered = new ArrayList<>(driveBays());
-        ordered.sort(Comparator.comparingInt(driveBay -> driveBay.contains(stack) ? 0 : 1));
+        List<StorageAccess> ordered = new ArrayList<>(storageAccesses());
+        ordered.sort(Comparator.comparingInt(access -> access.contains(stack) ? 0 : 1));
 
         ItemStack remainder = stack.copy();
-        for (DriveBayBlockEntity driveBay : ordered) {
-            remainder = driveBay.insert(remainder, mode);
+        for (StorageAccess storageAccess : ordered) {
+            remainder = storageAccess.insert(remainder, mode);
             if (remainder.isEmpty()) {
                 break;
             }
@@ -150,8 +157,8 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
 
         long requested = Math.min(maxAmount, template.getMaxStackSize());
         ItemStack result = ItemStack.EMPTY;
-        for (DriveBayBlockEntity driveBay : driveBays()) {
-            ItemStack part = driveBay.extract(template, requested - result.getCount(), mode);
+        for (StorageAccess storageAccess : storageAccesses()) {
+            ItemStack part = storageAccess.extract(template, requested - result.getCount(), mode);
             if (!part.isEmpty()) {
                 if (result.isEmpty()) {
                     result = part.copy();
@@ -169,22 +176,31 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
         return result;
     }
 
-    private List<DriveBayBlockEntity> driveBays() {
+    private List<StorageAccess> storageAccesses() {
         if (level == null || level.isClientSide()) {
             return List.of();
         }
 
-        List<DriveBayBlockEntity> driveBays = new ArrayList<>();
+        List<StorageAccess> storageAccesses = new ArrayList<>();
+        Map<BlockPos, StorageAccess> physicalInventories = new LinkedHashMap<>();
         BlockPos min = worldPosition.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS);
         BlockPos max = worldPosition.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS);
         for (BlockPos candidate : BlockPos.betweenClosed(min, max)) {
             if (level.getBlockEntity(candidate) instanceof DriveBayBlockEntity driveBay
                     && driveBay.refreshControllerLink()
                     && driveBay.isLinkedTo(this)) {
-                driveBays.add(driveBay);
+                storageAccesses.add(driveBay.storageAccess());
+            } else if (level.getBlockEntity(candidate) instanceof InventoryConnectorBlockEntity connector
+                    && connector.refreshControllerLink()
+                    && connector.isLinkedTo(this)) {
+                connector.endpoints().forEach(endpoint -> physicalInventories.putIfAbsent(
+                        endpoint.key(),
+                        endpoint.access()
+                ));
             }
         }
-        return driveBays;
+        storageAccesses.addAll(physicalInventories.values());
+        return storageAccesses;
     }
 
     private static void mergeResource(List<ResourceAmount> aggregated, ResourceAmount candidate) {
@@ -216,7 +232,7 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
         output.store(NETWORK_ID_KEY, UUIDUtil.CODEC, networkId);
     }
 
-    public record NetworkStatus(int linkedTerminals, int linkedDriveBays) {
+    public record NetworkStatus(int linkedTerminals, int linkedDriveBays, int linkedInventoryConnectors) {
     }
 
     public record NetworkState(

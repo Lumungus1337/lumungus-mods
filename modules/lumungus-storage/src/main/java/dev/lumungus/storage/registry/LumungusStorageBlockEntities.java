@@ -3,6 +3,7 @@ package dev.lumungus.storage.registry;
 import dev.lumungus.storage.LumungusStorage;
 import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
 import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
+import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import java.util.Set;
 import net.minecraft.core.Registry;
@@ -31,6 +32,12 @@ public final class LumungusStorageBlockEntities {
             "drive_bay",
             DriveBayBlockEntity::new,
             LumungusStorageBlocks.DRIVE_BAY
+    );
+
+    public static final BlockEntityType<InventoryConnectorBlockEntity> INVENTORY_CONNECTOR = register(
+            "inventory_connector",
+            InventoryConnectorBlockEntity::new,
+            LumungusStorageBlocks.INVENTORY_CONNECTOR
     );
 
     private LumungusStorageBlockEntities() {

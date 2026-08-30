@@ -2,20 +2,29 @@ package dev.lumungus.storage.gametest;
 
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
+import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
+import dev.lumungus.storage.inventory.FabricItemStorageAccess;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import java.lang.reflect.Method;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.Blocks;
 
 public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
@@ -23,6 +32,108 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     private static final BlockPos DRIVE_BAY = new BlockPos(4, 1, 1);
     private static final BlockPos SECOND_CONTROLLER = new BlockPos(3, 1, 1);
     private static final BlockPos CRAFTING_TERMINAL = new BlockPos(2, 1, 1);
+    private static final BlockPos PHYSICAL_CHEST = new BlockPos(6, 1, 1);
+    private static final BlockPos PHYSICAL_CONTROLLER = new BlockPos(5, 1, 3);
+    private static final BlockPos FIRST_INVENTORY_CONNECTOR = new BlockPos(6, 1, 3);
+    private static final BlockPos CONNECTED_CHEST = new BlockPos(7, 1, 3);
+    private static final BlockPos SECOND_INVENTORY_CONNECTOR = new BlockPos(8, 1, 3);
+
+    @GameTest
+    public void controllerUsesPhysicalChestWithoutCellsAndDeduplicatesConnectors(GameTestHelper context) {
+        context.setBlock(PHYSICAL_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(FIRST_INVENTORY_CONNECTOR, LumungusStorageBlocks.INVENTORY_CONNECTOR);
+        context.setBlock(CONNECTED_CHEST, Blocks.CHEST);
+        context.setBlock(SECOND_INVENTORY_CONNECTOR, LumungusStorageBlocks.INVENTORY_CONNECTOR);
+
+        ChestBlockEntity chest = context.getBlockEntity(CONNECTED_CHEST, ChestBlockEntity.class);
+        chest.setItem(0, new ItemStack(Items.COBBLESTONE, 48));
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                PHYSICAL_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        InventoryConnectorBlockEntity firstConnector = context.getBlockEntity(
+                FIRST_INVENTORY_CONNECTOR,
+                InventoryConnectorBlockEntity.class
+        );
+        InventoryConnectorBlockEntity secondConnector = context.getBlockEntity(
+                SECOND_INVENTORY_CONNECTOR,
+                InventoryConnectorBlockEntity.class
+        );
+
+        context.assertTrue(firstConnector.refreshControllerLink(), "First connector did not find the controller");
+        context.assertTrue(secondConnector.refreshControllerLink(), "Second connector did not find the controller");
+        context.assertValueEqual(controller.count(new ItemStack(Items.COBBLESTONE)), 48L, "Deduplicated chest count");
+
+        ItemStack insertRemainder = controller.insert(
+                new ItemStack(Items.COBBLESTONE, 16),
+                TransferMode.EXECUTE
+        );
+        context.assertTrue(insertRemainder.isEmpty(), "Controller did not insert into the physical chest");
+        context.assertValueEqual(controller.count(new ItemStack(Items.COBBLESTONE)), 64L, "Post-insert count");
+
+        ItemStack extracted = controller.extract(
+                new ItemStack(Items.COBBLESTONE),
+                20,
+                TransferMode.EXECUTE
+        );
+        context.assertValueEqual(extracted.getCount(), 20, "Physical extraction");
+        context.assertValueEqual(controller.count(new ItemStack(Items.COBBLESTONE)), 44L, "Post-extract count");
+        context.assertTrue(!chest.isEmpty(), "Physical chest was unexpectedly emptied");
+        context.succeed();
+    }
+
+    @GameTest
+    public void physicalInventoryAdapterIsTransactionalAndComponentSafe(GameTestHelper context) {
+        context.setBlock(PHYSICAL_CHEST, Blocks.CHEST);
+        ChestBlockEntity chest = context.getBlockEntity(PHYSICAL_CHEST, ChestBlockEntity.class);
+        chest.setItem(0, new ItemStack(Items.COBBLESTONE, 32));
+        chest.setItem(1, new ItemStack(Items.COBBLESTONE, 16));
+        ItemStack namedCobblestone = new ItemStack(Items.COBBLESTONE, 3);
+        namedCobblestone.set(DataComponents.CUSTOM_NAME, Component.literal("Reserved"));
+        chest.setItem(2, namedCobblestone);
+
+        BlockPos chestPos = context.absolutePos(PHYSICAL_CHEST);
+        Storage<ItemVariant> storage = ItemStorage.SIDED.find(context.getLevel(), chestPos, Direction.UP);
+        context.assertTrue(storage != null, "Fabric item storage was not exposed by the physical chest");
+        FabricItemStorageAccess access = new FabricItemStorageAccess(storage);
+
+        context.assertValueEqual(access.count(new ItemStack(Items.COBBLESTONE)), 48L, "Plain cobblestone");
+        context.assertValueEqual(access.count(namedCobblestone), 3L, "Named cobblestone");
+        context.assertValueEqual(access.storedResources().size(), 2, "Distinct physical resources");
+        context.assertValueEqual(access.snapshot().storedTotalAmount(), 51L, "Physical item total");
+
+        ItemStack simulatedRemainder = access.insert(
+                new ItemStack(Items.OAK_LOG, 10),
+                TransferMode.SIMULATE
+        );
+        context.assertTrue(simulatedRemainder.isEmpty(), "Simulated insertion unexpectedly failed");
+        context.assertValueEqual(access.count(new ItemStack(Items.OAK_LOG)), 0L, "Simulated oak logs");
+
+        ItemStack insertedRemainder = access.insert(
+                new ItemStack(Items.OAK_LOG, 10),
+                TransferMode.EXECUTE
+        );
+        context.assertTrue(insertedRemainder.isEmpty(), "Executed insertion unexpectedly failed");
+        context.assertValueEqual(access.count(new ItemStack(Items.OAK_LOG)), 10L, "Inserted oak logs");
+
+        ItemStack simulatedExtraction = access.extract(
+                new ItemStack(Items.COBBLESTONE),
+                40,
+                TransferMode.SIMULATE
+        );
+        context.assertValueEqual(simulatedExtraction.getCount(), 40, "Simulated extraction");
+        context.assertValueEqual(access.count(new ItemStack(Items.COBBLESTONE)), 48L, "Post-simulation count");
+
+        ItemStack extracted = access.extract(
+                new ItemStack(Items.COBBLESTONE),
+                40,
+                TransferMode.EXECUTE
+        );
+        context.assertValueEqual(extracted.getCount(), 40, "Executed extraction");
+        context.assertValueEqual(access.count(new ItemStack(Items.COBBLESTONE)), 8L, "Remaining cobblestone");
+        context.assertValueEqual(access.count(namedCobblestone), 3L, "Preserved named cobblestone");
+        context.succeed();
+    }
 
     @GameTest
     public void driveBayOwnershipIsStableAndLossless(GameTestHelper context) {
