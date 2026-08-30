@@ -125,5 +125,6 @@ tasks.register("storageUatBundle", Zip) {
     }
     from("docs/storage") {
         include "UAT*.md"
+        include "images/**"
     }
 }
