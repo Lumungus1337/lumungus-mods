@@ -8,6 +8,15 @@ repositories {
 dependencies {
     implementation project(":lumungus-core")
 
+    compileOnly "mezz.jei:jei-${minecraft_version}-fabric-api:${jei_version}"
+
     // Development-only: validates optional JEI recipe transfer without bundling JEI.
     localRuntime "mezz.jei:jei-${minecraft_version}-fabric:${jei_version}@jar"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:${junit_version}"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junit_version}"
+}
+
+tasks.named("test") {
+    useJUnitPlatform()
 }

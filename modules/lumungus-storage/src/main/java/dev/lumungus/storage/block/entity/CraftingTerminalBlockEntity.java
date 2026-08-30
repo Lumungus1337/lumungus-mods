@@ -3,10 +3,11 @@ package dev.lumungus.storage.block.entity;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.UUID;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.MenuProvider;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -16,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-public final class CraftingTerminalBlockEntity extends BlockEntity implements MenuProvider {
+public final class CraftingTerminalBlockEntity extends BlockEntity implements ExtendedMenuProvider<BlockPos> {
     private static final String CONTROLLER_POS_KEY = "controller_pos";
     private static final String NETWORK_ID_KEY = "network_id";
 
@@ -110,6 +111,11 @@ public final class CraftingTerminalBlockEntity extends BlockEntity implements Me
     }
 
     @Override
+    public BlockPos getScreenOpeningData(ServerPlayer player) {
+        return worldPosition;
+    }
+
+    @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
         if (level == null) {
             return null;
@@ -118,7 +124,8 @@ public final class CraftingTerminalBlockEntity extends BlockEntity implements Me
         return new LumungusCraftingMenu(
                 containerId,
                 inventory,
-                ContainerLevelAccess.create(level, worldPosition)
+                ContainerLevelAccess.create(level, worldPosition),
+                worldPosition
         );
     }
 

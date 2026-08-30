@@ -44,9 +44,14 @@ public final class CraftingTerminalBlock extends BaseEntityBlock {
             InteractionHand hand,
             BlockHitResult hit
     ) {
+        if (heldStack.isEmpty() || !player.isSecondaryUseActive()) {
+            return openTerminal(level, pos, player);
+        }
+
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
+
         if (!(level.getBlockEntity(pos) instanceof CraftingTerminalBlockEntity terminal)) {
             return InteractionResult.PASS;
         }
@@ -103,7 +108,14 @@ public final class CraftingTerminalBlock extends BaseEntityBlock {
                 ));
                 return InteractionResult.SUCCESS;
             }
+        }
 
+        return openTerminal(level, pos, player);
+    }
+
+    private InteractionResult openTerminal(Level level, BlockPos pos, Player player) {
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof CraftingTerminalBlockEntity terminal) {
+            StorageControllerBlockEntity controller = terminal.linkedController();
             player.sendSystemMessage(Component.translatable(controller != null
                     ? "message.lumungus_storage.crafting_terminal.connected"
                     : "message.lumungus_storage.crafting_terminal.unlinked"));

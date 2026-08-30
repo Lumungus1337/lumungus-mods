@@ -25,24 +25,25 @@ Der erste Slice nutzt bewusst Vanilla-Texturen, damit die IDs und Ressourcenstru
 - Controller und Terminals finden sich in einem begrenzten Radius von acht Bloecken; ein Terminal verbindet sich mit dem naechsten Controller.
 - Drive Bays im selben Radius werden vom Controller zu einem gemeinsamen Netzwerkbestand zusammengefasst.
 - Gefuellte Storage Cells behalten ihren gesamten Inhalt beim Herausnehmen und Wiedereinsetzen.
-- Items koennen direkt an einer Drive Bay oder ueber ein verbundenes Crafting Terminal eingelagert werden.
+- Items koennen direkt an einer Drive Bay, per Schnellaktion am Terminal oder in der Terminaloberflaeche eingelagert werden.
 - Ein leerer Rechtsklick entnimmt an der Drive Bay einen Stapel. Schleichen und Rechtsklick nimmt die Storage Cell heraus.
-- Schleichen und Rechtsklick auf das Crafting Terminal entnimmt einen Stapel aus dem gesamten Netzwerk.
-- Das Crafting Terminal oeffnet ein voll funktionsfaehiges 3x3-Crafting-Raster mit Spielerinventar.
-- Installiertes JEI kann Rezepte ueber seinen Transfer-Button direkt in dieses 3x3-Raster legen.
-- Crafting funktioniert auch ohne Controller lokal; die Netzwerkverbindung wird dem Spieler beim Oeffnen angezeigt.
+- Ein normaler Rechtsklick oeffnet das Crafting Terminal. Schleichen und Rechtsklick lagert einen gehaltenen Stapel schnell ein oder entnimmt mit leerer Hand einen Netzwerkstapel.
+- Das eigene, synchronisierte Terminalmenue zeigt 36 Itemtypen pro Seite und bietet Suche, Namens-/Mengensortierung, Seitenwechsel, Tooltips sowie genaue Bestands- und Kapazitaetsanzeigen.
+- Links-, Rechts- und Shift-Klick entnehmen Stapel, Einzelitems oder direkt ins Spielerinventar; der `IN`-Bereich nimmt Cursorstapel auf.
+- Das Terminal enthaelt ein voll funktionsfaehiges 3x3-Crafting-Raster und verwendet Zutaten aus Spielerinventar und Netzwerk.
+- Alle Netzwerktransaktionen und Rezeptentscheidungen werden serverseitig validiert und anschliessend an den Client synchronisiert.
+- Installiertes JEI kann Rezepte ueber den eigenen Lumungus-Transfer-Handler in das Raster legen. Der Server ermittelt das Rezept erneut und vertraut keinen vom Client gelieferten Zutatenmengen.
+- Netzwerk, Cell-Inhalte und Bestandsmengen bleiben nach Speichern und Neustart erhalten.
 
 ### JEI-Kompatibilitaet
 
-JEI bleibt eine optionale Mod und wird nicht in Lumungus Storage eingebaut oder vorausgesetzt. Das Crafting Terminal verwendet bewusst den Vanilla-Menue-Typ und dessen Slotreihenfolge. JEIs eigener Crafting-Transfer-Handler kann deshalb Rezepte aus der JEI-Ansicht in das Terminal uebertragen. Die aktuelle JEI-Fabric-Version ist nur in der lokalen Entwicklungsumgebung aktiv, damit diese Kompatibilitaet bei weiteren Arbeiten getestet werden kann. Auf einem dedizierten Multiplayer-Server muss JEI auch serverseitig installiert sein, damit dessen Rezepttransfer funktioniert.
-
-Sobald das Terminal zusaetzliche Netzwerk-Slots erhaelt, wird ein eigener JEI-Transfer-Handler noetig. Dieser soll zuerst das Spielerinventar und danach den verbundenen Storage-Bestand verwenden; fehlende Zutaten werden weiterhin von JEI markiert.
+JEI bleibt eine optionale Client-Mod und wird von Lumungus Storage nur zur Compile-Zeit angebunden. Der eigene Fabric-Entrypoint `jei_mod_plugin` registriert den Transfer-Handler nur, wenn JEI vorhanden ist. Der Client sendet dabei ausschliesslich Rezept-ID und Mengenmodus; Auswahl, Verfuegbarkeit und Entnahme der Zutaten bleiben Aufgabe des Servers.
 
 ## Naechster technischer Schritt
 
-1. Eigenes Terminal-Menue mit sichtbarer, durchsuchbarer Bestandsliste.
-2. Gezielt Items und Mengen aus dieser Liste entnehmen.
-3. Netzwerkbestand beim manuellen Crafting und beim JEI-Rezepttransfer verwenden.
+1. Den Release Candidate `0.1.0-uat.1` anhand von [UAT.md](UAT.md) mit einem zweiten Spieler und den dokumentierten Grenzfaellen abnehmen.
+2. UAT-Abweichungen beheben und den ersten freigegebenen Storage-Build erstellen.
+3. Danach Produktionsauftraege, Autocrafter, Autosteinsaege und Auto-Braustand als naechsten vertikalen Slice planen.
 
 ## Geplante Build Logistics
 

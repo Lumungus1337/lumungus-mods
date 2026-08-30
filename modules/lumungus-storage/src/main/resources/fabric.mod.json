@@ -12,6 +12,12 @@
   "entrypoints": {
     "main": [
       "dev.lumungus.storage.LumungusStorage"
+    ],
+    "client": [
+      "dev.lumungus.storage.client.LumungusStorageClient"
+    ],
+    "jei_mod_plugin": [
+      "dev.lumungus.storage.compat.jei.LumungusStorageJeiPlugin"
     ]
   },
   "depends": {
