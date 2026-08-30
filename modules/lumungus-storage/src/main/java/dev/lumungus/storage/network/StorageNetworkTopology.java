@@ -145,6 +145,7 @@ public final class StorageNetworkTopology {
                 || block == LumungusStorageBlocks.CRAFTING_TERMINAL
                 || block == LumungusStorageBlocks.DRIVE_BAY
                 || block == LumungusStorageBlocks.INVENTORY_CONNECTOR
+                || block == LumungusStorageBlocks.INVENTORY_TRIM
                 || block == LumungusStorageBlocks.INVENTORY_CABLE;
     }
 

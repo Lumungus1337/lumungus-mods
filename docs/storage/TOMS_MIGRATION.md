@@ -38,4 +38,6 @@ Automatisierte Tests decken ab:
 
 ## Naechster Slice
 
-Als Naechstes wird der konkrete Tom's-Adapter fuer die festgelegte Modversion gebaut. Er darf zunaechst ausschliesslich Netzbloecke entdecken und Inventare lesen. Danach folgt ein sichtbarer Dry-Run-Bericht mit erkannten, unterstuetzten und unbekannten Bloecken. Schreibende Konvertierung, Journal und Rollback bleiben gesperrt, bis dieser Bericht am Welt-Backup erfolgreich abgenommen wurde.
+Der versionsrobuste Blockkatalog fuer Tom's `2.4.1` ist vorbereitet. Er ordnet Controller, Terminals, Trims, Kabel und Kabel-Connectoren passenden Lumungus-Bloecken zu. Unbekannte Bloecke und noch nicht abgebildete Funktionsbloecke blockieren die Migration; ein Filing Cabinet wird wegen moeglicher eigener Inhalte gesondert als blockierend gemeldet.
+
+Als Naechstes liest der konkrete Welt-Scanner diese IDs und Positionen nur lesend ein und erzeugt daraus den sichtbaren Dry-Run-Bericht. Schreibende Konvertierung, Journal und Rollback bleiben gesperrt, bis dieser Bericht am Welt-Backup erfolgreich abgenommen wurde.

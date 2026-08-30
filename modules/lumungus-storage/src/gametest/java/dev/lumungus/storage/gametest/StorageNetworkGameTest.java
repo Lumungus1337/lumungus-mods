@@ -48,6 +48,31 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     private static final BlockPos DISTANT_TERMINAL = new BlockPos(10, 1, 10);
 
     @GameTest
+    public void inventoryTrimConnectsTouchingChestsWithoutSeparateConnectors(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 15);
+        BlockPos chestPos = new BlockPos(13, 1, 15);
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        for (int x = 2; x <= 12; x++) {
+            context.setBlock(new BlockPos(x, 1, 15), LumungusStorageBlocks.INVENTORY_TRIM);
+        }
+        context.setBlock(chestPos, Blocks.CHEST);
+
+        ChestBlockEntity chest = context.getBlockEntity(chestPos, ChestBlockEntity.class);
+        chest.setItem(0, new ItemStack(Items.DIAMOND, 31));
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                controllerPos,
+                StorageControllerBlockEntity.class
+        );
+
+        context.assertValueEqual(controller.count(new ItemStack(Items.DIAMOND)), 31L, "Trim-connected chest count");
+
+        context.setBlock(new BlockPos(7, 1, 15), Blocks.AIR);
+        context.assertValueEqual(controller.count(new ItemStack(Items.DIAMOND)), 0L, "Disconnected trim chest count");
+        context.assertValueEqual(chest.getItem(0).getCount(), 31, "Trim disconnect preserved chest contents");
+        context.succeed();
+    }
+
+    @GameTest
     public void topologyCacheInvalidatesOnlyTheChangedComponent(GameTestHelper context) {
         BlockPos firstStart = new BlockPos(1, 1, 13);
         BlockPos secondStart = new BlockPos(8, 1, 13);

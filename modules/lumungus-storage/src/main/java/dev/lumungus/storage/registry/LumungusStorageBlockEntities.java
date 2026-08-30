@@ -37,7 +37,8 @@ public final class LumungusStorageBlockEntities {
     public static final BlockEntityType<InventoryConnectorBlockEntity> INVENTORY_CONNECTOR = register(
             "inventory_connector",
             InventoryConnectorBlockEntity::new,
-            LumungusStorageBlocks.INVENTORY_CONNECTOR
+            LumungusStorageBlocks.INVENTORY_CONNECTOR,
+            LumungusStorageBlocks.INVENTORY_TRIM
     );
 
     private LumungusStorageBlockEntities() {

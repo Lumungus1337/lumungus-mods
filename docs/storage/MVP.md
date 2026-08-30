@@ -29,6 +29,7 @@ Seit dem ersten Entwicklungsschritt nach UAT.3 kann der Controller physische Inv
 - Controller und Terminals finden sich in einem begrenzten Radius von acht Bloecken; ein Terminal verbindet sich mit dem naechsten Controller.
 - Drive Bays im selben Radius werden vom Controller zu einem gemeinsamen Netzwerkbestand zusammengefasst.
 - Der erste native Inventory Connector bindet alle direkt angrenzenden Fabric-kompatiblen Item-Inventare ein. Damit funktionieren insbesondere Vanilla-Kisten ohne Umlagerung ihrer Inhalte.
+- Der native Inventory Trim verbindet wie Tom's Trim das Netzwerk und bindet zugleich direkt angrenzende Inventare ein. Dadurch kann ein bestehender Aufbau spaeter blockweise konvertiert werden, ohne an jeder Kiste einen separaten Connector setzen zu muessen.
 - Das erste native Inventory Cable verbindet Controller, Terminals, Drive Bays und Inventory Connectoren auch ausserhalb des Acht-Block-Radius. Die Suche besucht ausschliesslich bereits geladene Chunks und erzwingt kein Chunk-Laden.
 - Zusammenhaengende Kabelkomponenten werden pro Welt zwischengespeichert. Platzieren oder Entfernen eines Netzwerkblocks invalidiert nur die direkt betroffenen Komponenten; Chunk-Laden und -Entladen leeren den Welt-Cache sicherheitshalber vollstaendig.
 - Kabelnetze koennen geladene Chunk-Grenzen ueberqueren. Trennen und erneutes Verbinden aktualisiert die sichtbaren Bestaende, ohne Items aus den angeschlossenen Inventaren zu bewegen.
