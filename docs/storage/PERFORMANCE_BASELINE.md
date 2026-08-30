@@ -23,11 +23,29 @@ Erster gemessener Lauf auf der Entwicklungsmaschine:
 
 Der Test hat eine grosszuegige obere Schranke von 10.000 ms, um langsame CI- oder Entwicklungsrechner nicht durch normale Schwankungen auszusperren. Der gemessene Wert wird im Log ausgegeben und dient als vergleichbare Baseline, nicht als allgemeine Leistungszusage.
 
+## Grosses physisches Testlager
+
+Zweiter automatisierter Lauf auf derselben Entwicklungsmaschine:
+
+- 1 Storage Controller
+- 120 Inventory Cables in einem zehnstoeckigen Netz
+- 240 Inventory Connectoren
+- 240 echte Vanilla-Kisten
+- 399.360 eingelagerte Items
+- 24 unterschiedliche Itemtypen
+- 5 vollstaendige Abfragen aller 24 Itemtypen
+- 735 ms fuer alle 5 Abfragen
+- rund 147 ms pro vollstaendiger 24-Typ-Abfrage
+- Einlagerung und Entnahme nach der Messung erfolgreich
+
+Die Messungen haben unterschiedliche Anzahlen von Abfragen und Itemtypen und sind daher nicht als einfacher direkter Geschwindigkeitsvergleich gedacht. Sie zeigen, dass der physische Zugriffspfad auch mit 240 Inventaren stabil und innerhalb der automatischen Abnahmeschranke bleibt.
+
 ## Einordnung
 
-Dieser Test prueft echte Blockinventare und den vollstaendigen Fabric-Transferpfad. Er bildet noch nicht das bestehende Lager mit etwa sieben Millionen Items ab. Fuer die Produktionsfreigabe bleiben deshalb notwendig:
+Diese Tests pruefen echte Blockinventare und den vollstaendigen Fabric-Transferpfad. Sie bilden noch nicht das bestehende Lager mit etwa sieben Millionen Items ab.
 
-1. Ein groesserer synthetischer Test mit deutlich mehr Inventaren und Itemtypen.
-2. Ein Test an einer Kopie des bestehenden Tom's-Lagers.
-3. Messungen fuer Terminal-Snapshot, Suche, Einlagerung und Entnahme bei realer Chunk-Verteilung.
-4. Eine Abnahme, bei der Bestandssummen vor und nach der Migration exakt uebereinstimmen.
+## Verbleibende Produktionspruefungen
+
+1. Ein Test an einer Kopie des bestehenden Tom's-Lagers.
+2. Messungen fuer Terminal-Snapshot, Suche, Einlagerung und Entnahme bei realer Chunk-Verteilung.
+3. Eine Abnahme, bei der Bestandssummen vor und nach der Migration exakt uebereinstimmen.

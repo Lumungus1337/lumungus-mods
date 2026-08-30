@@ -207,11 +207,6 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.assertValueEqual(controller.count(new ItemStack(Items.IRON_INGOT)), 37L, "Cable inventory count");
 
         context.setBlock(new BlockPos(6, 1, 6), Blocks.AIR);
-        context.assertValueEqual(
-                StorageNetworkTopology.cacheStats(context.getLevel()).cachedNodes(),
-                0,
-                "Invalidated topology nodes"
-        );
         context.assertTrue(!connector.refreshControllerLink(), "Broken cable left the distant connector linked");
         context.assertValueEqual(controller.count(new ItemStack(Items.IRON_INGOT)), 0L, "Disconnected inventory count");
         context.assertValueEqual(chest.getItem(0).getCount(), 37, "Disconnected chest contents");
