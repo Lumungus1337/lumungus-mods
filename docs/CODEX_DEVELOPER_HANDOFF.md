@@ -47,6 +47,7 @@ Wichtige Dokumente:
 - docs/ARCHITECTURE.md
 - docs/storage/MVP.md
 - docs/storage/UAT.md
+- docs/storage/UAT_RESULTS_0.1.0-uat.2.md
 - docs/machines/MVP.md
 - docs/autotrader/MVP.md
 - docs/LICENSE_DECISION.md
@@ -59,7 +60,8 @@ Aktueller Storage-Stand:
 - Serverseitig autorisierte Netzwerkaktionen
 - 3x3-Crafting mit Zutaten aus Spielerinventar und Storage-Netzwerk
 - Eigener JEI-Rezepttransfer; der Server loest und validiert die Rezept-ID erneut
-- Zielversion des ersten UAT-Kandidaten: 0.1.0-uat.1
+- `0.1.0-uat.2` wurde am Build-Gate abgelehnt; alle Anforderungen fuer den naechsten Kandidaten stehen in `docs/storage/UAT_RESULTS_0.1.0-uat.2.md`.
+- Zielversion des naechsten UAT-Kandidaten: 0.1.0-uat.3
 
 Aufgabenteilung:
 - Du bist fuer Coding, Bugfixes, Refactoring und passende automatisierte Tests verantwortlich.
@@ -82,5 +84,5 @@ Arbeitsweise:
 10. Melde bei der Uebergabe Branchname, Commit-SHA, geaenderte Dateien, behobene UAT-IDs, Tests und bekannte Restrisiken.
 
 Erste Aktion:
-Hole den neuesten Stand von main. Beginne erst mit Codeaenderungen, wenn der UAT-Kandidat 0.1.0-uat.1 auf main gepusht wurde oder dir eine konkrete UAT-Fehler-ID zugewiesen wird. Untersuche dann den Fehler, implementiere die kleinstmoegliche belastbare Korrektur, teste sie und bereite eine klare Uebergabe fuer den erneuten UAT-Lauf vor.
+Hole den neuesten Stand von main und lies `docs/storage/UAT_RESULTS_0.1.0-uat.2.md`. Bearbeite die dort unter `Rueckgabe an Coding` genannten Punkte fuer `0.1.0-uat.3`, teste sie und bereite eine klare Uebergabe fuer den erneuten UAT-Lauf vor.
 ```
