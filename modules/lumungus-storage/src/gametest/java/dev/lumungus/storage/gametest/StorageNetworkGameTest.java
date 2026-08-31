@@ -257,6 +257,38 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
+    @GameTest(padding = 260)
+    public void dimensionWirelessInventoryConnectorIgnoresShortRangeLimit(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 220);
+        BlockPos wirelessControllerPos = new BlockPos(96, 1, 220);
+        BlockPos wirelessConnectorPos = new BlockPos(240, 1, 220);
+        BlockPos chestPos = new BlockPos(241, 1, 220);
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(wirelessControllerPos, LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_DIMENSION);
+        context.setBlock(wirelessConnectorPos, LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_DIMENSION);
+        context.setBlock(chestPos, Blocks.CHEST);
+
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                controllerPos,
+                StorageControllerBlockEntity.class
+        );
+        WirelessStorageControllerBlockEntity wirelessController = context.getBlockEntity(
+                wirelessControllerPos,
+                WirelessStorageControllerBlockEntity.class
+        );
+        WirelessInventoryConnectorBlockEntity wirelessConnector = context.getBlockEntity(
+                wirelessConnectorPos,
+                WirelessInventoryConnectorBlockEntity.class
+        );
+        ChestBlockEntity chest = context.getBlockEntity(chestPos, ChestBlockEntity.class);
+        chest.setItem(0, new ItemStack(Items.AMETHYST_SHARD, 27));
+
+        context.assertTrue(wirelessController.refreshControllerLink(), "Dimension wireless controller did not link");
+        context.assertTrue(wirelessConnector.refreshControllerLink(), "Dimension wireless connector did not link");
+        context.assertValueEqual(controller.count(new ItemStack(Items.AMETHYST_SHARD)), 27L, "Dimension wireless inventory count");
+        context.succeed();
+    }
+
     @GameTest(padding = 32)
     public void topologyCacheInvalidatesOnlyTheChangedComponent(GameTestHelper context) {
         BlockPos firstStart = new BlockPos(1, 1, 13);

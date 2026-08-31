@@ -6,6 +6,7 @@ import dev.lumungus.core.api.storage.StorageAccess;
 import dev.lumungus.core.api.storage.StorageCapacity;
 import dev.lumungus.core.api.storage.StorageProvider;
 import dev.lumungus.core.api.storage.StorageSnapshot;
+import dev.lumungus.storage.network.StorageControllerRegistry;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.network.WirelessInventoryConnectorRegistry;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
@@ -19,6 +20,7 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -36,6 +38,12 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
 
     public StorageControllerBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusStorageBlockEntities.STORAGE_CONTROLLER, pos, state);
+    }
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, StorageControllerBlockEntity controller) {
+        if (level.getGameTime() % 100 == 0) {
+            StorageControllerRegistry.register(level, pos);
+        }
     }
 
     public UUID getNetworkId() {

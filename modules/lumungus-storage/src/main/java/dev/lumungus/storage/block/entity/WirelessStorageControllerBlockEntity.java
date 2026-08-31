@@ -2,32 +2,50 @@ package dev.lumungus.storage.block.entity;
 
 import dev.lumungus.storage.block.WirelessStorageControllerBlock;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
+import dev.lumungus.storage.network.StorageControllerRegistry;
 import dev.lumungus.storage.network.StorageNetworkTopology;
+import dev.lumungus.storage.network.WirelessStorageControllerRegistry;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.UUID;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 public final class WirelessStorageControllerBlockEntity extends BlockEntity implements ExtendedMenuProvider<BlockPos> {
+    private static final String CONTROLLER_DIMENSION_KEY = "controller_dimension";
     private static final String CONTROLLER_POS_KEY = "controller_pos";
     private static final String NETWORK_ID_KEY = "network_id";
 
+    private Identifier controllerDimension;
     private BlockPos controllerPos;
     private UUID networkId;
 
     public WirelessStorageControllerBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusStorageBlockEntities.WIRELESS_STORAGE_CONTROLLER, pos, state);
+    }
+
+    public static void serverTick(
+            Level level,
+            BlockPos pos,
+            BlockState state,
+            WirelessStorageControllerBlockEntity wireless
+    ) {
+        if (level.getGameTime() % 40 == 0) {
+            WirelessStorageControllerRegistry.register(level, pos);
+            wireless.refreshControllerLink();
+        }
     }
 
     public boolean refreshControllerLink() {
@@ -37,10 +55,68 @@ public final class WirelessStorageControllerBlockEntity extends BlockEntity impl
         if (hasValidControllerLink()) {
             return true;
         }
-        if (controllerPos != null && !level.isLoaded(controllerPos)) {
+        if (controllerDimension != null
+                && controllerDimension.equals(level.dimension().identifier())
+                && controllerPos != null
+                && !level.isLoaded(controllerPos)) {
             return false;
         }
 
+        StorageControllerBlockEntity nearestController = nearestRegisteredController();
+        if (nearestController == null) {
+            nearestController = nearestLocalController();
+        }
+        if (nearestController == null) {
+            clearControllerLink();
+            return false;
+        }
+        linkTo(nearestController);
+        return true;
+    }
+
+    public boolean isLinkedTo(StorageControllerBlockEntity controller) {
+        return controllerDimension != null
+                && controllerPos != null
+                && networkId != null
+                && controllerDimension.equals(controller.getLevel().dimension().identifier())
+                && controllerPos.equals(controller.getBlockPos())
+                && networkId.equals(controller.getNetworkId());
+    }
+
+    public StorageControllerBlockEntity linkedController() {
+        if (!refreshControllerLink() || controllerPos == null) {
+            return null;
+        }
+        StorageControllerBlockEntity controller = linkedControllerBlockEntity();
+        return controller != null && isLinkedTo(controller) ? controller : null;
+    }
+
+    public WirelessStorageControllerBlock.WirelessTier tier() {
+        return level == null
+                ? WirelessStorageControllerBlock.WirelessTier.SHORT_RANGE
+                : WirelessStorageControllerBlock.tierFor(getBlockState().getBlock());
+    }
+
+    private StorageControllerBlockEntity nearestRegisteredController() {
+        if (level == null || level.getServer() == null) {
+            return null;
+        }
+        StorageControllerBlockEntity nearestController = null;
+        double nearestDistance = Double.MAX_VALUE;
+        for (StorageControllerBlockEntity controller : StorageControllerRegistry.loadedControllers(level.getServer())) {
+            boolean sameDimension = controller.getLevel().dimension().identifier().equals(level.dimension().identifier());
+            if (tier().canReach(sameDimension, worldPosition, controller.getBlockPos())) {
+                double distance = sameDimension ? worldPosition.distSqr(controller.getBlockPos()) : Double.MAX_VALUE - 1;
+                if (distance < nearestDistance) {
+                    nearestController = controller;
+                    nearestDistance = distance;
+                }
+            }
+        }
+        return nearestController;
+    }
+
+    private StorageControllerBlockEntity nearestLocalController() {
         StorageControllerBlockEntity nearestController = null;
         double nearestDistance = Double.MAX_VALUE;
         int radius = tier().searchRadius();
@@ -54,52 +130,51 @@ public final class WirelessStorageControllerBlockEntity extends BlockEntity impl
                 }
             }
         }
-
-        if (nearestController == null) {
-            clearControllerLink();
-            return false;
-        }
-        linkTo(nearestController);
-        return true;
+        return nearestController;
     }
 
-    public boolean isLinkedTo(StorageControllerBlockEntity controller) {
+    private boolean hasValidControllerLink() {
+        StorageControllerBlockEntity controller = linkedControllerBlockEntity();
         return controllerPos != null
+                && controllerDimension != null
                 && networkId != null
-                && controllerPos.equals(controller.getBlockPos())
-                && networkId.equals(controller.getNetworkId());
+                && controller != null
+                && networkId.equals(controller.getNetworkId())
+                && tier().canReach(sameDimensionAs(controller), worldPosition, controllerPos)
+                && (!sameDimensionAs(controller)
+                        || tier() != WirelessStorageControllerBlock.WirelessTier.SHORT_RANGE
+                        || StorageNetworkTopology.canReach(level, worldPosition, controllerPos, tier().searchRadius()));
     }
 
-    public StorageControllerBlockEntity linkedController() {
-        if (!refreshControllerLink() || level == null || controllerPos == null) {
+    private boolean sameDimensionAs(StorageControllerBlockEntity controller) {
+        return level != null && controller.getLevel().dimension().identifier().equals(level.dimension().identifier());
+    }
+
+    private StorageControllerBlockEntity linkedControllerBlockEntity() {
+        if (level == null || level.getServer() == null || controllerDimension == null || controllerPos == null) {
             return null;
         }
-        if (level.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller
-                && isLinkedTo(controller)) {
-            return controller;
+        for (net.minecraft.server.level.ServerLevel serverLevel : level.getServer().getAllLevels()) {
+            if (!serverLevel.dimension().identifier().equals(controllerDimension)) {
+                continue;
+            }
+            if (serverLevel.isLoaded(controllerPos)
+                    && serverLevel.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller) {
+                return controller;
+            }
+            return null;
         }
         return null;
     }
 
-    public WirelessStorageControllerBlock.WirelessTier tier() {
-        return level == null
-                ? WirelessStorageControllerBlock.WirelessTier.SHORT_RANGE
-                : WirelessStorageControllerBlock.tierFor(getBlockState().getBlock());
-    }
-
-    private boolean hasValidControllerLink() {
-        return controllerPos != null
-                && networkId != null
-                && level.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller
-                && networkId.equals(controller.getNetworkId())
-                && tier().canReach(true, worldPosition, controllerPos)
-                && StorageNetworkTopology.canReach(level, worldPosition, controllerPos, tier().searchRadius());
-    }
-
     private void linkTo(StorageControllerBlockEntity controller) {
+        Identifier newControllerDimension = controller.getLevel().dimension().identifier();
         BlockPos newControllerPos = controller.getBlockPos().immutable();
         UUID newNetworkId = controller.getNetworkId();
-        if (!newControllerPos.equals(controllerPos) || !newNetworkId.equals(networkId)) {
+        if (!newControllerDimension.equals(controllerDimension)
+                || !newControllerPos.equals(controllerPos)
+                || !newNetworkId.equals(networkId)) {
+            controllerDimension = newControllerDimension;
             controllerPos = newControllerPos;
             networkId = newNetworkId;
             setChanged();
@@ -107,7 +182,8 @@ public final class WirelessStorageControllerBlockEntity extends BlockEntity impl
     }
 
     private void clearControllerLink() {
-        if (controllerPos != null || networkId != null) {
+        if (controllerDimension != null || controllerPos != null || networkId != null) {
+            controllerDimension = null;
             controllerPos = null;
             networkId = null;
             setChanged();
@@ -140,6 +216,7 @@ public final class WirelessStorageControllerBlockEntity extends BlockEntity impl
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
+        controllerDimension = input.read(CONTROLLER_DIMENSION_KEY, Identifier.CODEC).orElse(null);
         controllerPos = input.read(CONTROLLER_POS_KEY, BlockPos.CODEC).orElse(null);
         networkId = input.read(NETWORK_ID_KEY, UUIDUtil.CODEC).orElse(null);
     }
@@ -147,6 +224,7 @@ public final class WirelessStorageControllerBlockEntity extends BlockEntity impl
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
+        output.storeNullable(CONTROLLER_DIMENSION_KEY, Identifier.CODEC, controllerDimension);
         output.storeNullable(CONTROLLER_POS_KEY, BlockPos.CODEC, controllerPos);
         output.storeNullable(NETWORK_ID_KEY, UUIDUtil.CODEC, networkId);
     }

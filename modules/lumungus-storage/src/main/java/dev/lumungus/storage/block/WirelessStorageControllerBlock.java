@@ -5,6 +5,7 @@ import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.block.entity.WirelessStorageControllerBlockEntity;
 import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.network.StorageNetworkTopology;
+import dev.lumungus.storage.network.WirelessStorageControllerRegistry;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -17,6 +18,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -43,8 +46,24 @@ public final class WirelessStorageControllerBlock extends BaseEntityBlock {
     }
 
     @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            Level level,
+            BlockState state,
+            BlockEntityType<T> blockEntityType
+    ) {
+        return level.isClientSide()
+                ? null
+                : createTickerHelper(
+                        blockEntityType,
+                        dev.lumungus.storage.registry.LumungusStorageBlockEntities.WIRELESS_STORAGE_CONTROLLER,
+                        WirelessStorageControllerBlockEntity::serverTick
+                );
+    }
+
+    @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
+        WirelessStorageControllerRegistry.register(level, pos);
         StorageNetworkTopology.invalidateAround(level, pos);
     }
 
@@ -56,6 +75,7 @@ public final class WirelessStorageControllerBlock extends BaseEntityBlock {
             boolean movedByPiston
     ) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        WirelessStorageControllerRegistry.unregister(level, pos);
         StorageNetworkTopology.invalidateAround(level, pos);
     }
 
@@ -85,6 +105,7 @@ public final class WirelessStorageControllerBlock extends BaseEntityBlock {
     ) {
         if (!level.isClientSide()) {
             if (level.getBlockEntity(pos) instanceof WirelessStorageControllerBlockEntity wireless) {
+                WirelessStorageControllerRegistry.register(level, pos);
                 StorageControllerBlockEntity controller = wireless.linkedController();
                 player.sendSystemMessage(Component.translatable(controller == null
                         ? "message.lumungus_storage.wireless_controller.unlinked"

@@ -3,6 +3,7 @@ package dev.lumungus.storage.block;
 import com.mojang.serialization.MapCodec;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.item.CopperWrenchItem;
+import dev.lumungus.storage.network.StorageControllerRegistry;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import net.minecraft.core.BlockPos;
@@ -15,6 +16,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -37,8 +40,24 @@ public final class StorageControllerBlock extends BaseEntityBlock {
     }
 
     @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            Level level,
+            BlockState state,
+            BlockEntityType<T> blockEntityType
+    ) {
+        return level.isClientSide()
+                ? null
+                : createTickerHelper(
+                        blockEntityType,
+                        dev.lumungus.storage.registry.LumungusStorageBlockEntities.STORAGE_CONTROLLER,
+                        StorageControllerBlockEntity::serverTick
+                );
+    }
+
+    @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
+        StorageControllerRegistry.register(level, pos);
         StorageNetworkTopology.invalidateAround(level, pos);
     }
 
@@ -50,6 +69,7 @@ public final class StorageControllerBlock extends BaseEntityBlock {
             boolean movedByPiston
     ) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        StorageControllerRegistry.unregister(level, pos);
         StorageNetworkTopology.invalidateAround(level, pos);
     }
 
@@ -79,6 +99,7 @@ public final class StorageControllerBlock extends BaseEntityBlock {
         BlockHitResult hit
     ) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StorageControllerBlockEntity controller) {
+            StorageControllerRegistry.register(level, pos);
             StorageControllerBlockEntity.NetworkStatus status = controller.refreshNetwork();
             long used = controller.snapshot().storedTotalAmount();
             long capacity = controller.capacity().maxTotalAmount();
