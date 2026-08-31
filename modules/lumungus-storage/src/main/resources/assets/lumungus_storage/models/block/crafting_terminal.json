@@ -6,7 +6,7 @@
     "up": "minecraft:block/green_stained_glass",
     "north": "minecraft:block/green_stained_glass",
     "south": "minecraft:block/light_gray_concrete",
-    "west": "minecraft:block/iron_block",
-    "east": "minecraft:block/iron_block"
+    "west": "minecraft:block/black_concrete",
+    "east": "minecraft:block/black_concrete"
   }
 }

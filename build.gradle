@@ -167,6 +167,6 @@ tasks.register("tomsMigrationUatBundle", Zip) {
     from("docs/storage") {
         include "TOMS_MIGRATION.md"
         include "TOMS_MIGRATION_UAT.md"
-        include "TOMS_MIGRATION_UAT_RESULTS_0.1.0-uat.5.md"
+        include "TOMS_MIGRATION_UAT_RESULTS_*.md"
     }
 }

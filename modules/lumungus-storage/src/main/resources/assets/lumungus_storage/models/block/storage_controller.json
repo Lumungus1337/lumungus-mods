@@ -3,10 +3,10 @@
   "textures": {
     "particle": "minecraft:block/iron_block",
     "down": "minecraft:block/smooth_stone",
-    "up": "minecraft:block/light_gray_concrete",
+    "up": "minecraft:block/green_concrete",
     "north": "minecraft:block/deepslate_tiles",
     "south": "minecraft:block/light_gray_concrete",
-    "west": "minecraft:block/iron_block",
-    "east": "minecraft:block/iron_block"
+    "west": "minecraft:block/black_concrete",
+    "east": "minecraft:block/black_concrete"
   }
 }
