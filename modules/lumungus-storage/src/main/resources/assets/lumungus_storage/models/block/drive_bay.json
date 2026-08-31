@@ -4,7 +4,7 @@
     "particle": "lumungus_storage:block/case_warm_metal",
     "down": "lumungus_storage:block/case_warm_metal",
     "up": "lumungus_storage:block/pipe_port",
-    "north": "lumungus_storage:block/dark_status_panel",
+    "north": "lumungus_storage:block/drive_bay_front",
     "south": "lumungus_storage:block/crt_green_scan",
     "west": "lumungus_storage:block/case_warm_metal",
     "east": "lumungus_storage:block/case_warm_metal"

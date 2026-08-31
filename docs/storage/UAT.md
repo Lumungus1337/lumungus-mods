@@ -4,13 +4,13 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.12`
+- Version: `0.1.0-uat.13`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.12.zip`
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.13.zip`
 - Abnahmestatus: `AUTOMATED_SERVER_PASS`; der Client-UAT aus `0.1.0-uat.3` bleibt die letzte visuelle Referenz, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
@@ -69,6 +69,8 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-16f Multi-Cell-Bay:** Eine Drive Bay nimmt bis zu acht 16k Storage Cells auf, zaehlt Kapazitaet und Inhalte ueber alle Cells zusammen und dropt beim Abbau alle eingesetzten Cells.
 - [ ] **UAT-16g Drive-Bay-Menue:** Rechtsklick auf eine Drive Bay oeffnet ein Rack-Menue mit acht sichtbaren Cell-Slots; Cells lassen sich per Klick und Shift-Klick zwischen Spielerinventar und Bay bewegen.
 - [ ] **UAT-16h Shulker-Logistik:** Befuellte Shulkerboxen werden beim Einlagern entladen; im Netzwerk bleiben nur die enthaltenen Items und leere Shulkerboxen. Der Terminal-Schalter `ITM`/`BOX` entnimmt wahlweise lose Items oder eine mit dem angeklickten Item befuellte Shulkerbox.
+- [ ] **UAT-16i Suchfeld-Hotkeys:** Wenn das Suchfeld aktiv ist, werden Buchstaben in die Suche geschrieben und nicht als globale Spiel-Hotkeys ausgefuehrt.
+- [ ] **UAT-16j Blockdesign:** Controller, Crafting Terminal, Drive Bay, Inventaranschluss, Rohrpostrohr, Rohrpostblende, Storage Cell und Kupfer-Schraubenschluessel nutzen die Kupfer-/Anthrazit-/Rohrpost-Optik ohne fehlende Texturen.
 
 ## Multiplayer und Grenzfaelle
 
@@ -79,7 +81,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.12`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.13`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|
