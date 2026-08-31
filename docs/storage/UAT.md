@@ -4,13 +4,13 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.7`
+- Version: `0.1.0-uat.8`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.7.zip`
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.8.zip`
 - Abnahmestatus: `AUTOMATED_SERVER_PASS`; der Client-UAT aus `0.1.0-uat.3` bleibt die letzte visuelle Referenz, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
@@ -29,6 +29,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | Automatisierte Logiktests | `PASS` | Elf JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
 | Server-GameTests | `PASS` | Dreizehn reale GameTests pruefen unter anderem physische Inventare, Rohrpostrohre, Blenden, Chunk-Grenzen, Lastfaelle und Crafting. |
 | Client-GameTest | `SMOKE uat.7` | Der Fabric-Client startet mit den neuen Lumungus-Assets ohne fehlende Lumungus-Modell- oder Texturwarnungen. |
+| Rezepte und Werkzeug | `PENDING uat.8` | Kupferlastige Rezepte, fokussierte Crafting-Terminal-Suche, Spitzhacken-Abbau und Kupfer-Schraubenschluessel werden im naechsten Client-Smoke geprueft. |
 
 ## Testaufbau
 
@@ -57,6 +58,13 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-14 Crafting-Reste:** Container und Rezeptreste landen gemaess Minecraft-Verhalten im Inventar oder Netzwerk; bei Platzmangel entsteht weder Verlust noch Duplikation.
 - [ ] **UAT-15 Fehlende Zutaten:** Crafting bleibt gesperrt und markiert den Mangel eindeutig, wenn die gemeinsame Zutatenmenge nicht ausreicht.
 - [ ] **UAT-16 JEI-Transfer:** Der JEI-Transfer befuellt das Rezept aus Spieler- und Netzwerkbestand, meldet fehlende Zutaten korrekt und verbraucht beim reinen Transfer noch keine Zutaten; die Gesamtmenge aus Grid, Inventar und Netzwerk bleibt gleich.
+- [ ] **UAT-16a Terminal-Suche:** Das Crafting-Terminal fokussiert die Suche beim Oeffnen; Suchbegriffe finden Items ueber Anzeigenamen und Item-ID.
+
+## Rezepte und Werkzeug
+
+- [ ] **UAT-16b Rezepte:** Controller, Crafting Terminal, Drive Bay, Inventaranschluss, Rohrpostrohr, Rohrpostblende, Storage Cell und Kupfer-Schraubenschluessel sind im Survival-Modus craftbar; Kupfer ist der primaere Metallbestandteil.
+- [ ] **UAT-16c Standard-Abbau:** Lumungus-Storage-Bloecke verhalten sich beim normalen Abbauen wie technische Metallbloecke und droppen mit Spitzhacke korrekt.
+- [ ] **UAT-16d Schraubenschluessel:** Der Kupfer-Schraubenschluessel baut Lumungus-Storage-Bloecke sofort mit normalen Drops ab und verliert Haltbarkeit.
 
 ## Multiplayer und Grenzfaelle
 
@@ -67,7 +75,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.7`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.8`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|

@@ -1,5 +1,6 @@
 {
   "block.lumungus_storage.storage_controller": "Storage Controller",
+  "item.lumungus_storage.copper_wrench": "Kupfer-Schraubenschluessel",
   "itemGroup.lumungus_storage.storage": "Lumungus Storage",
   "block.lumungus_storage.crafting_terminal": "Crafting Terminal",
   "block.lumungus_storage.drive_bay": "Drive Bay",
@@ -22,6 +23,7 @@
   "message.lumungus_storage.crafting_terminal.missing_ingredients": "Spielerinventar und Storage-Netzwerk enthalten nicht alle Rezeptzutaten.",
   "message.lumungus_storage.crafting_terminal.recipe_transfer_unavailable": "Der Rezepttransferkanal von Lumungus Storage ist nicht verfuegbar.",
   "gui.lumungus_storage.crafting_terminal.search": "Suchen...",
+  "gui.lumungus_storage.crafting_terminal.search_label": "Suche im Lager",
   "gui.lumungus_storage.crafting_terminal.crafting": "CRAFT",
   "gui.lumungus_storage.crafting_terminal.page": "%1$s / %2$s",
   "gui.lumungus_storage.crafting_terminal.status": "%1$s/%2$s Items  %3$s/%4$s Typen",

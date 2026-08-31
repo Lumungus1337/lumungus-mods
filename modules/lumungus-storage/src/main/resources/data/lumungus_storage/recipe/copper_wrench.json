@@ -3,15 +3,14 @@
   "category": "misc",
   "key": {
     "C": "minecraft:copper_ingot",
-    "G": "minecraft:glass_pane",
-    "R": "minecraft:redstone"
+    "S": "minecraft:stick"
   },
   "pattern": [
-    "CGC",
-    "CRC",
-    "CCC"
+    " C ",
+    " CC",
+    "S  "
   ],
   "result": {
-    "id": "lumungus_storage:drive_bay"
+    "id": "lumungus_storage:copper_wrench"
   }
 }

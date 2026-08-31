@@ -2,16 +2,17 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": "minecraft:copper_ingot",
+    "C": "minecraft:copper_block",
     "G": "minecraft:glass_pane",
-    "R": "minecraft:redstone"
+    "R": "minecraft:redstone",
+    "X": "minecraft:redstone_block"
   },
   "pattern": [
     "CGC",
-    "CRC",
+    "RXR",
     "CCC"
   ],
   "result": {
-    "id": "lumungus_storage:drive_bay"
+    "id": "lumungus_storage:storage_controller"
   }
 }

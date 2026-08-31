@@ -67,6 +67,7 @@ public final class LumungusStorageBlocks {
                         .setId(blockKey)
                         .mapColor(MapColor.METAL)
                         .strength(2.5F, 6.0F)
+                        .requiresCorrectToolForDrops()
                         .sound(SoundType.METAL)
         );
 

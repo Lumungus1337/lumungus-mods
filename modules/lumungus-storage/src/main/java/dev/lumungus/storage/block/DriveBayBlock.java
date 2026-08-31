@@ -3,6 +3,7 @@ package dev.lumungus.storage.block;
 import com.mojang.serialization.MapCodec;
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
+import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import net.minecraft.core.BlockPos;
@@ -63,6 +64,10 @@ public final class DriveBayBlock extends BaseEntityBlock {
             InteractionHand hand,
             BlockHitResult hit
     ) {
+        if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
+            return CopperWrenchItem.dismantle(heldStack, level, pos, player);
+        }
+
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }

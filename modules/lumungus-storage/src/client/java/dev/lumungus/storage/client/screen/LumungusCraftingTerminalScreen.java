@@ -12,6 +12,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -79,6 +80,8 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         searchBox.setHint(Component.translatable("gui.lumungus_storage.crafting_terminal.search"));
         searchBox.setResponder(value -> page = 0);
         addRenderableWidget(searchBox);
+        setInitialFocus(searchBox);
+        searchBox.setFocused(true);
     }
 
     @Override
@@ -93,6 +96,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
 
         graphics.fill(left + 5, top + 16, left + 171, top + 139, COLOR_FRAME);
         graphics.fill(left + 7, top + 18, left + 169, top + 137, COLOR_SCREEN);
+        graphics.outline(left + SEARCH_X - 1, top + SEARCH_Y - 1, SEARCH_WIDTH + 2, 20, COLOR_GREEN_DIM);
         graphics.outline(left + 196, top + 17, 113, 92, COLOR_FRAME);
         graphics.fill(left + 197, top + 18, left + 308, top + 108, COLOR_SHELL_LIGHT);
 
@@ -147,6 +151,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
                 false
         );
         graphics.centeredText(font, sortMode.label(), SORT_X + SORT_WIDTH / 2, SORT_Y + 5, COLOR_GREEN);
+        graphics.text(font, Component.translatable("gui.lumungus_storage.crafting_terminal.search_label"), SEARCH_X, 31, COLOR_GREEN_DIM, false);
         graphics.centeredText(font, "<", 18, PAGE_Y + 3, COLOR_GREEN);
         graphics.centeredText(font, ">", 159, PAGE_Y + 3, COLOR_GREEN);
         graphics.centeredText(font, "IN", DEPOSIT_X + 9, DEPOSIT_Y + 5, COLOR_AMBER);
@@ -333,9 +338,15 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
                 .thenComparing(resource -> resource.stack().getHoverName().getString());
         return menu.networkResources().stream()
                 .filter(resource -> query.isEmpty()
-                        || resource.stack().getHoverName().getString().toLowerCase(Locale.ROOT).contains(query))
+                        || searchableText(resource).contains(query))
                 .sorted(comparator)
                 .toList();
+    }
+
+    private static String searchableText(ResourceAmount resource) {
+        String displayName = resource.stack().getHoverName().getString().toLowerCase(Locale.ROOT);
+        String itemId = BuiltInRegistries.ITEM.getKey(resource.stack().getItem()).toString().toLowerCase(Locale.ROOT);
+        return displayName + " " + itemId;
     }
 
     private ResourceAmount resourceAt(double mouseX, double mouseY) {

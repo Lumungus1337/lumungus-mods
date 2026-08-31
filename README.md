@@ -33,7 +33,7 @@ Die Gameplay-Module haengen von Core ab, aber Core soll nicht von den Gameplay-M
 | Modul | Rolle | Status |
 |---|---|---|
 | `lumungus-core` | Gemeinsame APIs, Basistypen und technische Infrastruktur | angelegt |
-| `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Rohrpostverbindungen, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.7` UAT Candidate; eigene Rohrpost-/Terminal-Texturen und Kreativsuche-Fix |
+| `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Rohrpostverbindungen, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.8` UAT Candidate; Kupfer-Rezepte, fokussierte Terminalsuche und Kupfer-Schraubenschluessel |
 | `lumungus-backpack` | Modularer Rucksack mit Upgrade-Slots und spaeter Jetpack-Upgrade | angelegt |
 | `lumungus-machines` | Maschinen- und Automationsmodule | angelegt |
 | `lumungus-autotrader` | Automatisierte Handelsablaeufe, Trading-Terminals und spaetere Storage-Anbindung | angelegt |
@@ -79,7 +79,7 @@ Vorgeschlagene Strategie:
 
 - Gemeinsame Versionslinie fuer die Modreihe: `0.1.0`, `0.2.0`, `1.0.0`.
 - Snapshot-Versionen waehrend Entwicklung: `0.1.0-SNAPSHOT`.
-- UAT-Kandidaten vor einer Freigabe: `0.1.0-uat.1`, `0.1.0-uat.2`, `0.1.0-uat.3`, `0.1.0-uat.4`, `0.1.0-uat.5`, `0.1.0-uat.6`, `0.1.0-uat.7`.
+- UAT-Kandidaten vor einer Freigabe: `0.1.0-uat.1`, `0.1.0-uat.2`, `0.1.0-uat.3`, `0.1.0-uat.4`, `0.1.0-uat.5`, `0.1.0-uat.6`, `0.1.0-uat.7`, `0.1.0-uat.8`.
 - Tags pro Gesamtstand: `v0.1.0`.
 - Optional zusaetzliche Modul-Tags, falls Releases auseinanderlaufen: `core-v0.1.0`, `storage-v0.1.0`.
 - Breaking Changes in Core erhoehen mindestens die Minor-Version, nach `1.0.0` die Major-Version.

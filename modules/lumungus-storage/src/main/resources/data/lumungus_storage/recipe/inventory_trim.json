@@ -2,13 +2,13 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": "minecraft:chest",
-    "I": "minecraft:iron_ingot"
+    "C": "minecraft:copper_ingot",
+    "G": "minecraft:green_dye"
   },
   "pattern": [
-    "III",
-    "ICI",
-    "III"
+    "CCC",
+    "CGC",
+    "CCC"
   ],
   "result": {
     "count": 8,

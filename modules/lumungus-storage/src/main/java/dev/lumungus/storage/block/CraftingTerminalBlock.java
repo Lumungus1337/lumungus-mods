@@ -4,7 +4,9 @@ import com.mojang.serialization.MapCodec;
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
+import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.network.StorageNetworkTopology;
+import dev.lumungus.storage.registry.LumungusStorageItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -63,6 +65,10 @@ public final class CraftingTerminalBlock extends BaseEntityBlock {
             InteractionHand hand,
             BlockHitResult hit
     ) {
+        if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
+            return CopperWrenchItem.dismantle(heldStack, level, pos, player);
+        }
+
         if (heldStack.isEmpty() || !player.isSecondaryUseActive()) {
             return openTerminal(level, pos, player);
         }

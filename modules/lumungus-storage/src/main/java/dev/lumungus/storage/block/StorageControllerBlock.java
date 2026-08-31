@@ -2,12 +2,16 @@ package dev.lumungus.storage.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
+import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.network.StorageNetworkTopology;
+import dev.lumungus.storage.registry.LumungusStorageItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -47,6 +51,23 @@ public final class StorageControllerBlock extends BaseEntityBlock {
     ) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
         StorageNetworkTopology.invalidateAround(level, pos);
+    }
+
+    @Override
+    protected InteractionResult useItemOn(
+            ItemStack heldStack,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand,
+            BlockHitResult hit
+    ) {
+        if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
+            return CopperWrenchItem.dismantle(heldStack, level, pos, player);
+        }
+
+        return useWithoutItem(state, level, pos, player, hit);
     }
 
     @Override

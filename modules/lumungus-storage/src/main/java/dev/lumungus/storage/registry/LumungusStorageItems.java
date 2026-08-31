@@ -2,6 +2,7 @@ package dev.lumungus.storage.registry;
 
 import dev.lumungus.storage.LumungusStorage;
 import dev.lumungus.storage.data.StorageCellData;
+import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.item.StorageCellItem;
 import java.util.function.Function;
 import net.minecraft.core.Registry;
@@ -12,6 +13,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 
 public final class LumungusStorageItems {
+    public static final Item COPPER_WRENCH = register(
+            "copper_wrench",
+            properties -> new CopperWrenchItem(properties.stacksTo(1).durability(256))
+    );
+
     public static final Item STORAGE_CELL_16K = register(
             "storage_cell_16k",
             properties -> new StorageCellItem(properties

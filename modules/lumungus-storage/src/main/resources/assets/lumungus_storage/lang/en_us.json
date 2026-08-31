@@ -1,5 +1,6 @@
 {
   "block.lumungus_storage.storage_controller": "Storage Controller",
+  "item.lumungus_storage.copper_wrench": "Copper Wrench",
   "itemGroup.lumungus_storage.storage": "Lumungus Storage",
   "block.lumungus_storage.crafting_terminal": "Crafting Terminal",
   "block.lumungus_storage.drive_bay": "Drive Bay",
@@ -22,6 +23,7 @@
   "message.lumungus_storage.crafting_terminal.missing_ingredients": "The player inventory and storage network do not contain all recipe ingredients.",
   "message.lumungus_storage.crafting_terminal.recipe_transfer_unavailable": "The Lumungus Storage recipe-transfer channel is unavailable.",
   "gui.lumungus_storage.crafting_terminal.search": "Search...",
+  "gui.lumungus_storage.crafting_terminal.search_label": "Search storage",
   "gui.lumungus_storage.crafting_terminal.crafting": "CRAFT",
   "gui.lumungus_storage.crafting_terminal.page": "%1$s / %2$s",
   "gui.lumungus_storage.crafting_terminal.status": "%1$s/%2$s items  %3$s/%4$s types",

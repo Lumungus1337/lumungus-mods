@@ -3,15 +3,16 @@
   "category": "misc",
   "key": {
     "C": "minecraft:copper_ingot",
-    "G": "minecraft:glass_pane",
-    "R": "minecraft:redstone"
+    "G": "minecraft:green_stained_glass_pane",
+    "R": "minecraft:redstone",
+    "T": "minecraft:crafting_table"
   },
   "pattern": [
     "CGC",
-    "CRC",
+    "RTR",
     "CCC"
   ],
   "result": {
-    "id": "lumungus_storage:drive_bay"
+    "id": "lumungus_storage:crafting_terminal"
   }
 }
