@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:block/cube",
   "textures": {
-    "particle": "minecraft:block/light_gray_concrete",
-    "down": "minecraft:block/smooth_stone",
-    "up": "minecraft:block/light_gray_concrete",
-    "north": "minecraft:block/black_concrete",
-    "south": "minecraft:block/green_stained_glass",
-    "west": "minecraft:block/iron_block",
-    "east": "minecraft:block/iron_block"
+    "particle": "lumungus_storage:block/case_warm_metal",
+    "down": "lumungus_storage:block/case_warm_metal",
+    "up": "lumungus_storage:block/pipe_port",
+    "north": "lumungus_storage:block/dark_status_panel",
+    "south": "lumungus_storage:block/crt_green_scan",
+    "west": "lumungus_storage:block/case_warm_metal",
+    "east": "lumungus_storage:block/case_warm_metal"
   }
 }

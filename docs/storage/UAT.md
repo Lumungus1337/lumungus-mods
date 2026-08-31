@@ -4,13 +4,13 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.6`
+- Version: `0.1.0-uat.7`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.6.zip`
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.7.zip`
 - Abnahmestatus: `AUTOMATED_SERVER_PASS`; der Client-UAT aus `0.1.0-uat.3` bleibt die letzte visuelle Referenz, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
@@ -28,7 +28,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | JEI-Transfer | `PASS` | Der Lumungus-Transferknopf befuellt das 3x3-Raster serverseitig aus dem Netzwerk. |
 | Automatisierte Logiktests | `PASS` | Elf JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
 | Server-GameTests | `PASS` | Dreizehn reale GameTests pruefen unter anderem physische Inventare, Rohrpostrohre, Blenden, Chunk-Grenzen, Lastfaelle und Crafting. |
-| Client-GameTest | `BASELINE uat.3` | Der letzte visuell gepruefte Fabric-Testclient stammt aus `0.1.0-uat.3`; fuer `uat.6` wird der erste Rohrpost-Look als manueller Welt-UAT geprueft. |
+| Client-GameTest | `SMOKE uat.7` | Der Fabric-Client startet mit den neuen Lumungus-Assets ohne fehlende Lumungus-Modell- oder Texturwarnungen. |
 
 ## Testaufbau
 
@@ -67,7 +67,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.6`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.7`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|

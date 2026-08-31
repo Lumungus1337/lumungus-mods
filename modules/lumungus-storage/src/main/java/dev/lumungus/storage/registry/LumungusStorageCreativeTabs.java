@@ -1,6 +1,7 @@
 package dev.lumungus.storage.registry;
 
 import dev.lumungus.storage.LumungusStorage;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,17 +28,25 @@ public final class LumungusStorageCreativeTabs {
                 FabricCreativeModeTab.builder()
                         .title(Component.translatable("itemGroup.lumungus_storage.storage"))
                         .icon(() -> new ItemStack(LumungusStorageBlocks.INVENTORY_CABLE))
-                        .displayItems((context, output) -> {
-                            output.accept(LumungusStorageBlocks.STORAGE_CONTROLLER);
-                            output.accept(LumungusStorageBlocks.CRAFTING_TERMINAL);
-                            output.accept(LumungusStorageBlocks.DRIVE_BAY);
-                            output.accept(LumungusStorageBlocks.INVENTORY_CONNECTOR);
-                            output.accept(LumungusStorageBlocks.INVENTORY_TRIM);
-                            output.accept(LumungusStorageBlocks.INVENTORY_CABLE);
-                            output.accept(LumungusStorageItems.STORAGE_CELL_16K);
-                        })
+                        .displayItems((context, output) -> addStorageEntries(output))
                         .build()
         );
+        CreativeModeTabEvents.MODIFY_OUTPUT_ALL.register((tab, output) -> {
+            Identifier tabId = BuiltInRegistries.CREATIVE_MODE_TAB.getKey(tab);
+            if (tabId != null && ("functional_blocks".equals(tabId.getPath()) || "search".equals(tabId.getPath()))) {
+                addStorageEntries(output);
+            }
+        });
         LumungusStorage.LOGGER.info("Registered Lumungus Storage creative tab");
+    }
+
+    private static void addStorageEntries(CreativeModeTab.Output output) {
+        output.accept(LumungusStorageBlocks.STORAGE_CONTROLLER);
+        output.accept(LumungusStorageBlocks.CRAFTING_TERMINAL);
+        output.accept(LumungusStorageBlocks.DRIVE_BAY);
+        output.accept(LumungusStorageBlocks.INVENTORY_CONNECTOR);
+        output.accept(LumungusStorageBlocks.INVENTORY_TRIM);
+        output.accept(LumungusStorageBlocks.INVENTORY_CABLE);
+        output.accept(LumungusStorageItems.STORAGE_CELL_16K);
     }
 }

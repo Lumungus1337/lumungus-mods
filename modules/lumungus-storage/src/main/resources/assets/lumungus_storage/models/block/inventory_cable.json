@@ -1,10 +1,10 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "pipe": "minecraft:block/green_concrete",
-    "rim": "minecraft:block/black_concrete",
-    "shine": "minecraft:block/lime_concrete",
-    "particle": "minecraft:block/green_concrete"
+    "pipe": "lumungus_storage:block/pipe_green_flow",
+    "rim": "lumungus_storage:block/pipe_rim",
+    "shine": "lumungus_storage:block/pipe_green_flow",
+    "particle": "lumungus_storage:block/pipe_green_flow"
   },
   "elements": [
     {
