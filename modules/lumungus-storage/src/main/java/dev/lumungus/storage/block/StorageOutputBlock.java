@@ -15,6 +15,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -34,6 +36,21 @@ public final class StorageOutputBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new StorageOutputBlockEntity(pos, state);
+    }
+
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            Level level,
+            BlockState state,
+            BlockEntityType<T> blockEntityType
+    ) {
+        return level.isClientSide()
+                ? null
+                : createTickerHelper(
+                        blockEntityType,
+                        dev.lumungus.storage.registry.LumungusStorageBlockEntities.STORAGE_OUTPUT,
+                        StorageOutputBlockEntity::serverTick
+                );
     }
 
     @Override
@@ -66,7 +83,14 @@ public final class StorageOutputBlock extends BaseEntityBlock {
         if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
             return CopperWrenchItem.dismantle(heldStack, level, pos, player);
         }
-        return useWithoutItem(state, level, pos, player, hit);
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StorageOutputBlockEntity output) {
+            output.setFilter(heldStack);
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.output.filter_set",
+                    heldStack.getHoverName()
+            ));
+        }
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -75,10 +99,23 @@ public final class StorageOutputBlock extends BaseEntityBlock {
             Level level,
             BlockPos pos,
             Player player,
-            BlockHitResult hit
+        BlockHitResult hit
     ) {
-        if (!level.isClientSide()) {
-            player.sendSystemMessage(Component.translatable("message.lumungus_storage.output.pending"));
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StorageOutputBlockEntity output) {
+            if (player.isSecondaryUseActive()) {
+                output.clearFilter();
+                player.sendSystemMessage(Component.translatable("message.lumungus_storage.output.filter_cleared"));
+                return InteractionResult.SUCCESS;
+            }
+
+            output.refreshControllerLink();
+            ItemStack filter = output.filter();
+            player.sendSystemMessage(Component.translatable(
+                    filter.isEmpty()
+                            ? "message.lumungus_storage.output.active_unfiltered"
+                            : "message.lumungus_storage.output.active_filtered",
+                    filter.getHoverName()
+            ));
         }
         return InteractionResult.SUCCESS;
     }

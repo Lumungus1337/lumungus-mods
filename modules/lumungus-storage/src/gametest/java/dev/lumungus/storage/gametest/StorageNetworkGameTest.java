@@ -2,10 +2,14 @@ package dev.lumungus.storage.gametest;
 
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.storage.block.InventoryCableBlock;
-import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
 import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
+import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
 import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
+import dev.lumungus.storage.block.entity.StorageBreakerBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
+import dev.lumungus.storage.block.entity.StorageOutputBlockEntity;
+import dev.lumungus.storage.block.entity.StoragePlacerBlockEntity;
+import dev.lumungus.storage.block.entity.WirelessStorageControllerBlockEntity;
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
 import dev.lumungus.storage.menu.DriveBayMenu;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
@@ -53,6 +57,8 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     private static final BlockPos DEVICE_CABLE_CONTROLLER = new BlockPos(1, 1, 9);
     private static final BlockPos DISTANT_DRIVE_BAY = new BlockPos(11, 1, 9);
     private static final BlockPos DISTANT_TERMINAL = new BlockPos(10, 1, 10);
+    private static final BlockPos WORK_CONTROLLER = new BlockPos(1, 1, 18);
+    private static final BlockPos WORK_DRIVE_BAY = new BlockPos(2, 1, 18);
 
     @GameTest(padding = 32)
     public void inventoryTrimConnectsTouchingChestsWithoutSeparateConnectors(GameTestHelper context) {
@@ -76,6 +82,108 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.setBlock(new BlockPos(7, 1, 15), Blocks.AIR);
         context.assertValueEqual(controller.count(new ItemStack(Items.DIAMOND)), 0L, "Disconnected trim chest count");
         context.assertValueEqual(chest.getItem(0).getCount(), 31, "Trim disconnect preserved chest contents");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void storageOutputExportsAFilteredStackIntoAdjacentInventory(GameTestHelper context) {
+        context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(WORK_DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        BlockPos outputPos = new BlockPos(3, 1, 18);
+        BlockPos chestPos = new BlockPos(4, 1, 18);
+        context.setBlock(outputPos, LumungusStorageBlocks.STORAGE_OUTPUT);
+        context.setBlock(chestPos, Blocks.CHEST);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(WORK_DRIVE_BAY, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                WORK_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        controller.insert(new ItemStack(Items.COPPER_INGOT, 48), TransferMode.EXECUTE);
+        controller.insert(new ItemStack(Items.DIAMOND, 5), TransferMode.EXECUTE);
+
+        StorageOutputBlockEntity output = context.getBlockEntity(outputPos, StorageOutputBlockEntity.class);
+        output.setFilter(new ItemStack(Items.COPPER_INGOT));
+        output.exportOneStack();
+
+        ChestBlockEntity chest = context.getBlockEntity(chestPos, ChestBlockEntity.class);
+        context.assertValueEqual(chest.getItem(0).getCount(), 48, "Exported copper");
+        context.assertValueEqual(controller.count(new ItemStack(Items.COPPER_INGOT)), 0L, "Remaining copper");
+        context.assertValueEqual(controller.count(new ItemStack(Items.DIAMOND)), 5L, "Unfiltered diamonds");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void storageBreakerBreaksFilteredBlockIntoStorage(GameTestHelper context) {
+        context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(WORK_DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        BlockPos breakerPos = new BlockPos(3, 2, 18);
+        BlockPos targetPos = breakerPos.below();
+        context.setBlock(breakerPos, LumungusStorageBlocks.STORAGE_BREAKER);
+        context.setBlock(targetPos, Blocks.DIRT);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(WORK_DRIVE_BAY, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        StorageBreakerBlockEntity breaker = context.getBlockEntity(breakerPos, StorageBreakerBlockEntity.class);
+        breaker.setFilter(new ItemStack(Items.DIRT));
+        breaker.breakBelow();
+
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                WORK_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        context.assertTrue(context.getLevel().getBlockState(context.absolutePos(targetPos)).isAir(), "Dirt was not broken");
+        context.assertValueEqual(controller.count(new ItemStack(Items.DIRT)), 1L, "Stored dirt drop");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void storagePlacerPlacesFilteredBlockFromStorage(GameTestHelper context) {
+        context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(WORK_DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        BlockPos placerPos = new BlockPos(3, 2, 18);
+        BlockPos targetPos = placerPos.below();
+        context.setBlock(placerPos, LumungusStorageBlocks.STORAGE_PLACER);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(WORK_DRIVE_BAY, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                WORK_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        controller.insert(new ItemStack(Items.DIRT, 3), TransferMode.EXECUTE);
+
+        StoragePlacerBlockEntity placer = context.getBlockEntity(placerPos, StoragePlacerBlockEntity.class);
+        placer.setFilter(new ItemStack(Items.DIRT));
+        placer.placeBelow();
+
+        context.assertTrue(context.getLevel().getBlockState(context.absolutePos(targetPos)).is(Blocks.DIRT), "Dirt was not placed");
+        context.assertValueEqual(controller.count(new ItemStack(Items.DIRT)), 2L, "Remaining stored dirt");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void wirelessStorageControllerOpensALinkedStorageNetwork(GameTestHelper context) {
+        context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(WORK_DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        BlockPos wirelessPos = new BlockPos(20, 1, 18);
+        context.setBlock(wirelessPos, LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(WORK_DRIVE_BAY, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                WORK_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        controller.insert(new ItemStack(Items.DIAMOND, 12), TransferMode.EXECUTE);
+
+        WirelessStorageControllerBlockEntity wireless = context.getBlockEntity(
+                wirelessPos,
+                WirelessStorageControllerBlockEntity.class
+        );
+        context.assertTrue(wireless.linkedController() == controller, "Wireless controller did not link");
+        context.assertValueEqual(wireless.linkedController().count(new ItemStack(Items.DIAMOND)), 12L, "Wireless storage count");
         context.succeed();
     }
 

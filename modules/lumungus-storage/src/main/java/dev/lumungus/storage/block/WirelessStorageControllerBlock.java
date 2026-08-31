@@ -1,6 +1,7 @@
 package dev.lumungus.storage.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.block.entity.WirelessStorageControllerBlockEntity;
 import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.network.StorageNetworkTopology;
@@ -14,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -82,27 +84,56 @@ public final class WirelessStorageControllerBlock extends BaseEntityBlock {
             BlockHitResult hit
     ) {
         if (!level.isClientSide()) {
-            player.sendSystemMessage(Component.translatable(
-                    "message.lumungus_storage.wireless_controller.pending",
-                    tier.label()
-            ));
+            if (level.getBlockEntity(pos) instanceof WirelessStorageControllerBlockEntity wireless) {
+                StorageControllerBlockEntity controller = wireless.linkedController();
+                player.sendSystemMessage(Component.translatable(controller == null
+                        ? "message.lumungus_storage.wireless_controller.unlinked"
+                        : "message.lumungus_storage.wireless_controller.connected", tier.label()));
+                if (controller != null) {
+                    player.openMenu(wireless);
+                }
+            }
         }
         return InteractionResult.SUCCESS;
     }
 
+    public static WirelessTier tierFor(Block block) {
+        if (block == dev.lumungus.storage.registry.LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_DIMENSION) {
+            return WirelessTier.SAME_DIMENSION;
+        }
+        if (block == dev.lumungus.storage.registry.LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL) {
+            return WirelessTier.MULTIDIMENSIONAL;
+        }
+        return WirelessTier.SHORT_RANGE;
+    }
+
     public enum WirelessTier {
-        SHORT_RANGE("short"),
-        SAME_DIMENSION("dimension"),
-        MULTIDIMENSIONAL("multidimensional");
+        SHORT_RANGE("short", 32),
+        SAME_DIMENSION("dimension", 128),
+        MULTIDIMENSIONAL("multidimensional", 256);
 
         private final String label;
+        private final int searchRadius;
 
-        WirelessTier(String label) {
+        WirelessTier(String label, int searchRadius) {
             this.label = label;
+            this.searchRadius = searchRadius;
         }
 
         public String label() {
             return label;
+        }
+
+        public int searchRadius() {
+            return searchRadius;
+        }
+
+        public boolean canReach(boolean sameDimension, BlockPos wirelessPos, BlockPos controllerPos) {
+            return switch (this) {
+                case SHORT_RANGE -> sameDimension && wirelessPos.closerThan(controllerPos, searchRadius + 1);
+                case SAME_DIMENSION -> sameDimension;
+                case MULTIDIMENSIONAL -> true;
+            };
         }
     }
 }

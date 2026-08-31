@@ -6,6 +6,7 @@ import dev.lumungus.core.api.storage.StorageCapacity;
 import dev.lumungus.core.api.storage.StorageSnapshot;
 import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
+import dev.lumungus.storage.block.entity.WirelessStorageControllerBlockEntity;
 import dev.lumungus.storage.network.TerminalActionPayload;
 import dev.lumungus.storage.network.TerminalResourceEntry;
 import dev.lumungus.storage.network.TerminalSnapshotPayload;
@@ -393,6 +394,9 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         Optional<StorageControllerBlockEntity> linked = access.evaluate((level, pos) -> {
             if (level.getBlockEntity(pos) instanceof CraftingTerminalBlockEntity terminal) {
                 return Optional.ofNullable(terminal.linkedController());
+            }
+            if (level.getBlockEntity(pos) instanceof WirelessStorageControllerBlockEntity wireless) {
+                return Optional.ofNullable(wireless.linkedController());
             }
             return Optional.<StorageControllerBlockEntity>empty();
         }, Optional.<StorageControllerBlockEntity>empty());

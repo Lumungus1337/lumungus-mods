@@ -15,6 +15,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -34,6 +36,21 @@ public final class StoragePlacerBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new StoragePlacerBlockEntity(pos, state);
+    }
+
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            Level level,
+            BlockState state,
+            BlockEntityType<T> blockEntityType
+    ) {
+        return level.isClientSide()
+                ? null
+                : createTickerHelper(
+                        blockEntityType,
+                        dev.lumungus.storage.registry.LumungusStorageBlockEntities.STORAGE_PLACER,
+                        StoragePlacerBlockEntity::serverTick
+                );
     }
 
     @Override
@@ -66,7 +83,14 @@ public final class StoragePlacerBlock extends BaseEntityBlock {
         if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
             return CopperWrenchItem.dismantle(heldStack, level, pos, player);
         }
-        return useWithoutItem(state, level, pos, player, hit);
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StoragePlacerBlockEntity placer) {
+            placer.setFilter(heldStack);
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.placer.filter_set",
+                    heldStack.getHoverName()
+            ));
+        }
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -75,10 +99,23 @@ public final class StoragePlacerBlock extends BaseEntityBlock {
             Level level,
             BlockPos pos,
             Player player,
-            BlockHitResult hit
+        BlockHitResult hit
     ) {
-        if (!level.isClientSide()) {
-            player.sendSystemMessage(Component.translatable("message.lumungus_storage.placer.pending"));
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StoragePlacerBlockEntity placer) {
+            if (player.isSecondaryUseActive()) {
+                placer.clearFilter();
+                player.sendSystemMessage(Component.translatable("message.lumungus_storage.placer.filter_cleared"));
+                return InteractionResult.SUCCESS;
+            }
+
+            placer.refreshControllerLink();
+            ItemStack filter = placer.filter();
+            player.sendSystemMessage(Component.translatable(
+                    filter.isEmpty()
+                            ? "message.lumungus_storage.placer.active_unfiltered"
+                            : "message.lumungus_storage.placer.active_filtered",
+                    filter.getHoverName()
+            ));
         }
         return InteractionResult.SUCCESS;
     }

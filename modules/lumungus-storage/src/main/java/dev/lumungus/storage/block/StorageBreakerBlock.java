@@ -15,6 +15,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -34,6 +36,21 @@ public final class StorageBreakerBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new StorageBreakerBlockEntity(pos, state);
+    }
+
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            Level level,
+            BlockState state,
+            BlockEntityType<T> blockEntityType
+    ) {
+        return level.isClientSide()
+                ? null
+                : createTickerHelper(
+                        blockEntityType,
+                        dev.lumungus.storage.registry.LumungusStorageBlockEntities.STORAGE_BREAKER,
+                        StorageBreakerBlockEntity::serverTick
+                );
     }
 
     @Override
@@ -66,7 +83,14 @@ public final class StorageBreakerBlock extends BaseEntityBlock {
         if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
             return CopperWrenchItem.dismantle(heldStack, level, pos, player);
         }
-        return useWithoutItem(state, level, pos, player, hit);
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StorageBreakerBlockEntity breaker) {
+            breaker.setFilter(heldStack);
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.breaker.filter_set",
+                    heldStack.getHoverName()
+            ));
+        }
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -75,10 +99,23 @@ public final class StorageBreakerBlock extends BaseEntityBlock {
             Level level,
             BlockPos pos,
             Player player,
-            BlockHitResult hit
+        BlockHitResult hit
     ) {
-        if (!level.isClientSide()) {
-            player.sendSystemMessage(Component.translatable("message.lumungus_storage.breaker.pending"));
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StorageBreakerBlockEntity breaker) {
+            if (player.isSecondaryUseActive()) {
+                breaker.clearFilter();
+                player.sendSystemMessage(Component.translatable("message.lumungus_storage.breaker.filter_cleared"));
+                return InteractionResult.SUCCESS;
+            }
+
+            breaker.refreshControllerLink();
+            ItemStack filter = breaker.filter();
+            player.sendSystemMessage(Component.translatable(
+                    filter.isEmpty()
+                            ? "message.lumungus_storage.breaker.active_unfiltered"
+                            : "message.lumungus_storage.breaker.active_filtered",
+                    filter.getHoverName()
+            ));
         }
         return InteractionResult.SUCCESS;
     }
