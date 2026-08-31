@@ -2,6 +2,7 @@ package dev.lumungus.storage.block.entity;
 
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.storage.block.StorageBreakerBlock;
+import dev.lumungus.storage.block.WorkBlockPower;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.List;
@@ -88,7 +89,7 @@ public final class StorageBreakerBlockEntity extends BlockEntity {
     }
 
     public void breakBelow() {
-        if (!(level instanceof ServerLevel serverLevel)) {
+        if (!(level instanceof ServerLevel serverLevel) || WorkBlockPower.isPaused(level, worldPosition)) {
             return;
         }
         StorageControllerBlockEntity controller = linkedController();
@@ -99,6 +100,7 @@ public final class StorageBreakerBlockEntity extends BlockEntity {
         BlockPos targetPos = worldPosition.relative(getBlockState().getValue(StorageBreakerBlock.FACING));
         BlockState targetState = level.getBlockState(targetPos);
         if (targetState.isAir()
+                || StorageNetworkTopology.isDeviceNode(targetState.getBlock())
                 || targetState.is(Blocks.BEDROCK)
                 || targetState.getDestroySpeed(level, targetPos) < 0
                 || !matchesFilter(targetState)) {

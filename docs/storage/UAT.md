@@ -4,14 +4,14 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.24`
+- Version: `0.1.0-uat.25`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.24.zip`
-- Abnahmestatus: `AUTOMATED_SERVER_PASS`; Arbeitszyklen, gerichtete Arbeitsseiten, tragbare Storage Interfaces, Wireless Inventory Connectoren und Wireless-Reichweiten jenseits der Kurzdistanz sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.25.zip`
+- Abnahmestatus: `AUTOMATED_SERVER_PASS`; Arbeitszyklen, gerichtete Arbeitsseiten, Redstone-Pause, Breaker-Schutz, tragbare Storage Interfaces, Wireless Inventory Connectoren und Wireless-Reichweiten jenseits der Kurzdistanz sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
 
@@ -82,6 +82,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-16s Wireless Inventory Connectoren:** Wireless Inventaranschluss I/II/III erscheinen im Kreativmenue, sind craftbar, droppen beim Abbau, reagieren auf den Kupfer-Schraubenschluessel und verbinden entfernte Kisten/Faesser ueber einen erreichbaren Wireless Storage Controller mit dem Lager.
 - [ ] **UAT-16t Wireless-Reichweite:** Wireless Storage Controller und Wireless Inventaranschluesse der Stufe II verbinden geladene Gegenstellen in derselben Dimension auch ausserhalb der Kurzdistanz; Stufe III speichert Links mit Dimensions-ID fuer dimensionsuebergreifende Gegenstellen.
 - [ ] **UAT-16u Gerichtete Arbeitsseiten:** Lager-Output exportiert nur zur sichtbaren Arbeitsseite, Lager-Breaker/Placer arbeiten nur in ihrer gesetzten Richtung, und Shift-Rechtsklick mit dem Kupfer-Schraubenschluessel richtet die Arbeitsseite neu aus.
+- [ ] **UAT-16v Arbeitsblock-Sicherheit:** Output, Breaker und Placer pausieren bei Redstone-Signal; der Breaker baut keine Lumungus-Storage-Geraete oder Rohrpostknoten ab.
 
 ## Multiplayer und Grenzfaelle
 
@@ -92,7 +93,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.24`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.25`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|

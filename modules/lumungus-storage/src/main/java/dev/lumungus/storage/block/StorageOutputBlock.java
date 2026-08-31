@@ -112,7 +112,7 @@ public final class StorageOutputBlock extends BaseEntityBlock {
         if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
             if (player.isSecondaryUseActive()) {
                 if (!level.isClientSide()) {
-                    Direction nextFacing = state.getValue(FACING).getClockWise(Direction.Axis.Y);
+                    Direction nextFacing = WorkBlockFacing.next(state.getValue(FACING));
                     level.setBlock(pos, state.setValue(FACING, nextFacing), 3);
                     player.sendSystemMessage(Component.translatable(
                             "message.lumungus_storage.work_block.facing",

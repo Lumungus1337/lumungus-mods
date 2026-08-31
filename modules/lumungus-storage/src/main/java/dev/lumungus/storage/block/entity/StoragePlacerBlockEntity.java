@@ -3,6 +3,7 @@ package dev.lumungus.storage.block.entity;
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.core.api.resource.ResourceAmount;
 import dev.lumungus.storage.block.StoragePlacerBlock;
+import dev.lumungus.storage.block.WorkBlockPower;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.Optional;
@@ -85,7 +86,7 @@ public final class StoragePlacerBlockEntity extends BlockEntity {
 
     public void placeBelow() {
         StorageControllerBlockEntity controller = linkedController();
-        if (controller == null) {
+        if (controller == null || WorkBlockPower.isPaused(level, worldPosition)) {
             return;
         }
 

@@ -3,6 +3,7 @@ package dev.lumungus.storage.block.entity;
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.core.api.resource.ResourceAmount;
 import dev.lumungus.storage.block.StorageOutputBlock;
+import dev.lumungus.storage.block.WorkBlockPower;
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
@@ -89,7 +90,7 @@ public final class StorageOutputBlockEntity extends BlockEntity {
 
     public void exportOneStack() {
         StorageControllerBlockEntity controller = linkedController();
-        if (controller == null) {
+        if (controller == null || WorkBlockPower.isPaused(level, worldPosition)) {
             return;
         }
 
