@@ -48,6 +48,12 @@ public final class LumungusStorageCreativeTabs {
         output.accept(LumungusStorageBlocks.INVENTORY_CONNECTOR);
         output.accept(LumungusStorageBlocks.INVENTORY_TRIM);
         output.accept(LumungusStorageBlocks.INVENTORY_CABLE);
+        output.accept(LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT);
+        output.accept(LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_DIMENSION);
+        output.accept(LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL);
+        output.accept(LumungusStorageBlocks.STORAGE_OUTPUT);
+        output.accept(LumungusStorageBlocks.STORAGE_BREAKER);
+        output.accept(LumungusStorageBlocks.STORAGE_PLACER);
         output.accept(LumungusStorageItems.STORAGE_CELL_16K);
     }
 }

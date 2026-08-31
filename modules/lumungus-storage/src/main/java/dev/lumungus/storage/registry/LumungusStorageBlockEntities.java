@@ -4,7 +4,11 @@ import dev.lumungus.storage.LumungusStorage;
 import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
 import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
 import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
+import dev.lumungus.storage.block.entity.StorageBreakerBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
+import dev.lumungus.storage.block.entity.StorageOutputBlockEntity;
+import dev.lumungus.storage.block.entity.StoragePlacerBlockEntity;
+import dev.lumungus.storage.block.entity.WirelessStorageControllerBlockEntity;
 import java.util.Set;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -39,6 +43,32 @@ public final class LumungusStorageBlockEntities {
             InventoryConnectorBlockEntity::new,
             LumungusStorageBlocks.INVENTORY_CONNECTOR,
             LumungusStorageBlocks.INVENTORY_TRIM
+    );
+
+    public static final BlockEntityType<WirelessStorageControllerBlockEntity> WIRELESS_STORAGE_CONTROLLER = register(
+            "wireless_storage_controller",
+            WirelessStorageControllerBlockEntity::new,
+            LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT,
+            LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_DIMENSION,
+            LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL
+    );
+
+    public static final BlockEntityType<StorageOutputBlockEntity> STORAGE_OUTPUT = register(
+            "storage_output",
+            StorageOutputBlockEntity::new,
+            LumungusStorageBlocks.STORAGE_OUTPUT
+    );
+
+    public static final BlockEntityType<StorageBreakerBlockEntity> STORAGE_BREAKER = register(
+            "storage_breaker",
+            StorageBreakerBlockEntity::new,
+            LumungusStorageBlocks.STORAGE_BREAKER
+    );
+
+    public static final BlockEntityType<StoragePlacerBlockEntity> STORAGE_PLACER = register(
+            "storage_placer",
+            StoragePlacerBlockEntity::new,
+            LumungusStorageBlocks.STORAGE_PLACER
     );
 
     private LumungusStorageBlockEntities() {

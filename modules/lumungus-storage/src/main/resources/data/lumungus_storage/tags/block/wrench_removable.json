@@ -6,6 +6,12 @@
     "lumungus_storage:drive_bay",
     "lumungus_storage:inventory_connector",
     "lumungus_storage:inventory_trim",
-    "lumungus_storage:inventory_cable"
+    "lumungus_storage:inventory_cable",
+    "lumungus_storage:wireless_storage_controller_short",
+    "lumungus_storage:wireless_storage_controller_dimension",
+    "lumungus_storage:wireless_storage_controller_multidimensional",
+    "lumungus_storage:storage_output",
+    "lumungus_storage:storage_breaker",
+    "lumungus_storage:storage_placer"
   ]
 }

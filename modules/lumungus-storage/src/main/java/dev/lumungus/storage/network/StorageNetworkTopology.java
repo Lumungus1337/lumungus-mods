@@ -146,7 +146,13 @@ public final class StorageNetworkTopology {
                 || block == LumungusStorageBlocks.DRIVE_BAY
                 || block == LumungusStorageBlocks.INVENTORY_CONNECTOR
                 || block == LumungusStorageBlocks.INVENTORY_TRIM
-                || block == LumungusStorageBlocks.INVENTORY_CABLE;
+                || block == LumungusStorageBlocks.INVENTORY_CABLE
+                || block == LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT
+                || block == LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_DIMENSION
+                || block == LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL
+                || block == LumungusStorageBlocks.STORAGE_OUTPUT
+                || block == LumungusStorageBlocks.STORAGE_BREAKER
+                || block == LumungusStorageBlocks.STORAGE_PLACER;
     }
 
     private static boolean insideCube(BlockPos first, BlockPos second, int radius) {

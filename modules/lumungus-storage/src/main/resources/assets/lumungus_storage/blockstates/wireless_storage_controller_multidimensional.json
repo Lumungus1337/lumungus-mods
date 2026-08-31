@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "lumungus_storage:block/wireless_storage_controller_multidimensional"
+    }
+  }
+}

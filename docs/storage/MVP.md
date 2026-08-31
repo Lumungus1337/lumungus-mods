@@ -7,6 +7,10 @@
 - Inventory Connector: Bindet angrenzende Kisten, Faesser, Shulkerboxen und kompatible Mod-Inventare ein, ohne deren Inhalte zu verschieben.
 - Rohrpostrohr/Rohrpostblende: Verbindet Controller, Terminals und Connectoren ueber groessere Lageranlagen. Die aktuelle interne ID `inventory_cable` bleibt vorerst kompatibel, die sichtbare Sprache und Texturen gehen aber in Richtung Item-Rohrpost.
 - Drive Bay und 16k Storage Cell: Bereits implementierter Prototyp, der als optionaler Massenspeicher erhalten bleiben kann, aber nicht mehr Voraussetzung fuer das Netzwerk ist.
+- Wireless Storage Controller I/II/III: Geplante drahtlose Netzbruecken fuer kurze Distanz, gleiche Dimension und mehrere Dimensionen.
+- Lager-Output: Soll Items aus dem Storage-Netzwerk in ein angrenzendes Inventar ausgeben.
+- Lager-Breaker: Soll den Block unter sich abbauen und Drops ins Lager legen; ohne Filter jeder abbaubare Block, mit Filter nur der gesetzte Blocktyp.
+- Lager-Placer: Soll einen konfigurierten Blocktyp aus dem Lager entnehmen und unter sich platzieren.
 - Tom's Migration Assistant: Einmalige Integration, die vorhandene Tom's-Kabel, Trims und Connectoren durch Lumungus-Gegenstuecke ersetzt. Die angeschlossenen Inventare und ihre Items bleiben unberuehrt; danach kann Tom's entfernt werden.
 
 ## Stilrichtung

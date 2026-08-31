@@ -5,7 +5,11 @@ import dev.lumungus.storage.block.CraftingTerminalBlock;
 import dev.lumungus.storage.block.DriveBayBlock;
 import dev.lumungus.storage.block.InventoryConnectorBlock;
 import dev.lumungus.storage.block.InventoryCableBlock;
+import dev.lumungus.storage.block.StorageBreakerBlock;
 import dev.lumungus.storage.block.StorageControllerBlock;
+import dev.lumungus.storage.block.StorageOutputBlock;
+import dev.lumungus.storage.block.StoragePlacerBlock;
+import dev.lumungus.storage.block.WirelessStorageControllerBlock;
 import java.util.function.Function;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -48,6 +52,45 @@ public final class LumungusStorageBlocks {
     public static final Block INVENTORY_CABLE = registerBlockWithItem(
             "inventory_cable",
             InventoryCableBlock::new
+    );
+
+    public static final Block WIRELESS_STORAGE_CONTROLLER_SHORT = registerBlockWithItem(
+            "wireless_storage_controller_short",
+            properties -> new WirelessStorageControllerBlock(
+                    properties,
+                    WirelessStorageControllerBlock.WirelessTier.SHORT_RANGE
+            )
+    );
+
+    public static final Block WIRELESS_STORAGE_CONTROLLER_DIMENSION = registerBlockWithItem(
+            "wireless_storage_controller_dimension",
+            properties -> new WirelessStorageControllerBlock(
+                    properties,
+                    WirelessStorageControllerBlock.WirelessTier.SAME_DIMENSION
+            )
+    );
+
+    public static final Block WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL = registerBlockWithItem(
+            "wireless_storage_controller_multidimensional",
+            properties -> new WirelessStorageControllerBlock(
+                    properties,
+                    WirelessStorageControllerBlock.WirelessTier.MULTIDIMENSIONAL
+            )
+    );
+
+    public static final Block STORAGE_OUTPUT = registerBlockWithItem(
+            "storage_output",
+            StorageOutputBlock::new
+    );
+
+    public static final Block STORAGE_BREAKER = registerBlockWithItem(
+            "storage_breaker",
+            StorageBreakerBlock::new
+    );
+
+    public static final Block STORAGE_PLACER = registerBlockWithItem(
+            "storage_placer",
+            StoragePlacerBlock::new
     );
 
     private LumungusStorageBlocks() {
