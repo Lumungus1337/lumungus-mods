@@ -29,11 +29,11 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
     private static final int NETWORK_Y = 44;
     private static final int DEPOSIT_X = 174;
     private static final int DEPOSIT_Y = 44;
-    private static final int BAY_MOVE_X = 174;
+    private static final int BAY_MOVE_X = 173;
     private static final int BAY_MOVE_Y = 68;
-    private static final int BAY_MOVE_WIDTH = 20;
+    private static final int BAY_MOVE_WIDTH = 22;
     private static final int SHULKER_MODE_Y = 92;
-    private static final int SHULKER_MODE_WIDTH = 28;
+    private static final int SHULKER_MODE_WIDTH = 22;
     private static final int SORT_X = 124;
     private static final int SORT_Y = 18;
     private static final int SORT_WIDTH = 44;
@@ -50,8 +50,11 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
     private static final int COLOR_SCREEN_HOVER = 0xFF28513A;
     private static final int COLOR_GREEN = 0xFF8DDB94;
     private static final int COLOR_GREEN_DIM = 0xFF4E8B5A;
+    private static final int COLOR_GREEN_DARK = 0xFF1B3B28;
     private static final int COLOR_AMBER = 0xFFFFC857;
+    private static final int COLOR_COPPER = 0xFFC97C4C;
     private static final int COLOR_TEXT = 0xFF242726;
+    private static final int COLOR_TEXT_DIM = 0xFF5B605D;
 
     private EditBox searchBox;
     private SortMode sortMode = SortMode.NAME;
@@ -67,7 +70,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         titleLabelX = 8;
         titleLabelY = 5;
         inventoryLabelX = 73;
-        inventoryLabelY = 141;
+        inventoryLabelY = 143;
     }
 
     @Override
@@ -102,16 +105,19 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         graphics.fill(left + 2, top + 2, left + imageWidth - 2, top + imageHeight - 2, COLOR_SHELL);
         graphics.fill(left + 5, top + 5, left + imageWidth - 5, top + 15, COLOR_SHELL_LIGHT);
 
-        graphics.fill(left + 5, top + 16, left + 171, top + 139, COLOR_FRAME);
-        graphics.fill(left + 7, top + 18, left + 169, top + 137, COLOR_SCREEN);
+        graphics.fill(left + 5, top + 16, left + 170, top + 139, COLOR_FRAME);
+        graphics.fill(left + 7, top + 18, left + 168, top + 137, COLOR_SCREEN);
+        graphics.fill(left + 8, top + 18, left + 120, top + 36, COLOR_GREEN_DARK);
         graphics.outline(left + SEARCH_X - 1, top + SEARCH_Y - 1, SEARCH_WIDTH + 2, 20, COLOR_GREEN_DIM);
         graphics.outline(left + 196, top + 17, 113, 92, COLOR_FRAME);
         graphics.fill(left + 197, top + 18, left + 308, top + 108, COLOR_SHELL_LIGHT);
+        graphics.fill(left + 197, top + 18, left + 308, top + 29, 0xFFDDE2DD);
+        graphics.outline(left + 70, top + 151, 166, 74, COLOR_FRAME);
 
         List<ResourceAmount> resources = filteredResources();
         int pageCount = Math.max(1, (resources.size() + NETWORK_PAGE_SIZE - 1) / NETWORK_PAGE_SIZE);
         page = Math.min(page, pageCount - 1);
-        drawButton(graphics, SORT_X, SORT_Y, SORT_WIDTH, 18, true);
+        drawButton(graphics, SORT_X, SORT_Y, SORT_WIDTH, 18, true, COLOR_GREEN_DIM);
         drawButton(graphics, 8, PAGE_Y, 20, 14, page > 0);
         drawButton(graphics, 149, PAGE_Y, 20, 14, page < pageCount - 1);
 
@@ -134,13 +140,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         int depositLeft = left + DEPOSIT_X;
         int depositTop = top + DEPOSIT_Y;
         boolean depositHovered = isPointInside(mouseX, mouseY, depositLeft, depositTop, 18, 18);
-        graphics.fill(
-                depositLeft,
-                depositTop,
-                depositLeft + 18,
-                depositTop + 18,
-                depositHovered ? 0xFF664F20 : COLOR_FRAME
-        );
+        graphics.fill(depositLeft, depositTop, depositLeft + 18, depositTop + 18, depositHovered ? 0xFF664F20 : COLOR_FRAME);
         graphics.outline(depositLeft, depositTop, 18, 18, COLOR_AMBER);
         drawButton(
                 graphics,
@@ -148,7 +148,8 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
                 BAY_MOVE_Y,
                 BAY_MOVE_WIDTH,
                 18,
-                true
+                true,
+                COLOR_GREEN_DIM
         );
         drawButton(
                 graphics,
@@ -156,8 +157,10 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
                 SHULKER_MODE_Y,
                 SHULKER_MODE_WIDTH,
                 18,
-                true
+                true,
+                shulkerExtractMode ? COLOR_AMBER : COLOR_GREEN_DIM
         );
+        drawCraftingArrow(graphics, left, top);
 
         drawVanillaSlotBackgrounds(graphics, left, top);
     }
@@ -169,20 +172,20 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         graphics.text(
                 font,
                 Component.translatable("gui.lumungus_storage.crafting_terminal.crafting"),
-                199,
+                201,
                 6,
                 COLOR_TEXT,
                 false
         );
+        graphics.text(font, Component.literal("LAGER"), 10, 31, COLOR_GREEN_DIM, false);
         graphics.centeredText(font, sortMode.label(), SORT_X + SORT_WIDTH / 2, SORT_Y + 5, COLOR_GREEN);
-        graphics.text(font, Component.translatable("gui.lumungus_storage.crafting_terminal.search_label"), SEARCH_X, 31, COLOR_GREEN_DIM, false);
         graphics.centeredText(font, "<", 18, PAGE_Y + 3, COLOR_GREEN);
         graphics.centeredText(font, ">", 159, PAGE_Y + 3, COLOR_GREEN);
         graphics.centeredText(font, "IN", DEPOSIT_X + 9, DEPOSIT_Y + 5, COLOR_AMBER);
-        graphics.centeredText(font, "BAY", BAY_MOVE_X + BAY_MOVE_WIDTH / 2, BAY_MOVE_Y + 5, COLOR_GREEN);
+        graphics.centeredText(font, "B", BAY_MOVE_X + BAY_MOVE_WIDTH / 2, BAY_MOVE_Y + 5, COLOR_GREEN);
         graphics.centeredText(
                 font,
-                shulkerExtractMode ? "BOX" : "ITM",
+                shulkerExtractMode ? "S" : "I",
                 BAY_MOVE_X + SHULKER_MODE_WIDTH / 2,
                 SHULKER_MODE_Y + 5,
                 shulkerExtractMode ? COLOR_AMBER : COLOR_GREEN
@@ -227,20 +230,8 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             graphics.itemDecorations(font, resource.stack(), x, y, formatAmount(resource.amount()));
         }
 
-        graphics.text(
-                font,
-                Component.translatable(
-                        "gui.lumungus_storage.crafting_terminal.status",
-                        menu.networkStoredAmount(),
-                        menu.networkTotalCapacity(),
-                        menu.networkStoredTypes(),
-                        menu.networkTotalTypeCapacity()
-                ),
-                8,
-                130,
-                COLOR_GREEN,
-                false
-        );
+        graphics.text(font, compactStatus(), 10, 128, COLOR_GREEN, false);
+        graphics.text(font, compactTypeStatus(), 104, 128, COLOR_GREEN_DIM, false);
     }
 
     @Override
@@ -484,10 +475,25 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             int height,
             boolean active
     ) {
+        drawButton(graphics, x, y, width, height, active, COLOR_GREEN_DIM);
+    }
+
+    private void drawButton(
+            GuiGraphicsExtractor graphics,
+            int x,
+            int y,
+            int width,
+            int height,
+            boolean active,
+            int accentColor
+    ) {
         int left = leftPos + x;
         int top = topPos + y;
         graphics.fill(left, top, left + width, top + height, active ? COLOR_SCREEN : COLOR_FRAME);
-        graphics.outline(left, top, width, height, active ? COLOR_GREEN_DIM : 0xFF4A4E4C);
+        graphics.outline(left, top, width, height, active ? accentColor : 0xFF4A4E4C);
+        if (active) {
+            graphics.fill(left + 1, top + 1, left + width - 1, top + 2, 0x553FEF7F);
+        }
     }
 
     private void drawVanillaSlotBackgrounds(GuiGraphicsExtractor graphics, int left, int top) {
@@ -513,6 +519,17 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         graphics.fill(x + 1, y + 1, x + 17, y + 17, COLOR_SHELL_LIGHT);
     }
 
+    private void drawCraftingArrow(GuiGraphicsExtractor graphics, int left, int top) {
+        int x = left + 253;
+        int y = top + 52;
+        graphics.fill(x, y + 2, x + 12, y + 6, COLOR_TEXT_DIM);
+        graphics.fill(x + 8, y, x + 10, y + 8, COLOR_TEXT_DIM);
+        graphics.fill(x + 10, y + 1, x + 12, y + 7, COLOR_TEXT_DIM);
+        graphics.fill(x + 12, y + 2, x + 14, y + 6, COLOR_TEXT_DIM);
+        graphics.fill(left + 198, top + 111, left + 307, top + 113, COLOR_COPPER);
+        graphics.fill(left + 198, top + 113, left + 307, top + 116, COLOR_FRAME);
+    }
+
     private static boolean isPointInside(
             double mouseX,
             double mouseY,
@@ -530,6 +547,30 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         }
         if (amount >= 1_000) {
             return amount / 1_000 + "K";
+        }
+        return Long.toString(amount);
+    }
+
+    private Component compactStatus() {
+        return Component.literal(compactAmount(menu.networkStoredAmount()) + "/" + compactAmount(menu.networkTotalCapacity()));
+    }
+
+    private Component compactTypeStatus() {
+        return Component.literal(menu.networkStoredTypes() + "/" + compactAmount(menu.networkTotalTypeCapacity()) + " T");
+    }
+
+    private static String compactAmount(long amount) {
+        if (amount >= 10_000_000) {
+            return amount / 1_000_000 + "M";
+        }
+        if (amount >= 1_000_000) {
+            return String.format(Locale.ROOT, "%.1fM", amount / 1_000_000.0D);
+        }
+        if (amount >= 10_000) {
+            return amount / 1_000 + "K";
+        }
+        if (amount >= 1_000) {
+            return String.format(Locale.ROOT, "%.1fK", amount / 1_000.0D);
         }
         return Long.toString(amount);
     }
