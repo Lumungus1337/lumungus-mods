@@ -52,19 +52,22 @@ public final class LumungusStorageBlocks {
 
     public static final Block INVENTORY_TRIM = registerBlockWithItem(
             "inventory_trim",
-            InventoryConnectorBlock::new
+            InventoryConnectorBlock::new,
+            tooltip("inventory_trim")
     );
 
     public static final Block PNEUMATIC_PIPE = registerBlockWithItem(
             "pneumatic_pipe",
             InventoryCableBlock::new,
-            true
+            true,
+            tooltip("pneumatic_pipe")
     );
 
     public static final Block INVENTORY_CABLE = registerBlockWithItem(
             "inventory_cable",
             InventoryCableBlock::new,
-            true
+            true,
+            tooltip("inventory_cable")
     );
 
     public static final Block WIRELESS_STORAGE_CONTROLLER_SHORT = registerBlockWithItem(
