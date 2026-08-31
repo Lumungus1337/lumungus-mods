@@ -47,7 +47,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     private static final BlockPos DISTANT_DRIVE_BAY = new BlockPos(11, 1, 9);
     private static final BlockPos DISTANT_TERMINAL = new BlockPos(10, 1, 10);
 
-    @GameTest
+    @GameTest(padding = 32)
     public void inventoryTrimConnectsTouchingChestsWithoutSeparateConnectors(GameTestHelper context) {
         BlockPos controllerPos = new BlockPos(1, 1, 15);
         BlockPos chestPos = new BlockPos(13, 1, 15);
@@ -72,7 +72,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
-    @GameTest
+    @GameTest(padding = 32)
     public void topologyCacheInvalidatesOnlyTheChangedComponent(GameTestHelper context) {
         BlockPos firstStart = new BlockPos(1, 1, 13);
         BlockPos secondStart = new BlockPos(8, 1, 13);
@@ -114,7 +114,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
-    @GameTest
+    @GameTest(padding = 32)
     public void cableNetworkCrossesALoadedChunkBoundary(GameTestHelper context) {
         BlockPos anchor = context.absolutePos(new BlockPos(8, 1, 8));
         int boundaryX = Math.floorDiv(anchor.getX(), 16) * 16 + 16;
@@ -162,7 +162,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
-    @GameTest
+    @GameTest(padding = 32)
     public void cableLinksDistantDriveBayAndCraftingTerminal(GameTestHelper context) {
         context.setBlock(DEVICE_CABLE_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
         for (int x = 2; x <= 10; x++) {
@@ -199,7 +199,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
-    @GameTest
+    @GameTest(padding = 32)
     public void cableConnectsAndDisconnectsADistantPhysicalInventory(GameTestHelper context) {
         context.setBlock(CABLE_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
         for (int x = 2; x <= 10; x++) {
@@ -242,7 +242,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
-    @GameTest
+    @GameTest(padding = 32)
     public void controllerUsesPhysicalChestWithoutCellsAndDeduplicatesConnectors(GameTestHelper context) {
         context.setBlock(PHYSICAL_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
         context.setBlock(FIRST_INVENTORY_CONNECTOR, LumungusStorageBlocks.INVENTORY_CONNECTOR);
@@ -286,7 +286,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
-    @GameTest
+    @GameTest(padding = 32)
     public void physicalInventoryAdapterIsTransactionalAndComponentSafe(GameTestHelper context) {
         context.setBlock(PHYSICAL_CHEST, Blocks.CHEST);
         ChestBlockEntity chest = context.getBlockEntity(PHYSICAL_CHEST, ChestBlockEntity.class);
@@ -339,7 +339,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
-    @GameTest
+    @GameTest(padding = 32)
     public void driveBayOwnershipIsStableAndLossless(GameTestHelper context) {
         context.setBlock(FIRST_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
         context.setBlock(DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
@@ -377,7 +377,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
-    @GameTest
+    @GameTest(padding = 32)
     public void partialShiftCraftPreservesEveryResultItem(GameTestHelper context) {
         context.setBlock(CRAFTING_TERMINAL, LumungusStorageBlocks.CRAFTING_TERMINAL);
         ServerPlayer player = context.makeMockServerPlayerInLevel();
@@ -413,7 +413,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
-    @GameTest
+    @GameTest(padding = 32)
     public void missingJeiIngredientsLeaveTheExistingGridUntouched(GameTestHelper context) {
         context.setBlock(FIRST_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
         context.setBlock(DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);

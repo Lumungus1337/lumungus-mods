@@ -71,7 +71,7 @@ public final class StorageLoadGameTest implements CustomTestMethodInvoker {
             Items.END_STONE
     );
 
-    @GameTest
+    @GameTest(padding = 32)
     public void scansLargeMultiLevelPhysicalWarehouse(GameTestHelper context) {
         int inventoryCount = (LAST_COLUMN - FIRST_COLUMN + 1) * LARGE_WAREHOUSE_LEVELS * 2;
         context.setBlock(CONTROLLER_POS, LumungusStorageBlocks.STORAGE_CONTROLLER);
@@ -167,7 +167,7 @@ public final class StorageLoadGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
-    @GameTest
+    @GameTest(padding = 32)
     public void scansDensePhysicalWarehouseWithoutCells(GameTestHelper context) {
         context.setBlock(CONTROLLER_POS, LumungusStorageBlocks.STORAGE_CONTROLLER);
         for (int x = FIRST_COLUMN; x <= LAST_COLUMN; x++) {
