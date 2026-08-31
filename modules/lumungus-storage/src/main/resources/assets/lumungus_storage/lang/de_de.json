@@ -72,6 +72,7 @@
   "message.lumungus_storage.work_block.facing": "Arbeitsrichtung: %1$s.",
   "message.lumungus_storage.work_block.running": "laeuft",
   "message.lumungus_storage.work_block.paused": "Redstone-Pause",
+  "message.lumungus_storage.work_block.unlinked": "kein Controller",
   "message.lumungus_storage.output.filter_set": "Lager-Output exportiert jetzt %1$s.",
   "message.lumungus_storage.output.filter_cleared": "Lager-Output exportiert wieder automatisch passende Items.",
   "message.lumungus_storage.output.active_unfiltered": "Lager-Output: automatisch. Richtung: %2$s. Status: %3$s.",

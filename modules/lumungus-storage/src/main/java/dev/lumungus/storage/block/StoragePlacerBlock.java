@@ -148,12 +148,10 @@ public final class StoragePlacerBlock extends BaseEntityBlock {
                 return InteractionResult.SUCCESS;
             }
 
-            placer.refreshControllerLink();
+            boolean linked = placer.refreshControllerLink();
             ItemStack filter = placer.filter();
             Direction facing = state.getValue(FACING);
-            Component status = Component.translatable(WorkBlockPower.isPaused(level, pos)
-                    ? "message.lumungus_storage.work_block.paused"
-                    : "message.lumungus_storage.work_block.running");
+            Component status = WorkBlockStatus.describe(level, pos, linked);
             player.sendSystemMessage(Component.translatable(
                     filter.isEmpty()
                             ? "message.lumungus_storage.placer.active_unfiltered"

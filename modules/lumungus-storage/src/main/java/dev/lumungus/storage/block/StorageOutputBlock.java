@@ -148,12 +148,10 @@ public final class StorageOutputBlock extends BaseEntityBlock {
                 return InteractionResult.SUCCESS;
             }
 
-            output.refreshControllerLink();
+            boolean linked = output.refreshControllerLink();
             ItemStack filter = output.filter();
             Direction facing = state.getValue(FACING);
-            Component status = Component.translatable(WorkBlockPower.isPaused(level, pos)
-                    ? "message.lumungus_storage.work_block.paused"
-                    : "message.lumungus_storage.work_block.running");
+            Component status = WorkBlockStatus.describe(level, pos, linked);
             player.sendSystemMessage(Component.translatable(
                     filter.isEmpty()
                             ? "message.lumungus_storage.output.active_unfiltered"

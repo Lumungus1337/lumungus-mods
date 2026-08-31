@@ -4,13 +4,13 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.26`
+- Version: `0.1.0-uat.27`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.26.zip`
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.27.zip`
 - Abnahmestatus: `AUTOMATED_SERVER_PASS`; Arbeitszyklen, gerichtete Arbeitsseiten, Redstone-Pause, Breaker-Schutz, Tooltips, tragbare Storage Interfaces, Wireless Inventory Connectoren und Wireless-Reichweiten jenseits der Kurzdistanz sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
@@ -83,7 +83,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-16t Wireless-Reichweite:** Wireless Storage Controller und Wireless Inventaranschluesse der Stufe II verbinden geladene Gegenstellen in derselben Dimension auch ausserhalb der Kurzdistanz; Stufe III speichert Links mit Dimensions-ID fuer dimensionsuebergreifende Gegenstellen.
 - [ ] **UAT-16u Gerichtete Arbeitsseiten:** Lager-Output exportiert nur zur sichtbaren Arbeitsseite, Lager-Breaker/Placer arbeiten nur in ihrer gesetzten Richtung, und Shift-Rechtsklick mit dem Kupfer-Schraubenschluessel richtet die Arbeitsseite neu aus.
 - [ ] **UAT-16v Arbeitsblock-Sicherheit:** Output, Breaker und Placer pausieren bei Redstone-Signal; der Breaker baut keine Lumungus-Storage-Geraete oder Rohrpostknoten ab.
-- [ ] **UAT-16w Bedienhilfen:** Storage-Bloecke, Wireless-Stufen, Arbeitsbloecke, Kupfer-Schraubenschluessel und tragbare Interfaces zeigen kurze Tooltips; Arbeitsblock-Statusmeldungen nennen Filter, Arbeitsrichtung und Redstone-Status.
+- [ ] **UAT-16w Bedienhilfen:** Storage-Bloecke, Wireless-Stufen, Arbeitsbloecke, Kupfer-Schraubenschluessel und tragbare Interfaces zeigen kurze Tooltips; Arbeitsblock-Statusmeldungen nennen Filter, Arbeitsrichtung, Redstone-Status und fehlende Controller.
 
 ## Multiplayer und Grenzfaelle
 
@@ -94,7 +94,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.26`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.27`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|

@@ -72,6 +72,7 @@
   "message.lumungus_storage.work_block.facing": "Working direction: %1$s.",
   "message.lumungus_storage.work_block.running": "running",
   "message.lumungus_storage.work_block.paused": "Redstone-paused",
+  "message.lumungus_storage.work_block.unlinked": "no controller",
   "message.lumungus_storage.output.filter_set": "Storage Output now exports %1$s.",
   "message.lumungus_storage.output.filter_cleared": "Storage Output now exports matching items automatically again.",
   "message.lumungus_storage.output.active_unfiltered": "Storage Output: automatic. Direction: %2$s. Status: %3$s.",
