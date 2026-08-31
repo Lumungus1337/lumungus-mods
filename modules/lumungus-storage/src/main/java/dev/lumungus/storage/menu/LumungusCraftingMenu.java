@@ -44,7 +44,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 
 public final class LumungusCraftingMenu extends AbstractCraftingMenu {
-    public static final int IMAGE_WIDTH = 320;
+    public static final int IMAGE_WIDTH = 336;
     public static final int IMAGE_HEIGHT = 236;
     public static final int RESULT_SLOT = 0;
     public static final int RECIPE_SLOT_START = 1;
@@ -88,9 +88,9 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         this.player = inventory.player;
         this.terminalPos = terminalPos.immutable();
 
-        addResultSlot(player, 269, 45);
-        addCraftingGridSlots(199, 27);
-        addStandardInventorySlots(inventory, 73, 154);
+        addResultSlot(player, 286, 58);
+        addCraftingGridSlots(214, 40);
+        addStandardInventorySlots(inventory, 87, 154);
     }
 
     public BlockPos terminalPos() {
