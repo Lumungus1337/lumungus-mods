@@ -18,6 +18,8 @@ Richtung Item-Rohrpost, 90er-Terminal und Werkstattmaschine.
   helleren Mittelakzent auf Basis vorhandener Minecraft-Texturen.
 - Controller, Crafting Terminal, Inventaranschluss und Blende nutzen staerkere
   gruene und dunkle Akzente, damit sie zur Rohrpostlinie passen.
+- Eine eigene Kreativgruppe `Lumungus Storage` zeigt alle aktuellen Storage-
+  Bloecke und die 16k Storage Cell direkt im Kreativmenue.
 - `docs/VISUAL_IDENTITY.md` beschreibt die verbindliche Lumungus-Stilrichtung.
 
 ## Automatisierte Abnahme
@@ -30,7 +32,8 @@ Richtung Item-Rohrpost, 90er-Terminal und Werkstattmaschine.
 
 Noch offen:
 
-- Rohrpostrohr im Kreativinventar suchen und platzieren.
+- Kreativgruppe `Lumungus Storage` oeffnen.
+- Rohrpostrohr aus dem Kreativinventar nehmen und platzieren.
 - Controller, Crafting Terminal, Inventaranschluss und Rohrpostblende daneben
   platzieren.
 - Pruefen, ob die Bloecke in der Welt klar als zusammengehoerige

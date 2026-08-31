@@ -1,5 +1,6 @@
 {
   "block.lumungus_storage.storage_controller": "Storage Controller",
+  "itemGroup.lumungus_storage.storage": "Lumungus Storage",
   "block.lumungus_storage.crafting_terminal": "Crafting Terminal",
   "block.lumungus_storage.drive_bay": "Drive Bay",
   "item.lumungus_storage.storage_cell_16k": "16k Storage Cell",

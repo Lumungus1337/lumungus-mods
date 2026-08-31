@@ -1,0 +1,43 @@
+package dev.lumungus.storage.registry;
+
+import dev.lumungus.storage.LumungusStorage;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+
+public final class LumungusStorageCreativeTabs {
+    public static final ResourceKey<CreativeModeTab> STORAGE_TAB = ResourceKey.create(
+            Registries.CREATIVE_MODE_TAB,
+            Identifier.fromNamespaceAndPath(LumungusStorage.MOD_ID, "storage")
+    );
+
+    private LumungusStorageCreativeTabs() {
+    }
+
+    public static void register() {
+        Registry.register(
+                BuiltInRegistries.CREATIVE_MODE_TAB,
+                STORAGE_TAB,
+                FabricCreativeModeTab.builder()
+                        .title(Component.translatable("itemGroup.lumungus_storage.storage"))
+                        .icon(() -> new ItemStack(LumungusStorageBlocks.INVENTORY_CABLE))
+                        .displayItems((context, output) -> {
+                            output.accept(LumungusStorageBlocks.STORAGE_CONTROLLER);
+                            output.accept(LumungusStorageBlocks.CRAFTING_TERMINAL);
+                            output.accept(LumungusStorageBlocks.DRIVE_BAY);
+                            output.accept(LumungusStorageBlocks.INVENTORY_CONNECTOR);
+                            output.accept(LumungusStorageBlocks.INVENTORY_TRIM);
+                            output.accept(LumungusStorageBlocks.INVENTORY_CABLE);
+                            output.accept(LumungusStorageItems.STORAGE_CELL_16K);
+                        })
+                        .build()
+        );
+        LumungusStorage.LOGGER.info("Registered Lumungus Storage creative tab");
+    }
+}

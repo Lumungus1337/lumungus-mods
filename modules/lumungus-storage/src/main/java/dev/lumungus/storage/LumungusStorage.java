@@ -2,6 +2,7 @@ package dev.lumungus.storage;
 
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
+import dev.lumungus.storage.registry.LumungusStorageCreativeTabs;
 import dev.lumungus.storage.registry.LumungusStorageDataComponents;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import dev.lumungus.storage.network.StorageNetworkTopology;
@@ -23,6 +24,7 @@ public final class LumungusStorage implements ModInitializer {
         LumungusStorageBlocks.register();
         LumungusStorageBlockEntities.register();
         LumungusStorageMenus.register();
+        LumungusStorageCreativeTabs.register();
         TerminalNetworking.register();
         ServerChunkEvents.CHUNK_LOAD.register((level, chunk, generated) -> StorageNetworkTopology.invalidate(level));
         ServerChunkEvents.CHUNK_UNLOAD.register((level, chunk) -> StorageNetworkTopology.invalidate(level));
