@@ -2,6 +2,7 @@ package dev.lumungus.storage.block.entity;
 
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.core.api.resource.ResourceAmount;
+import dev.lumungus.storage.block.StorageOutputBlock;
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
@@ -97,34 +98,32 @@ public final class StorageOutputBlockEntity extends BlockEntity {
             return;
         }
 
-        for (Direction direction : Direction.values()) {
-            BlockPos targetPos = worldPosition.relative(direction);
-            if (!level.isLoaded(targetPos)
-                    || StorageNetworkTopology.isDeviceNode(level.getBlockState(targetPos).getBlock())) {
-                continue;
-            }
-            Storage<ItemVariant> target = ItemStorage.SIDED.find(level, targetPos, direction.getOpposite());
-            if (target == null) {
-                continue;
-            }
-
-            FabricItemStorageAccess access = new FabricItemStorageAccess(target);
-            ItemStack available = controller.extract(template, template.getMaxStackSize(), TransferMode.SIMULATE);
-            if (available.isEmpty()) {
-                continue;
-            }
-            ItemStack simulatedRemainder = access.insert(available, TransferMode.SIMULATE);
-            int movable = available.getCount() - simulatedRemainder.getCount();
-            if (movable <= 0) {
-                continue;
-            }
-
-            ItemStack extracted = controller.extract(template, movable, TransferMode.EXECUTE);
-            ItemStack remainder = access.insert(extracted, TransferMode.EXECUTE);
-            if (!remainder.isEmpty()) {
-                controller.insert(remainder, TransferMode.EXECUTE);
-            }
+        Direction direction = getBlockState().getValue(StorageOutputBlock.FACING);
+        BlockPos targetPos = worldPosition.relative(direction);
+        if (!level.isLoaded(targetPos)
+                || StorageNetworkTopology.isDeviceNode(level.getBlockState(targetPos).getBlock())) {
             return;
+        }
+        Storage<ItemVariant> target = ItemStorage.SIDED.find(level, targetPos, direction.getOpposite());
+        if (target == null) {
+            return;
+        }
+
+        FabricItemStorageAccess access = new FabricItemStorageAccess(target);
+        ItemStack available = controller.extract(template, template.getMaxStackSize(), TransferMode.SIMULATE);
+        if (available.isEmpty()) {
+            return;
+        }
+        ItemStack simulatedRemainder = access.insert(available, TransferMode.SIMULATE);
+        int movable = available.getCount() - simulatedRemainder.getCount();
+        if (movable <= 0) {
+            return;
+        }
+
+        ItemStack extracted = controller.extract(template, movable, TransferMode.EXECUTE);
+        ItemStack remainder = access.insert(extracted, TransferMode.EXECUTE);
+        if (!remainder.isEmpty()) {
+            controller.insert(remainder, TransferMode.EXECUTE);
         }
     }
 

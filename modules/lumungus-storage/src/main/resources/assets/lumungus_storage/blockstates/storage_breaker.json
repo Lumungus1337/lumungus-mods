@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
-      "model": "lumungus_storage:block/storage_breaker"
-    }
+    "facing=down": { "model": "lumungus_storage:block/storage_breaker", "x": 90 },
+    "facing=up": { "model": "lumungus_storage:block/storage_breaker", "x": 270 },
+    "facing=north": { "model": "lumungus_storage:block/storage_breaker" },
+    "facing=south": { "model": "lumungus_storage:block/storage_breaker", "y": 180 },
+    "facing=west": { "model": "lumungus_storage:block/storage_breaker", "y": 270 },
+    "facing=east": { "model": "lumungus_storage:block/storage_breaker", "y": 90 }
   }
 }

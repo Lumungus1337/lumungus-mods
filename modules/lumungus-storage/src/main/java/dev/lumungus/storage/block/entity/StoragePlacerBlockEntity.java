@@ -2,6 +2,7 @@ package dev.lumungus.storage.block.entity;
 
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.core.api.resource.ResourceAmount;
+import dev.lumungus.storage.block.StoragePlacerBlock;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.Optional;
@@ -88,7 +89,7 @@ public final class StoragePlacerBlockEntity extends BlockEntity {
             return;
         }
 
-        BlockPos targetPos = worldPosition.below();
+        BlockPos targetPos = worldPosition.relative(getBlockState().getValue(StoragePlacerBlock.FACING));
         if (!level.getBlockState(targetPos).canBeReplaced()) {
             return;
         }

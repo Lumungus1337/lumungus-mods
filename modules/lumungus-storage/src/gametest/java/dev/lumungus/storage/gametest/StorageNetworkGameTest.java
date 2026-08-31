@@ -2,6 +2,9 @@ package dev.lumungus.storage.gametest;
 
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.storage.block.InventoryCableBlock;
+import dev.lumungus.storage.block.StorageBreakerBlock;
+import dev.lumungus.storage.block.StorageOutputBlock;
+import dev.lumungus.storage.block.StoragePlacerBlock;
 import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
 import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
 import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
@@ -92,8 +95,11 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.setBlock(WORK_DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
         BlockPos outputPos = new BlockPos(3, 1, 18);
         BlockPos chestPos = new BlockPos(4, 1, 18);
-        context.setBlock(outputPos, LumungusStorageBlocks.STORAGE_OUTPUT);
+        BlockPos ignoredChestPos = new BlockPos(3, 1, 19);
+        context.setBlock(outputPos, LumungusStorageBlocks.STORAGE_OUTPUT.defaultBlockState()
+                .setValue(StorageOutputBlock.FACING, Direction.EAST));
         context.setBlock(chestPos, Blocks.CHEST);
+        context.setBlock(ignoredChestPos, Blocks.CHEST);
 
         DriveBayBlockEntity driveBay = context.getBlockEntity(WORK_DRIVE_BAY, DriveBayBlockEntity.class);
         driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
@@ -109,7 +115,9 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         output.exportOneStack();
 
         ChestBlockEntity chest = context.getBlockEntity(chestPos, ChestBlockEntity.class);
+        ChestBlockEntity ignoredChest = context.getBlockEntity(ignoredChestPos, ChestBlockEntity.class);
         context.assertValueEqual(chest.getItem(0).getCount(), 48, "Exported copper");
+        context.assertTrue(ignoredChest.isEmpty(), "Output exported into a non-facing inventory");
         context.assertValueEqual(controller.count(new ItemStack(Items.COPPER_INGOT)), 0L, "Remaining copper");
         context.assertValueEqual(controller.count(new ItemStack(Items.DIAMOND)), 5L, "Unfiltered diamonds");
         context.succeed();
@@ -120,9 +128,12 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
         context.setBlock(WORK_DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
         BlockPos breakerPos = new BlockPos(3, 2, 18);
-        BlockPos targetPos = breakerPos.below();
-        context.setBlock(breakerPos, LumungusStorageBlocks.STORAGE_BREAKER);
+        BlockPos targetPos = breakerPos.east();
+        BlockPos ignoredTargetPos = breakerPos.below();
+        context.setBlock(breakerPos, LumungusStorageBlocks.STORAGE_BREAKER.defaultBlockState()
+                .setValue(StorageBreakerBlock.FACING, Direction.EAST));
         context.setBlock(targetPos, Blocks.DIRT);
+        context.setBlock(ignoredTargetPos, Blocks.STONE);
 
         DriveBayBlockEntity driveBay = context.getBlockEntity(WORK_DRIVE_BAY, DriveBayBlockEntity.class);
         driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
@@ -135,6 +146,10 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
                 StorageControllerBlockEntity.class
         );
         context.assertTrue(context.getLevel().getBlockState(context.absolutePos(targetPos)).isAir(), "Dirt was not broken");
+        context.assertTrue(
+                context.getLevel().getBlockState(context.absolutePos(ignoredTargetPos)).is(Blocks.STONE),
+                "Breaker ignored its facing direction"
+        );
         context.assertValueEqual(controller.count(new ItemStack(Items.DIRT)), 1L, "Stored dirt drop");
         context.succeed();
     }
@@ -144,8 +159,10 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
         context.setBlock(WORK_DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
         BlockPos placerPos = new BlockPos(3, 2, 18);
-        BlockPos targetPos = placerPos.below();
-        context.setBlock(placerPos, LumungusStorageBlocks.STORAGE_PLACER);
+        BlockPos targetPos = placerPos.east();
+        BlockPos ignoredTargetPos = placerPos.below();
+        context.setBlock(placerPos, LumungusStorageBlocks.STORAGE_PLACER.defaultBlockState()
+                .setValue(StoragePlacerBlock.FACING, Direction.EAST));
 
         DriveBayBlockEntity driveBay = context.getBlockEntity(WORK_DRIVE_BAY, DriveBayBlockEntity.class);
         driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
@@ -160,6 +177,10 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         placer.placeBelow();
 
         context.assertTrue(context.getLevel().getBlockState(context.absolutePos(targetPos)).is(Blocks.DIRT), "Dirt was not placed");
+        context.assertTrue(
+                context.getLevel().getBlockState(context.absolutePos(ignoredTargetPos)).isAir(),
+                "Placer ignored its facing direction"
+        );
         context.assertValueEqual(controller.count(new ItemStack(Items.DIRT)), 2L, "Remaining stored dirt");
         context.succeed();
     }

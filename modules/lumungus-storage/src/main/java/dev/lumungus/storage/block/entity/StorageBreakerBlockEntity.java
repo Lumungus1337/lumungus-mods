@@ -1,6 +1,7 @@
 package dev.lumungus.storage.block.entity;
 
 import dev.lumungus.core.api.inventory.TransferMode;
+import dev.lumungus.storage.block.StorageBreakerBlock;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.List;
@@ -95,7 +96,7 @@ public final class StorageBreakerBlockEntity extends BlockEntity {
             return;
         }
 
-        BlockPos targetPos = worldPosition.below();
+        BlockPos targetPos = worldPosition.relative(getBlockState().getValue(StorageBreakerBlock.FACING));
         BlockState targetState = level.getBlockState(targetPos);
         if (targetState.isAir()
                 || targetState.is(Blocks.BEDROCK)

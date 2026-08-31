@@ -51,6 +51,7 @@
   "message.lumungus_storage.portable_interface.connected": "Tragbares Storage Interface %1$s mit Netzwerk %2$s verbunden.",
   "message.lumungus_storage.portable_interface.unlinked": "Kein erreichbarer Storage Controller fuer Interface %1$s gefunden. Shift-Rechtsklick auf einen Controller bindet es.",
   "message.lumungus_storage.portable_interface.out_of_range": "Storage Controller ist fuer Interface %1$s zu weit entfernt.",
+  "message.lumungus_storage.work_block.facing": "Arbeitsrichtung: %1$s.",
   "message.lumungus_storage.output.filter_set": "Lager-Output exportiert jetzt %1$s.",
   "message.lumungus_storage.output.filter_cleared": "Lager-Output exportiert wieder automatisch passende Items.",
   "message.lumungus_storage.output.active_unfiltered": "Lager-Output aktiv: automatisch.",
