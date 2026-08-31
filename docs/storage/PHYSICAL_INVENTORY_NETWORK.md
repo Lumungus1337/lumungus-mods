@@ -11,7 +11,7 @@ Fuer ein vorhandenes Tom's-Simple-Storage-Lager gilt als Zielablauf:
 1. Bestehende Tom's-Kabel, Trims, Connectoren, Kisten und Faesser bleiben unveraendert.
 2. Lumungus Core, Storage und Integration werden installiert.
 3. Der Migrationsassistent liest das vorhandene Tom's-Netz und vergleicht Inventaranzahl, Slots, Itemtypen und Gesamtmenge, ohne etwas zu veraendern.
-4. Nach ausdruecklichem Start ersetzt er ausschliesslich Tom's-Controller, Connectoren, Kabel, Trims und Terminals durch passende Lumungus-Bloecke. Kisten, Faesser, Shulkerboxen und deren Inhalte werden nicht angefasst.
+4. Nach ausdruecklichem Start ersetzt er ausschliesslich Tom's-Controller, Connectoren, Kabel, Trims und Terminals durch passende Lumungus-Rohrpostbloecke. Kisten, Faesser, Shulkerboxen und deren Inhalte werden nicht angefasst.
 5. Lumungus liest das konvertierte Netz erneut ein und vergleicht es mit dem vorherigen Snapshot.
 6. Erst bei erfolgreicher Validierung wird die Migration als abgeschlossen markiert. Danach wird gespeichert, neu gestartet und Tom's entfernt.
 
@@ -22,9 +22,9 @@ Crafting Terminal
        |
 Lumungus Controller
        |
-       +-- Lumungus Cable/Trim -- Inventory Connector -- Kisten/Faesser
+       +-- Lumungus Rohrpostrohr/-blende -- Inventaranschluss -- Kisten/Faesser
        |
-       +-- einmalig konvertiertes ehemaliges Tom's-Kabelnetz
+       +-- einmalig konvertiertes ehemaliges Tom's-Kabelnetz als Lumungus-Rohrpost
        |
        `-- optionale Drive Bay / Storage Cell
 ```
@@ -40,13 +40,14 @@ Der Controller arbeitet ausschliesslich gegen allgemeine Storage-Endpunkte. Ein 
 - Ein abgebrochener Lauf muss anhand des Journals fortgesetzt oder zurueckgerollt werden koennen, solange Tom's noch installiert ist.
 - Kisten, Faesser und andere Blockinventare sind primaere Speicher, Cells nur optionale Erweiterungen.
 - Doppeltruhen und andere mehrteilige Inventare duerfen nur einmal indexiert werden.
-- Derselbe physische Endpunkt darf auch ueber mehrere Kabelwege oder Connectoren nur einmal erscheinen.
+- Derselbe physische Endpunkt darf auch ueber mehrere Rohrwege oder Connectoren nur einmal erscheinen.
 - Einlagerung versucht zuerst vorhandene passende Stapel und danach freie Slots.
 - Extraktion, Crafting und JEI-Transfer bleiben serverautorisiert.
 - Nicht vollstaendig ausgefuehrte Transfers muessen den Rest zurueckgeben; Verlust und Duplikation sind unzulaessig.
 - Ungefundene oder entladene Chunks werden nicht automatisch geladen. Ihr Bestand wird als voruebergehend nicht erreichbar behandelt.
 - Blockabbau, Chunk-Unload und Topologieaenderungen invalidieren den Index kontrolliert.
 - Das Oeffnen eines Terminals darf nicht bei jedem Tick Millionen ItemStacks neu scannen.
+- Neue Lumungus-Verbindungsbloecke verwenden nach aussen die Rohrpost-Sprache. Alte interne IDs duerfen nur aus Kompatibilitaetsgruenden bestehen bleiben.
 
 ## Skalierung fuer grosse Lager
 
@@ -66,7 +67,7 @@ Der Bestandsindex aggregiert nach Item und Komponenten, speichert aber weiterhin
 ### Slice 2: Natives Lumungus-Netz
 
 - Inventory Connector
-- Kabel und verkleidbare Trims
+- Rohrpostrohre und verkleidbare Rohrpostblenden
 - Topologie-Cache und Deduplizierung
 - Controller und Terminal verwenden physische Endpunkte gemeinsam mit optionalen Drive Bays
 
@@ -75,7 +76,7 @@ Der Bestandsindex aggregiert nach Item und Komponenten, speichert aber weiterhin
 - temporaere Compile-/Runtime-Integration in `lumungus-integration`
 - read-only Snapshot und komponentensicherer Bestandsvergleich (Vergleichskern implementiert)
 - Dry Run mit Liste aller erkannten, konvertierbaren und nicht unterstuetzten Netzwerkbloecke
-- protokollierte Ersetzung von Tom's Connectoren, Kabeln, Trims und Terminals
+- protokollierte Ersetzung von Tom's Connectoren, Kabeln, Trims und Terminals durch Lumungus-Rohrpostbloecke
 - Wiederaufnahme und Rollback ueber ein persistentes Migrationsjournal
 - Bestands- und Topologievergleich vor und nach der Konvertierung
 - Kompatibilitaetstest gegen die konkret eingesetzte Tom's-Version

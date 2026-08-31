@@ -45,6 +45,7 @@ Architektur:
 Wichtige Dokumente:
 - README.md
 - docs/ARCHITECTURE.md
+- docs/VISUAL_IDENTITY.md
 - docs/storage/MVP.md
 - docs/storage/PHYSICAL_INVENTORY_NETWORK.md
 - docs/storage/UAT.md
@@ -56,6 +57,7 @@ Wichtige Dokumente:
 Aktueller Storage-Stand:
 - Storage Controller, Drive Bay und persistente 16k Storage Cell
 - Eigenes synchronisiertes Crafting-Terminal im 90er-Computerstil
+- Sichtbare Storage-Verbindungen sollen als Item-Rohrpost gedacht und gestaltet werden. Die bestehende interne ID `inventory_cable` bleibt nur aus Kompatibilitaetsgruenden bestehen.
 - Netzwerkbestand mit Suche, Sortierung, Seiten, Tooltips und Kapazitaetsanzeige
 - Einlagern und Entnehmen ueber Cursor, Links-, Rechts- und Shift-Klick
 - Serverseitig autorisierte Netzwerkaktionen
@@ -64,7 +66,7 @@ Aktueller Storage-Stand:
 - `0.1.0-uat.2` wurde am Build-Gate abgelehnt; alle Anforderungen fuer den naechsten Kandidaten stehen in `docs/storage/UAT_RESULTS_0.1.0-uat.2.md`.
 - Zielversion des naechsten UAT-Kandidaten: 0.1.0-uat.3
 - Wichtige Korrektur der Zielarchitektur: Cells sind nur optional. Primaerer Speicher sind bestehende Kisten, Faesser, Shulkerboxen und kompatible Mod-Inventare.
-- Hoechste Prioritaet ist der verlustfreie Tom's-Uebergang: `lumungus-integration` soll den alten Bestand lesend vergleichen und danach Tom's-Kabel, Trims und Connectoren in Lumungus-Gegenstuecke konvertieren. Die Items bleiben in ihren bisherigen Inventaren; nach erfolgreicher Validierung muss die Welt ohne Tom's funktionieren.
+- Hoechste Prioritaet ist der verlustfreie Tom's-Uebergang: `lumungus-integration` soll den alten Bestand lesend vergleichen und danach Tom's-Kabel, Trims und Connectoren in Lumungus-Rohrpostbloecke konvertieren. Die Items bleiben in ihren bisherigen Inventaren; nach erfolgreicher Validierung muss die Welt ohne Tom's funktionieren.
 
 Aufgabenteilung:
 - Du bist fuer Coding, Bugfixes, Refactoring und passende automatisierte Tests verantwortlich.
@@ -87,5 +89,5 @@ Arbeitsweise:
 10. Melde bei der Uebergabe Branchname, Commit-SHA, geaenderte Dateien, behobene UAT-IDs, Tests und bekannte Restrisiken.
 
 Erste Aktion:
-Hole den neuesten Stand von main und lies `docs/storage/UAT_RESULTS_0.1.0-uat.2.md`. Bearbeite die dort unter `Rueckgabe an Coding` genannten Punkte fuer `0.1.0-uat.3`, teste sie und bereite eine klare Uebergabe fuer den erneuten UAT-Lauf vor.
+Hole den neuesten Stand von main und lies `README.md`, `docs/ARCHITECTURE.md`, `docs/VISUAL_IDENTITY.md` und die aktuellen Storage-UAT-Dokumente. Arbeite neue Storage- und Maschinenfeatures in der Rohrpost-/90er-Terminal-Sprache aus und teste sie vor der Uebergabe.
 ```

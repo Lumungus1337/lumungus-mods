@@ -46,7 +46,7 @@ Noch nicht enthalten sind Block-Registrierung, GUI-Code, Netzwerkpakete oder Dat
 Lumungus Storage soll den physischen Lageransatz von Tom's Simple Storage mit spaeteren Automationsfunktionen verbinden. Vorhandene Items bleiben in ihren Kisten und Faessern; eine Migration in Cells darf nie Voraussetzung sein.
 
 - Storage Controller als Netzwerkzentrum
-- native Inventar-Connectoren, Kabel und verkleidbare Trims
+- native Inventaranschluesse, Rohrpostrohre und verkleidbare Rohrpostblenden
 - Kisten, Faesser, Shulkerboxen und kompatible Mod-Inventare als primaerer Speicher
 - Storage-Terminal
 - Crafting Terminal mit 3x3-Crafting-Funktion
@@ -58,7 +58,7 @@ Lumungus Storage soll den physischen Lageransatz von Tom's Simple Storage mit sp
 - Schematic-Materialplanung mit automatischer Shulkerbox-Bestueckung und Build Clipboard
 - spaeter Autocrafting und Stock-Keeper
 
-Der erste spielbare Storage-Slice registriert `storage_controller`, `crafting_terminal` und den bisherigen Cell-Prototyp als echte Bloecke, Items und Block-Entities. Der naechste Slice ersetzt die Cell-zentrierte Discovery durch allgemeine Storage-Endpunkte. `lumungus-integration` erkennt bei der einmaligen Migration ein installiertes Tom's Simple Storage, vergleicht dessen Inventarbestand und ersetzt dessen Netzwerkbloecke durch Lumungus-Gegenstuecke. Tom's ist danach weder Pflichtabhaengigkeit noch dauerhaftes zweites Storage-System. Details und Sicherheitsregeln stehen in [storage/PHYSICAL_INVENTORY_NETWORK.md](storage/PHYSICAL_INVENTORY_NETWORK.md).
+Der erste spielbare Storage-Slice registriert `storage_controller`, `crafting_terminal` und den bisherigen Cell-Prototyp als echte Bloecke, Items und Block-Entities. Der naechste Slice ersetzt die Cell-zentrierte Discovery durch allgemeine Storage-Endpunkte. `lumungus-integration` erkennt bei der einmaligen Migration ein installiertes Tom's Simple Storage, vergleicht dessen Inventarbestand und ersetzt dessen Netzwerkbloecke durch Lumungus-Gegenstuecke. Spielerisch sollen diese Gegenstuecke wie sichtbare Item-Rohrpost wirken, nicht wie abstrakte Kabel. Tom's ist danach weder Pflichtabhaengigkeit noch dauerhaftes zweites Storage-System. Details und Sicherheitsregeln stehen in [storage/PHYSICAL_INVENTORY_NETWORK.md](storage/PHYSICAL_INVENTORY_NETWORK.md).
 
 ## Backpack-Vision
 
@@ -83,6 +83,8 @@ RailQuarry wird hier weiterhin als geplantes zukuenftiges Feature dokumentiert, 
 Lumungus Autotrader wird als eigenes Modul gefuehrt. Es soll automatisierte Handelsablaeufe, Trading-Terminals und spaetere Storage-Anbindung aufnehmen. Eine bestehende Autotrader-Implementierung wird im Initialstand noch nicht migriert; zuerst wird das Modul als Teil der Lumungus-Architektur dokumentiert und buildbar gemacht.
 
 Optisch gehoert Autotrader in dieselbe Linie wie Storage, Machines und RailQuarry: 90er-Computertechnik, helle Gehaeuse, dunkle Frontplatten, gruene Monitore, Status-LEDs und eine klare Werkstatt-/Terminal-Anmutung.
+
+Die verbindliche visuelle Richtung fuer alle Module steht in [VISUAL_IDENTITY.md](VISUAL_IDENTITY.md). Kurzfassung: Lumungus setzt auf eigene Rohrpost-Logistik fuer Items, robuste Werkstattmaschinen und 90er-Terminals mit CRT-Gefuehl.
 
 ## Integration-Vision
 

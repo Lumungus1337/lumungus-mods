@@ -6,6 +6,8 @@ Lumungus Machines soll mengenbasierte Produktionsauftraege aus dem Crafting Term
 
 Beispiel: Eine Schematic benoetigt 120 Faesser. Der Planer berechnet daraus den Bedarf an Brettern und Holzstufen, verarbeitet vorhandene Holzstaemme ueber die noetigen Zwischenrezepte und laesst den Autocrafter anschliessend genau 120 Faesser herstellen.
 
+Maschinen haengen sichtbar am Lumungus-Rohrpostnetz. Zutaten kommen ueber Rohre an, Zwischenprodukte koennen an andere Maschinen weitergereicht werden und fertige Items laufen zurueck ins physische Lager.
+
 Der Produktionsplaner soll:
 
 - mehrstufige Rezeptketten automatisch und rekursiv aufloesen
@@ -24,6 +26,7 @@ Der Produktionsplaner soll:
 - Produziert eine eingestellte Zielmenge statt nur endlos zu craften.
 - Kann Zwischenprodukte ueber weitere verbundene Autocrafter anfordern.
 - Soll Rezepte spaeter direkt aus JEI und aus dem Crafting Terminal uebernehmen koennen.
+- Besitzt sichtbare Ein- und Ausgangsrohre fuer Zutaten, Zwischenprodukte und fertige Stacks.
 
 ### Autosteinsaege
 

@@ -19,6 +19,7 @@ Autotrader soll optisch zur Storage- und Machines-Linie passen:
 - 90er-Computertechnik statt moderner Sci-Fi-Glasoptik
 - helle Gehaeuse, dunkle Frontplatten, gruene Monitore und Statusanzeigen
 - Tastenfelder, Bon-Drucker-/Kassenterminal-Anmutung und kleine LED-Reihen
+- sichtbarer Rohrpostanschluss fuer Warenfluss zwischen Lager und Handelsblock
 - klare, handwerkliche Maschinenoptik passend zu Storage Controller, Crafting Terminal und RailQuarry
 
 ## Abgrenzung zu RailQuarry

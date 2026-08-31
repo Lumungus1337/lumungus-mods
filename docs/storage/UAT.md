@@ -27,13 +27,13 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | Netzwerk-Crafting | `PASS` | Ein Rezept nutzt einen Stamm aus dem Netzwerk und erzeugt vier Bretter. |
 | JEI-Transfer | `PASS` | Der Lumungus-Transferknopf befuellt das 3x3-Raster serverseitig aus dem Netzwerk. |
 | Automatisierte Logiktests | `PASS` | Elf JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
-| Server-GameTests | `PASS` | Dreizehn reale GameTests pruefen unter anderem physische Inventare, Kabel, Trims, Chunk-Grenzen, Lastfaelle und Crafting. |
+| Server-GameTests | `PASS` | Dreizehn reale GameTests pruefen unter anderem physische Inventare, Rohrpostrohre, Blenden, Chunk-Grenzen, Lastfaelle und Crafting. |
 | Client-GameTest | `BASELINE uat.3` | Der letzte visuell gepruefte Fabric-Testclient stammt aus `0.1.0-uat.3`; fuer `uat.5` ist kein neuer visueller Anspruch Teil des Migrationskandidaten. |
 
 ## Testaufbau
 
 - [ ] **UAT-01 Setup:** Minecraft 26.2 startet mit Fabric, Lumungus Core, Lumungus Storage und der vorgesehenen JEI-Version ohne Ladefehler.
-- [ ] **UAT-02 Testnetz:** Ein Controller, mehrere Kisten oder Faesser ueber Kabel, Connectoren oder Inventory Trims und ein Terminal bilden ein gemeinsames Netzwerk; ein zweiter Spieler kann beitreten.
+- [ ] **UAT-02 Testnetz:** Ein Controller, mehrere Kisten oder Faesser ueber Rohrpostrohre, Inventaranschluesse oder Rohrpostblenden und ein Terminal bilden ein gemeinsames Netzwerk; ein zweiter Spieler kann beitreten.
 - [ ] **UAT-03 Testdaten:** Das Netzwerk enthaelt mehrere Itemtypen, grosse Mengen, Items mit Komponenten sowie freie und nahezu volle Cells.
 
 ## Netzwerk und Persistenz

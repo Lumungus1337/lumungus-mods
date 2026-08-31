@@ -5,7 +5,7 @@
 Stand: 2026-08-30, Minecraft/Fabric 26.2, lokaler automatisierter GameTest.
 
 - 1 Storage Controller
-- 12 Inventory Cables
+- 12 Rohrpostrohre
 - 36 Inventory Connectoren
 - 36 echte Vanilla-Kisten
 - 59.904 eingelagerte Items
@@ -28,7 +28,7 @@ Der Test hat eine grosszuegige obere Schranke von 10.000 ms, um langsame CI- ode
 Zweiter automatisierter Lauf auf derselben Entwicklungsmaschine:
 
 - 1 Storage Controller
-- 120 Inventory Cables in einem zehnstoeckigen Netz
+- 120 Rohrpostrohre in einem zehnstoeckigen Netz
 - 240 Inventory Connectoren
 - 240 echte Vanilla-Kisten
 - 399.360 eingelagerte Items
