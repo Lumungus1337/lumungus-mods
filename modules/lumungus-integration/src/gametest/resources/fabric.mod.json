@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "lumungus_integration_gametest",
+  "version": "1.0.0",
+  "name": "Lumungus Integration Game Tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.lumungus.integration.gametest.TomsRemoteRuntimeIntegrationGameTest"
+    ]
+  }
+}

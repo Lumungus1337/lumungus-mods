@@ -3,7 +3,7 @@
   "command.lumungus_integration.migration.blocks": "Tom's dry run: %1$s network blocks, %2$s convertible and %3$s blocking.",
   "command.lumungus_integration.migration.unloaded": "Scan stopped: the network touches an unloaded area. All affected chunks must be loaded.",
   "command.lumungus_integration.migration.limit": "Scan stopped: the safety limit of %1$s network blocks was reached.",
-  "command.lumungus_integration.migration.remote_pending.configured_active": "Scan stopped: An active Tom's remote channel leads to a network segment that has not been captured yet.",
+  "command.lumungus_integration.migration.remote_pending.configured_resolved": "The active Tom's remote channel was captured completely.",
   "command.lumungus_integration.migration.remote_pending.configured_not_ready": "Scan stopped: A Tom's remote channel is configured, but its connection is not ready. Load the entire network and try again.",
   "command.lumungus_integration.migration.remote_pending.runtime_unavailable": "Scan stopped: The installed Tom's version cannot be read safely for remote channels.",
   "command.lumungus_integration.migration.blocker": "Blocker at %1$s: %2$s (%3$s)",

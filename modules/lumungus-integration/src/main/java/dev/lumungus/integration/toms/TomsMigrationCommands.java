@@ -42,51 +42,48 @@ public final class TomsMigrationCommands {
             return 0;
         }
 
+        TomsRemoteScanResult remoteScan = TomsRemoteConnectorInspector.resolve(
+                level,
+                initialReport,
+                MAX_SCAN_NODES
+        );
         source.sendSuccess(() -> Component.translatable(
                 "command.lumungus_integration.migration.blocks",
-                initialReport.blocks().size(),
-                initialReport.convertibleCount(),
-                initialReport.blockingCount()
+                remoteScan.blockCount(),
+                remoteScan.convertibleCount(),
+                remoteScan.blockingCount()
         ), false);
 
-        TomsDryRunReport report = initialReport;
-
-        if (report.unloadedBoundary()) {
+        if (remoteScan.segments().stream().anyMatch(segment -> segment.report().unloadedBoundary())) {
             source.sendFailure(Component.translatable("command.lumungus_integration.migration.unloaded"));
         }
-        if (report.nodeLimitReached()) {
+        if (remoteScan.segments().stream().anyMatch(segment -> segment.report().nodeLimitReached())) {
             source.sendFailure(Component.translatable(
                     "command.lumungus_integration.migration.limit",
                     MAX_SCAN_NODES
             ));
         }
-        if (report.remoteConnectionsRequireScan()) {
-            TomsRemoteConnectorStatus remoteStatus = TomsRemoteConnectorInspector.inspect(level, report);
-            if (remoteStatus == TomsRemoteConnectorStatus.NONE_CONFIGURED) {
-                report = report.withRemoteConnectionsResolved();
-            } else {
-                source.sendFailure(Component.translatable(remoteStatus.messageKey()));
-            }
+        if (!remoteScan.resolved()) {
+            source.sendFailure(Component.translatable(remoteScan.status().messageKey()));
         }
-        report.blocks().stream()
-                .filter(block -> block.plan().disposition() != TomsMigrationDisposition.CONVERTIBLE)
+        remoteScan.segments().stream()
+                .flatMap(segment -> segment.report().blocks().stream().map(block -> new SegmentBlock(segment, block)))
+                .filter(entry -> entry.block().plan().disposition() != TomsMigrationDisposition.CONVERTIBLE)
                 .limit(10)
-                .forEach(block -> source.sendFailure(Component.translatable(
+                .forEach(entry -> source.sendFailure(Component.translatable(
                         "command.lumungus_integration.migration.blocker",
-                        block.position().toShortString(),
-                        block.plan().sourceId().toString(),
-                        block.plan().disposition().name()
+                        entry.segment().level().dimension().identifier() + " " + entry.block().position().toShortString(),
+                        entry.block().plan().sourceId().toString(),
+                        entry.block().plan().disposition().name()
                 )));
 
-        if (!report.safeForInventorySnapshot()) {
+        if (!remoteScan.safeForInventorySnapshot()) {
             source.sendFailure(Component.translatable("command.lumungus_integration.migration.blocked"));
             return 0;
         }
 
         MigrationInventorySnapshot snapshot = TomsInventorySnapshotCollector.capture(
-                world,
-                report,
-                "Tom's Simple Storage dry run"
+                remoteScan.segments(), "Tom's Simple Storage dry run"
         );
         source.sendSuccess(() -> Component.translatable(
                 "command.lumungus_integration.migration.inventory",
@@ -99,6 +96,9 @@ public final class TomsMigrationCommands {
                 () -> Component.translatable("command.lumungus_integration.migration.read_only_complete"),
                 false
         );
-        return report.blocks().size();
+        return remoteScan.blockCount();
+    }
+
+    private record SegmentBlock(TomsNetworkSegment segment, TomsDryRunBlock block) {
     }
 }

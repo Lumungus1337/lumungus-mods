@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 /** Collects physical inventory contents adjacent to Tom's inventory-facing network blocks. */
 public final class TomsInventorySnapshotCollector {
@@ -54,5 +56,42 @@ public final class TomsInventorySnapshotCollector {
             resources.addAll(endpoint.resources());
         }
         return ReadOnlyInventorySnapshotter.capture(source, endpoints.size(), slots, resources);
+    }
+
+    public static MigrationInventorySnapshot capture(List<TomsNetworkSegment> segments, String source) {
+        Map<DimensionPos, TomsReadOnlyInventoryEndpoint> endpoints = new LinkedHashMap<>();
+        for (TomsNetworkSegment segment : segments) {
+            TomsDryRunReport report = segment.report().withRemoteConnectionsResolved();
+            if (!report.safeForInventorySnapshot()) {
+                throw new IllegalStateException("Tom's remote network dry run is incomplete or blocked");
+            }
+            TomsInventoryWorldView world = new MinecraftTomsInventoryWorldView(segment.level());
+            for (TomsDryRunBlock block : report.blocks()) {
+                if (!INVENTORY_FACING_BLOCKS.contains(block.plan().sourceId().getPath())) {
+                    continue;
+                }
+                for (Direction direction : Direction.values()) {
+                    BlockPos inventoryPos = block.position().relative(direction);
+                    world.inventoryAt(inventoryPos, direction.getOpposite()).ifPresent(endpoint -> endpoints.putIfAbsent(
+                            new DimensionPos(segment.level().dimension(), endpoint.key()),
+                            endpoint
+                    ));
+                }
+            }
+        }
+
+        long slots = 0;
+        List<ResourceAmount> resources = new ArrayList<>();
+        for (TomsReadOnlyInventoryEndpoint endpoint : endpoints.values()) {
+            slots = Math.addExact(slots, endpoint.slotCount());
+            resources.addAll(endpoint.resources());
+        }
+        return ReadOnlyInventorySnapshotter.capture(source, endpoints.size(), slots, resources);
+    }
+
+    private record DimensionPos(ResourceKey<Level> dimension, BlockPos position) {
+        private DimensionPos {
+            position = position.immutable();
+        }
     }
 }

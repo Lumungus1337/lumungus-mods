@@ -3,7 +3,7 @@
   "command.lumungus_integration.migration.blocks": "Tom's Dry Run: %1$s Netzwerkbloecke, davon %2$s konvertierbar und %3$s blockierend.",
   "command.lumungus_integration.migration.unloaded": "Scan gestoppt: Das Netzwerk beruehrt einen ungeladenen Bereich. Alle betroffenen Chunks muessen geladen sein.",
   "command.lumungus_integration.migration.limit": "Scan gestoppt: Das Sicherheitslimit von %1$s Netzwerkbloecken wurde erreicht.",
-  "command.lumungus_integration.migration.remote_pending.configured_active": "Scan gestoppt: Ein aktiver Tom's-Fernkanal fuehrt zu einem noch nicht erfassten Teilnetz.",
+  "command.lumungus_integration.migration.remote_pending.configured_resolved": "Der aktive Tom's-Fernkanal wurde vollstaendig erfasst.",
   "command.lumungus_integration.migration.remote_pending.configured_not_ready": "Scan gestoppt: Ein Tom's-Fernkanal ist konfiguriert, aber seine Verbindung ist noch nicht bereit. Lade das gesamte Netz und versuche es erneut.",
   "command.lumungus_integration.migration.remote_pending.runtime_unavailable": "Scan gestoppt: Die installierte Tom's-Version kann fuer Fernkanaele nicht sicher gelesen werden.",
   "command.lumungus_integration.migration.blocker": "Blocker bei %1$s: %2$s (%3$s)",

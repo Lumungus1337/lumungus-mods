@@ -2,7 +2,7 @@ package dev.lumungus.integration.toms;
 
 public enum TomsRemoteConnectorStatus {
     NONE_CONFIGURED("none_configured"),
-    CONFIGURED_ACTIVE("configured_active"),
+    CONFIGURED_RESOLVED("configured_resolved"),
     CONFIGURED_NOT_READY("configured_not_ready"),
     RUNTIME_UNAVAILABLE("runtime_unavailable");
 

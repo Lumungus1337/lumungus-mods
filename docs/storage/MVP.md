@@ -48,7 +48,7 @@ Seit dem ersten Entwicklungsschritt nach UAT.3 kann der Controller physische Inv
 - Netzwerk, Cell-Inhalte und Bestandsmengen bleiben nach Speichern und Neustart erhalten.
 - `lumungus-integration` besitzt nun einen strikt nur lesenden Snapshot- und Vergleichskern fuer den Tom's-Uebergang. Er vergleicht Endpunkte, Slots und jede Itemvariante inklusive Komponenten und wurde unter anderem mit 7.000.000 Items getestet.
 - Der Tom's-Weltscanner erfasst geladene, physisch verbundene Netzwerkbloecke mit Sicherheitslimit und sammelt angrenzende Lagerinventare dedupliziert in einen Read-only-Snapshot. Unbekannte Bloecke, ungeladene Grenzen oder Teilscans verhindern eine Freigabe.
-- Der Befehl `/lumungus migration scan <x> <y> <z>` gibt den Dry-Run-Bericht im Spiel aus. Die optionale, nicht eingebettete Tom's-`26.2-2.11.3`-Integration unterscheidet normale Kabel-Connectoren von echten Fernkanaelen; letztere bleiben bis zur vollstaendigen Teilnetz-Zusammenfuehrung blockiert.
+- Der Befehl `/lumungus migration scan <x> <y> <z>` gibt den Dry-Run-Bericht im Spiel aus. Die optionale, nicht eingebettete Tom's-`26.2-2.11.3`-Integration unterscheidet normale Kabel-Connectoren von echten Fernkanaelen und fuehrt geladene entfernte Teilnetze dimensionssicher im Nur-Lese-Bericht zusammen.
 
 ### JEI-Kompatibilitaet
 
@@ -56,7 +56,7 @@ JEI bleibt eine optionale Client-Mod und wird von Lumungus Storage nur zur Compi
 
 ## Naechster technischer Schritt
 
-1. Aktive Tom's-Fernconnectoren dimensionsuebergreifend verfolgen und alle erreichbaren Teilnetze in einem gemeinsamen Nur-Lese-Dry-Run zusammenfassen.
+1. Den gemeinsamen Fernnetz-Dry-Run um einen UAT-Bericht je Dimension und Teilnetz erweitern.
 2. Echtes Chunk-Unload/-Reload mit einem persistierten Testnetz absichern und die weltweite Chunk-Invalidierung anschliessend auf betroffene Chunks beziehungsweise Komponenten verfeinern.
 3. Nach erfolgreichem Dry Run die protokollierte Konvertierung von Kabeln, Trims und Connectoren mit Journal und Rollback implementieren. Kein Lageritem wird dabei umgelagert.
 4. Einen grossen Bestands- und Performance-UAT sowie einen echten Test an einer Sicherung des bestehenden Lagers durchfuehren. Abnahmekriterium ist, dass die Welt anschliessend ohne Tom's denselben Bestand ueber Lumungus anzeigt.
