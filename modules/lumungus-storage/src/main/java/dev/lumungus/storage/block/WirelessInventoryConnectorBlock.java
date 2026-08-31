@@ -105,13 +105,16 @@ public final class WirelessInventoryConnectorBlock extends BaseEntityBlock {
         if (!level.isClientSide()
                 && level.getBlockEntity(pos) instanceof WirelessInventoryConnectorBlockEntity connector) {
             WirelessInventoryConnectorRegistry.register(level, pos);
+            boolean linked = connector.refreshControllerLink();
             int inventories = connector.endpoints().size();
+            BlockPos controllerPos = connector.linkedControllerPosition();
             player.sendSystemMessage(Component.translatable(
-                    connector.refreshControllerLink()
+                    linked
                             ? "message.lumungus_storage.wireless_inventory_connector.connected"
                             : "message.lumungus_storage.wireless_inventory_connector.no_wireless_controller",
                     tier.label(),
-                    inventories
+                    inventories,
+                    controllerPos == null ? Component.empty() : WirelessStatusText.position(controllerPos)
             ));
         }
         return InteractionResult.SUCCESS;

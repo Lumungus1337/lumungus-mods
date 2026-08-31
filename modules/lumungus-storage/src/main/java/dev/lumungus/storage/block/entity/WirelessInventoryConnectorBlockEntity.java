@@ -71,6 +71,11 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
                 && networkId.equals(controller.getNetworkId());
     }
 
+    public BlockPos linkedControllerPosition() {
+        StorageControllerBlockEntity controller = linkedControllerBlockEntity();
+        return controller != null && isLinkedTo(controller) ? controller.getBlockPos() : null;
+    }
+
     public List<PhysicalInventoryEndpoint> endpoints() {
         if (level == null || level.isClientSide()) {
             return List.of();

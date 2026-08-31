@@ -109,7 +109,9 @@ public final class WirelessStorageControllerBlock extends BaseEntityBlock {
                 StorageControllerBlockEntity controller = wireless.linkedController();
                 player.sendSystemMessage(Component.translatable(controller == null
                         ? "message.lumungus_storage.wireless_controller.unlinked"
-                        : "message.lumungus_storage.wireless_controller.connected", tier.label()));
+                        : "message.lumungus_storage.wireless_controller.connected",
+                        tier.label(),
+                        controller == null ? Component.empty() : WirelessStatusText.position(controller.getBlockPos())));
                 if (controller != null) {
                     player.openMenu(wireless);
                 }

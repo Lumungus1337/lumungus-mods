@@ -4,13 +4,13 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.28`
+- Version: `0.1.0-uat.29`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.28.zip`
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.29.zip`
 - Abnahmestatus: `AUTOMATED_SERVER_PASS`; Arbeitszyklen, gerichtete Arbeitsseiten, Redstone-Pause, Breaker-Schutz, Tooltips, tragbare Storage Interfaces, Wireless Inventory Connectoren und Wireless-Reichweiten jenseits der Kurzdistanz sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
@@ -94,7 +94,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.28`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.29`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|
