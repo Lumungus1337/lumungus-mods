@@ -150,11 +150,17 @@ public final class StorageOutputBlock extends BaseEntityBlock {
 
             output.refreshControllerLink();
             ItemStack filter = output.filter();
+            Direction facing = state.getValue(FACING);
+            Component status = Component.translatable(WorkBlockPower.isPaused(level, pos)
+                    ? "message.lumungus_storage.work_block.paused"
+                    : "message.lumungus_storage.work_block.running");
             player.sendSystemMessage(Component.translatable(
                     filter.isEmpty()
                             ? "message.lumungus_storage.output.active_unfiltered"
                             : "message.lumungus_storage.output.active_filtered",
-                    filter.getHoverName()
+                    filter.getHoverName(),
+                    Component.translatable("direction.minecraft." + facing.getName()),
+                    status
             ));
         }
         return InteractionResult.SUCCESS;

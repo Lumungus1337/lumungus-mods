@@ -150,11 +150,17 @@ public final class StorageBreakerBlock extends BaseEntityBlock {
 
             breaker.refreshControllerLink();
             ItemStack filter = breaker.filter();
+            Direction facing = state.getValue(FACING);
+            Component status = Component.translatable(WorkBlockPower.isPaused(level, pos)
+                    ? "message.lumungus_storage.work_block.paused"
+                    : "message.lumungus_storage.work_block.running");
             player.sendSystemMessage(Component.translatable(
                     filter.isEmpty()
                             ? "message.lumungus_storage.breaker.active_unfiltered"
                             : "message.lumungus_storage.breaker.active_filtered",
-                    filter.getHoverName()
+                    filter.getHoverName(),
+                    Component.translatable("direction.minecraft." + facing.getName()),
+                    status
             ));
         }
         return InteractionResult.SUCCESS;

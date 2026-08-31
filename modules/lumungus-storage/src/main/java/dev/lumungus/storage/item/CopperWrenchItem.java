@@ -1,7 +1,9 @@
 package dev.lumungus.storage.item;
 
 import dev.lumungus.storage.registry.LumungusStorageTags;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -10,6 +12,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,6 +31,17 @@ public final class CopperWrenchItem extends Item {
                 context.getClickedPos(),
                 context.getPlayer()
         );
+    }
+
+    @Override
+    public void appendHoverText(
+            ItemStack stack,
+            TooltipContext context,
+            TooltipDisplay display,
+            Consumer<Component> textConsumer,
+            TooltipFlag flag
+    ) {
+        textConsumer.accept(Component.translatable("tooltip.lumungus_storage.copper_wrench"));
     }
 
     public static InteractionResult dismantle(ItemStack wrench, Level level, BlockPos pos, Player player) {

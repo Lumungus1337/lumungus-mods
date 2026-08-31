@@ -7,6 +7,7 @@ import dev.lumungus.storage.menu.LumungusCraftingMenu;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageDataComponents;
 import java.util.Comparator;
+import java.util.function.Consumer;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -22,6 +23,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
@@ -31,6 +34,18 @@ public final class PortableStorageInterfaceItem extends Item {
     public PortableStorageInterfaceItem(Properties properties, WirelessStorageControllerBlock.WirelessTier tier) {
         super(properties);
         this.tier = tier;
+    }
+
+    @Override
+    public void appendHoverText(
+            ItemStack stack,
+            TooltipContext context,
+            TooltipDisplay display,
+            Consumer<Component> textConsumer,
+            TooltipFlag flag
+    ) {
+        textConsumer.accept(Component.translatable("tooltip.lumungus_storage.portable_interface"));
+        textConsumer.accept(Component.translatable("tooltip.lumungus_storage.portable_interface." + tier.label()));
     }
 
     @Override
