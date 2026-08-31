@@ -1,6 +1,6 @@
 # Tom's-Migration: sicherer Bestandsvergleich
 
-Status: Read-only-Vergleich implementiert, konkrete Tom's-Anbindung als naechster Slice
+Status: Read-only-Scanner fuer Tom's `26.2-2.11.3` implementiert; Weltkopie-UAT als naechster Schritt
 
 ## Ziel
 
@@ -48,4 +48,4 @@ Fuer den UAT gibt der Befehl jedes Teilnetz mit Dimension, Startposition, Blockz
 
 Tom's `26.2-2.11.3` ist als optionale Compile- und lokale Testabhaengigkeit festgelegt und wird nicht in das Lumungus-JAR eingebettet. Ein echter Fabric-GameTest startet beide Mods gemeinsam und prueft den Nur-Lese-Zugriff auf Kanal-ID und Laufzeitstatus eines realen Tom's-Connectors.
 
-Als Naechstes erhaelt der gemeinsame Fernnetz-Dry-Run einen detaillierten UAT-Bericht je Dimension und Teilnetz. Schreibende Konvertierung, Journal und Rollback bleiben gesperrt, bis der vollstaendige Bericht am Welt-Backup erfolgreich abgenommen wurde.
+Der gemeinsame Fernnetz-Dry-Run meldet Dimension, Startposition, Blockzahlen und Inventarsummen je Teilnetz. Der naechste Schritt ist der Nur-Lese-UAT an einer Kopie des bestehenden Lagers nach [TOMS_MIGRATION_UAT.md](TOMS_MIGRATION_UAT.md). Schreibende Konvertierung, Journal und Rollback bleiben gesperrt, bis dieser Bericht erfolgreich abgenommen wurde.

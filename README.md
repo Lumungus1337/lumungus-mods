@@ -33,11 +33,11 @@ Die Gameplay-Module haengen von Core ab, aber Core soll nicht von den Gameplay-M
 | Modul | Rolle | Status |
 |---|---|---|
 | `lumungus-core` | Gemeinsame APIs, Basistypen und technische Infrastruktur | angelegt |
-| `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.3` UAT Candidate; physische Inventare als naechster Slice |
+| `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.4` UAT Candidate; physische Inventare und Inventory Trims implementiert |
 | `lumungus-backpack` | Modularer Rucksack mit Upgrade-Slots und spaeter Jetpack-Upgrade | angelegt |
 | `lumungus-machines` | Maschinen- und Automationsmodule | angelegt |
 | `lumungus-autotrader` | Automatisierte Handelsablaeufe, Trading-Terminals und spaetere Storage-Anbindung | angelegt |
-| `lumungus-integration` | Cross-Mod-Integration zwischen Lumungus-Modulen und optional externen Mods | angelegt |
+| `lumungus-integration` | Cross-Mod-Integration zwischen Lumungus-Modulen und optional externen Mods | Tom's-2.11.3-Nur-Lese-Scanner fuer den Migrations-UAT |
 
 RailQuarry wird noch nicht migriert. Es ist als zukuenftiges Modul oder Feature innerhalb `lumungus-machines` dokumentiert, sobald die Core-APIs stabil genug sind.
 
@@ -54,10 +54,16 @@ Jedes Modul ist ein eigenes Gradle-Subprojekt mit eigener `fabric.mod.json`. Dad
 ./gradlew :lumungus-storage:build
 ./gradlew build
 ./gradlew storageUatBundle
+./gradlew tomsMigrationUatBundle
 ```
 
 `storageUatBundle` erzeugt unter `build/uat/` ein Testpaket mit den getrennten
 Core- und Storage-JARs sowie der UAT-Checkliste.
+
+`tomsMigrationUatBundle` erzeugt ein separates, schreibgeschuetztes Testpaket
+mit Core, Storage und Integration. Es enthaelt Tom's Simple Storage bewusst
+nicht; fuer den Test wird die bereits installierte Fabric-Version `26.2-2.11.3`
+verwendet.
 
 Die Module erzeugen getrennte installierbare JARs. Runtime-Abhaengigkeiten werden in den jeweiligen `fabric.mod.json`-Dateien deklariert. Konkrete Java-Abhaengigkeiten zwischen den Modulen werden erst aktiviert, sobald ein Modul Core-API-Typen wirklich importiert; fuer 26.x muss diese Stelle mit Looms aktueller Multi-Project-Empfehlung gegengeprueft werden.
 
@@ -71,7 +77,7 @@ Vorgeschlagene Strategie:
 
 - Gemeinsame Versionslinie fuer die Modreihe: `0.1.0`, `0.2.0`, `1.0.0`.
 - Snapshot-Versionen waehrend Entwicklung: `0.1.0-SNAPSHOT`.
-- UAT-Kandidaten vor einer Freigabe: `0.1.0-uat.1`, `0.1.0-uat.2`, `0.1.0-uat.3`.
+- UAT-Kandidaten vor einer Freigabe: `0.1.0-uat.1`, `0.1.0-uat.2`, `0.1.0-uat.3`, `0.1.0-uat.4`.
 - Tags pro Gesamtstand: `v0.1.0`.
 - Optional zusaetzliche Modul-Tags, falls Releases auseinanderlaufen: `core-v0.1.0`, `storage-v0.1.0`.
 - Breaking Changes in Core erhoehen mindestens die Minor-Version, nach `1.0.0` die Major-Version.

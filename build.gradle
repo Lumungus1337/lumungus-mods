@@ -137,3 +137,36 @@ tasks.register("storageUatBundle", Zip) {
         include "images/**"
     }
 }
+
+tasks.register("tomsMigrationUatBundle", Zip) {
+    group = "distribution"
+    description = "Builds the read-only Tom's migration UAT bundle with Core, Storage, and Integration."
+    dependsOn(
+        ":lumungus-core:jar",
+        ":lumungus-core:check",
+        ":lumungus-storage:jar",
+        ":lumungus-storage:check",
+        ":lumungus-storage:runGameTest",
+        ":lumungus-integration:jar",
+        ":lumungus-integration:check",
+        ":lumungus-integration:runGameTest"
+    )
+
+    archiveFileName = "lumungus-toms-migration-${project.version}.zip"
+    destinationDirectory = layout.buildDirectory.dir("uat")
+
+    from({ project(":lumungus-core").tasks.named("jar").get().archiveFile.get().asFile }) {
+        into "mods"
+    }
+    from({ project(":lumungus-storage").tasks.named("jar").get().archiveFile.get().asFile }) {
+        into "mods"
+    }
+    from({ project(":lumungus-integration").tasks.named("jar").get().archiveFile.get().asFile }) {
+        into "mods"
+    }
+    from("docs/storage") {
+        include "TOMS_MIGRATION.md"
+        include "TOMS_MIGRATION_UAT.md"
+        include "TOMS_MIGRATION_UAT_RESULTS_0.1.0-uat.4.md"
+    }
+}

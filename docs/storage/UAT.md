@@ -4,14 +4,14 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.3`
+- Version: `0.1.0-uat.4`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.3.zip`
-- Abnahmestatus: `AUTOMATED_CLIENT_PASS`, manueller Interaktions- und Multiplayer-UAT noch offen; siehe [UAT_RESULTS_0.1.0-uat.3.md](UAT_RESULTS_0.1.0-uat.3.md)
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.4.zip`
+- Abnahmestatus: `AUTOMATED_SERVER_PASS`; der Client-UAT aus `0.1.0-uat.3` bleibt die letzte visuelle Referenz, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
 
@@ -27,13 +27,13 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | Netzwerk-Crafting | `PASS` | Ein Rezept nutzt einen Stamm aus dem Netzwerk und erzeugt vier Bretter. |
 | JEI-Transfer | `PASS` | Der Lumungus-Transferknopf befuellt das 3x3-Raster serverseitig aus dem Netzwerk. |
 | Automatisierte Logiktests | `PASS` | Elf JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
-| Server-GameTests | `PASS` | Vier reale GameTests pruefen stabile Bay-Zuordnung, verlustfreien Besitzerwechsel, partielles Shift-Crafting und atomaren JEI-Fehltransfer. |
-| Client-GameTest | `PASS` | Ein echter Fabric-Testclient baut ein Netzwerk auf, synchronisiert fuenf Materialtypen, oeffnet das Terminal mit JEI und erzeugt einen visuell geprueften Screenshot. |
+| Server-GameTests | `PASS` | Dreizehn reale GameTests pruefen unter anderem physische Inventare, Kabel, Trims, Chunk-Grenzen, Lastfaelle und Crafting. |
+| Client-GameTest | `BASELINE uat.3` | Der letzte visuell gepruefte Fabric-Testclient stammt aus `0.1.0-uat.3`; fuer `uat.4` ist kein neuer visueller Anspruch Teil des Migrationskandidaten. |
 
 ## Testaufbau
 
 - [ ] **UAT-01 Setup:** Minecraft 26.2 startet mit Fabric, Lumungus Core, Lumungus Storage und der vorgesehenen JEI-Version ohne Ladefehler.
-- [ ] **UAT-02 Testnetz:** Ein Controller, mindestens zwei Drive Bays mit 16k Cells und ein Terminal bilden ein gemeinsames Netzwerk; ein zweiter Spieler kann beitreten.
+- [ ] **UAT-02 Testnetz:** Ein Controller, mehrere Kisten oder Faesser ueber Kabel, Connectoren oder Inventory Trims und ein Terminal bilden ein gemeinsames Netzwerk; ein zweiter Spieler kann beitreten.
 - [ ] **UAT-03 Testdaten:** Das Netzwerk enthaelt mehrere Itemtypen, grosse Mengen, Items mit Komponenten sowie freie und nahezu volle Cells.
 
 ## Netzwerk und Persistenz
@@ -67,7 +67,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.3`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.4`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|
