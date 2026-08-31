@@ -25,6 +25,22 @@ final class TomsReadOnlyNetworkScannerTest {
 
         assertEquals(3, report.blocks().size());
         assertEquals(3, report.convertibleCount());
+        assertEquals(0, report.readOnlySupportedCount());
+        assertEquals(0, report.blockingCount());
+        assertTrue(report.safeForInventorySnapshot());
+    }
+
+    @Test
+    void acceptsBasicInventoryHoppersForReadOnlySnapshots() {
+        FakeWorld world = new FakeWorld();
+        world.put(0, "inventory_connector");
+        world.put(1, "basic_inventory_hopper");
+
+        TomsDryRunReport report = TomsReadOnlyNetworkScanner.scan(world, pos(0), 100);
+
+        assertEquals(2, report.blocks().size());
+        assertEquals(1, report.convertibleCount());
+        assertEquals(1, report.readOnlySupportedCount());
         assertEquals(0, report.blockingCount());
         assertTrue(report.safeForInventorySnapshot());
     }
@@ -39,6 +55,7 @@ final class TomsReadOnlyNetworkScannerTest {
         TomsDryRunReport report = TomsReadOnlyNetworkScanner.scan(world, pos(0), 100);
 
         assertEquals(3, report.blocks().size());
+        assertEquals(0, report.readOnlySupportedCount());
         assertEquals(2, report.blockingCount());
         assertFalse(report.safeForInventorySnapshot());
     }

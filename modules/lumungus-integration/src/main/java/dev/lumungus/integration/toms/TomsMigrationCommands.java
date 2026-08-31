@@ -53,6 +53,7 @@ public final class TomsMigrationCommands {
                 "command.lumungus_integration.migration.blocks",
                 remoteScan.blockCount(),
                 remoteScan.convertibleCount(),
+                remoteScan.readOnlySupportedCount(),
                 remoteScan.blockingCount()
         ), false);
         reportSegmentTopology(source, remoteScan);
@@ -71,7 +72,7 @@ public final class TomsMigrationCommands {
         }
         remoteScan.segments().stream()
                 .flatMap(segment -> segment.report().blocks().stream().map(block -> new SegmentBlock(segment, block)))
-                .filter(entry -> entry.block().plan().disposition() != TomsMigrationDisposition.CONVERTIBLE)
+                .filter(entry -> !entry.block().plan().disposition().safeForInventorySnapshot())
                 .limit(10)
                 .forEach(entry -> source.sendFailure(Component.translatable(
                         "command.lumungus_integration.migration.blocker",
@@ -120,6 +121,7 @@ public final class TomsMigrationCommands {
                     report.start().toShortString(),
                     report.blocks().size(),
                     report.convertibleCount(),
+                    report.readOnlySupportedCount(),
                     report.blockingCount()
             ), false);
         }

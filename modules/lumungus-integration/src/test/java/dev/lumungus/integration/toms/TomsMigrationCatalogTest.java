@@ -30,8 +30,20 @@ final class TomsMigrationCatalogTest {
         TomsBlockPlan trim = TomsMigrationCatalog.planFor(toms("trim")).orElseThrow();
 
         assertEquals(TomsMigrationDisposition.CONVERTIBLE, connector.disposition());
+        assertTrue(connector.disposition().convertible());
+        assertTrue(connector.disposition().safeForInventorySnapshot());
         assertEquals(lumungus("storage_controller"), connector.replacementId().orElseThrow());
         assertEquals(lumungus("inventory_trim"), trim.replacementId().orElseThrow());
+    }
+
+    @Test
+    void keepsBasicInventoryHoppersSnapshotSafeWithoutConversionMapping() {
+        TomsBlockPlan hopper = TomsMigrationCatalog.planFor(toms("basic_inventory_hopper")).orElseThrow();
+
+        assertEquals(TomsMigrationDisposition.READ_ONLY_SUPPORTED, hopper.disposition());
+        assertFalse(hopper.disposition().convertible());
+        assertTrue(hopper.disposition().safeForInventorySnapshot());
+        assertTrue(hopper.replacementId().isEmpty());
     }
 
     @Test

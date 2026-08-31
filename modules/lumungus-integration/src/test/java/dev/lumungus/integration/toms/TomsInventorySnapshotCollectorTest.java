@@ -44,6 +44,26 @@ final class TomsInventorySnapshotCollectorTest {
     }
 
     @Test
+    void snapshotsInventoriesTouchedByBasicInventoryHoppers() {
+        FakeInventoryWorld world = new FakeInventoryWorld();
+        world.block(new BlockPos(0, 0, 0), "inventory_connector");
+        world.block(new BlockPos(1, 0, 0), "basic_inventory_hopper");
+        TomsReadOnlyInventoryEndpoint hopperEndpoint = new TomsReadOnlyInventoryEndpoint(
+                new BlockPos(1, 0, 1),
+                27,
+                java.util.List.of(new ResourceAmount(MinecraftTestBootstrap.stack(Items.BARREL), 120))
+        );
+        world.inventory(new BlockPos(1, 0, 1), hopperEndpoint);
+
+        TomsDryRunReport report = TomsReadOnlyNetworkScanner.scan(world, new BlockPos(0, 0, 0), 100);
+        MigrationInventorySnapshot snapshot = TomsInventorySnapshotCollector.capture(world, report, "Tom's dry run");
+
+        assertEquals(1, snapshot.endpointCount());
+        assertEquals(27, snapshot.slotCount());
+        assertEquals(120, snapshot.totalAmount());
+    }
+
+    @Test
     void refusesToSnapshotAnIncompleteNetworkScan() {
         FakeInventoryWorld world = new FakeInventoryWorld();
         world.block(new BlockPos(0, 0, 0), "inventory_cable");

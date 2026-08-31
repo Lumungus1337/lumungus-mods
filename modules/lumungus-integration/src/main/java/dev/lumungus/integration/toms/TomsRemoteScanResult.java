@@ -25,6 +25,10 @@ public record TomsRemoteScanResult(
         return segments.stream().mapToLong(segment -> segment.report().convertibleCount()).sum();
     }
 
+    public long readOnlySupportedCount() {
+        return segments.stream().mapToLong(segment -> segment.report().readOnlySupportedCount()).sum();
+    }
+
     public long blockingCount() {
         return segments.stream().mapToLong(segment -> segment.report().blockingCount()).sum();
     }

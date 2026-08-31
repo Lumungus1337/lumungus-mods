@@ -1,7 +1,7 @@
 {
   "command.lumungus_integration.migration.not_toms": "No loaded Tom's network block was found at that position.",
-  "command.lumungus_integration.migration.blocks": "Tom's dry run: %1$s network blocks, %2$s convertible and %3$s blocking.",
-  "command.lumungus_integration.migration.segment": "Segment %1$s/%2$s: %3$s at %4$s, %5$s blocks (%6$s convertible, %7$s blocking).",
+  "command.lumungus_integration.migration.blocks": "Tom's dry run: %1$s network blocks, %2$s convertible, %3$s read-only supported and %4$s blocking.",
+  "command.lumungus_integration.migration.segment": "Segment %1$s/%2$s: %3$s at %4$s, %5$s blocks (%6$s convertible, %7$s read-only supported, %8$s blocking).",
   "command.lumungus_integration.migration.segment_inventory": "Segment %1$s inventory: %2$s inventories, %3$s slots, %4$s items and %5$s item types.",
   "command.lumungus_integration.migration.segment_truncated": "Segment output limited to %1$s of %2$s entries; the aggregate remains complete.",
   "command.lumungus_integration.migration.unloaded": "Scan stopped: the network touches an unloaded area. All affected chunks must be loaded.",

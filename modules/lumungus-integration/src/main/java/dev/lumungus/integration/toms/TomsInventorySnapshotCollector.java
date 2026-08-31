@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
@@ -21,6 +22,7 @@ public final class TomsInventorySnapshotCollector {
             "crafting_terminal",
             "trim",
             "painted_trim",
+            "basic_inventory_hopper",
             "inventory_cable_connector",
             "inventory_cable_connector_framed"
     );
@@ -59,6 +61,19 @@ public final class TomsInventorySnapshotCollector {
     }
 
     public static MigrationInventorySnapshot capture(List<TomsNetworkSegment> segments, String source) {
+        if (FabricLoader.getInstance().isModLoaded("toms_storage")) {
+            try {
+                return Toms211InventorySnapshotCollector.capture(segments, source).orElseGet(() ->
+                        captureAdjacentInventories(segments, source)
+                );
+            } catch (LinkageError incompatibleRuntime) {
+                return captureAdjacentInventories(segments, source);
+            }
+        }
+        return captureAdjacentInventories(segments, source);
+    }
+
+    private static MigrationInventorySnapshot captureAdjacentInventories(List<TomsNetworkSegment> segments, String source) {
         Map<DimensionPos, TomsReadOnlyInventoryEndpoint> endpoints = new LinkedHashMap<>();
         for (TomsNetworkSegment segment : segments) {
             TomsDryRunReport report = segment.report().withRemoteConnectionsResolved();

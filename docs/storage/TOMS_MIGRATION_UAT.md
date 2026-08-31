@@ -1,4 +1,4 @@
-# Tom's-Migration UAT 0.1.0-uat.4
+# Tom's-Migration UAT 0.1.0-uat.5
 
 Dieser UAT prueft ausschliesslich den lesenden Zugriff auf ein bestehendes
 Tom's-Simple-Storage-Lager. Der Kandidat enthaelt keine schreibende
@@ -10,8 +10,8 @@ Konvertierung und darf keine Bloecke oder Inventare veraendern.
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Tom's Simple Storage: Fabric `26.2-2.11.3` (separat installiert)
-- Lumungus: `0.1.0-uat.4`
-- Paket: `build/uat/lumungus-toms-migration-0.1.0-uat.4.zip`
+- Lumungus: `0.1.0-uat.5`
+- Paket: `build/uat/lumungus-toms-migration-0.1.0-uat.5.zip`
 
 Das ZIP enthaelt `lumungus-core`, `lumungus-storage` und
 `lumungus-integration` als getrennte JARs im Ordner `mods/`.
@@ -22,6 +22,7 @@ Das ZIP enthaelt `lumungus-core`, `lumungus-storage` und
 - Die unveraenderte Originalsicherung bis zum Abschluss nicht starten oder ueberschreiben.
 - Tom's fuer diesen Test installiert lassen.
 - Bei Ladefehlern, unbekannten Tom's-Bloecken, ungeladenen Grenzen oder einem abgebrochenen Scan sofort stoppen.
+- Tom's `basic_inventory_hopper` darf im Lesetest vorkommen. Er wird fuer den Snapshot beruecksichtigt, aber noch nicht als schreibend konvertierbarer Block behandelt.
 - Nach dem Scan keine Tom's-Bloecke entfernen. Dieser Kandidat prueft nur den Bericht.
 
 ## Ablauf
@@ -48,7 +49,7 @@ Das ZIP enthaelt `lumungus-core`, `lumungus-storage` und
 
 ## Ergebnis
 
-Version: `0.1.0-uat.4`  Tester: `________________`  Datum: `________________`
+Version: `0.1.0-uat.5`  Tester: `________________`  Datum: `________________`
 
 Gesamt: `PASS` / `FAIL` / `BLOCKED`
 

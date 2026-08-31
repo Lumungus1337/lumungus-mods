@@ -18,7 +18,7 @@ public record TomsBlockPlan(
         if (reason.isEmpty()) {
             throw new IllegalArgumentException("Migration reason must not be blank");
         }
-        if ((disposition == TomsMigrationDisposition.CONVERTIBLE) != replacementId.isPresent()) {
+        if (disposition.convertible() != replacementId.isPresent()) {
             throw new IllegalArgumentException("Only convertible blocks must define a replacement");
         }
     }

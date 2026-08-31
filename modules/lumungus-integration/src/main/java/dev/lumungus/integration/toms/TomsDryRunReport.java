@@ -18,12 +18,20 @@ public record TomsDryRunReport(
 
     public long convertibleCount() {
         return blocks.stream()
-                .filter(block -> block.plan().disposition() == TomsMigrationDisposition.CONVERTIBLE)
+                .filter(block -> block.plan().disposition().convertible())
+                .count();
+    }
+
+    public long readOnlySupportedCount() {
+        return blocks.stream()
+                .filter(block -> block.plan().disposition() == TomsMigrationDisposition.READ_ONLY_SUPPORTED)
                 .count();
     }
 
     public long blockingCount() {
-        return blocks.size() - convertibleCount();
+        return blocks.stream()
+                .filter(block -> !block.plan().disposition().safeForInventorySnapshot())
+                .count();
     }
 
     public boolean safeForInventorySnapshot() {

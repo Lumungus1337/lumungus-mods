@@ -44,8 +44,8 @@ public final class TomsMigrationCatalog {
                 "Filing Cabinet can contain items and needs a dedicated content migration");
         block(plans, "open_crate", TomsMigrationDisposition.BLOCKED_UNSUPPORTED, "No Lumungus equivalent yet");
         block(plans, "level_emitter", TomsMigrationDisposition.BLOCKED_UNSUPPORTED, "No Lumungus equivalent yet");
-        block(plans, "basic_inventory_hopper", TomsMigrationDisposition.BLOCKED_UNSUPPORTED,
-                "No Lumungus equivalent yet");
+        readOnlySupported(plans, "basic_inventory_hopper",
+                "Known Tom's automation node; conversion needs a Lumungus Machines adapter");
         block(plans, "inventory_interface", TomsMigrationDisposition.BLOCKED_UNSUPPORTED,
                 "Automation behavior needs a dedicated adapter");
         block(plans, "inventory_proxy", TomsMigrationDisposition.BLOCKED_UNSUPPORTED,
@@ -71,6 +71,16 @@ public final class TomsMigrationCatalog {
     ) {
         Identifier sourceId = toms(source);
         plans.put(sourceId, blocked(sourceId, disposition, reason));
+    }
+
+    private static void readOnlySupported(Map<Identifier, TomsBlockPlan> plans, String source, String reason) {
+        Identifier sourceId = toms(source);
+        plans.put(sourceId, new TomsBlockPlan(
+                sourceId,
+                TomsMigrationDisposition.READ_ONLY_SUPPORTED,
+                Optional.empty(),
+                reason
+        ));
     }
 
     private static TomsBlockPlan blocked(
