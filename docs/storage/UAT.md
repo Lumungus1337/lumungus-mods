@@ -4,13 +4,13 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.15`
+- Version: `0.1.0-uat.16`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.15.zip`
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.16.zip`
 - Abnahmestatus: `AUTOMATED_SERVER_PASS`; der Client-UAT aus `0.1.0-uat.3` bleibt die letzte visuelle Referenz, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
@@ -73,6 +73,8 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-16j Blockdesign:** Controller, Crafting Terminal, Drive Bay, Inventaranschluss, Rohrpostrohr, Rohrpostblende, Storage Cell und Kupfer-Schraubenschluessel nutzen die Kupfer-/Anthrazit-/Rohrpost-Optik ohne fehlende Texturen.
 - [ ] **UAT-16k Neue Geraetebloecke:** Wireless Storage Controller I/II/III, Lager-Output, Lager-Breaker und Lager-Placer erscheinen im Kreativmenue, sind craftbar, droppen beim Abbau und reagieren auf den Kupfer-Schraubenschluessel.
 - [ ] **UAT-16l Rohrpost-Rendering:** Das Rohrpostrohr erscheint im Kreativmenue und in Rezepten als Rohrpostrohr, nicht als Cable; beim Platzieren auf Boden, Wand oder Decke entsteht kein X-Ray-/Durchsicht-Effekt.
+- [ ] **UAT-16m Gerichtete Rohrpost:** Rohrpostrohre bilden sichtbare Arme nur zu Lumungus-Storage-Geraeten oder anderen Rohrpostrohren; normale Bloecke, Boden, Waende und Kisten ohne Inventaranschluss erzeugen keine falschen Anschluesse.
+- [ ] **UAT-16n Block-Unterscheidbarkeit:** Controller, Terminal, Drive Bay, Output, Breaker, Placer und Wireless-Controller sind im Inventar und platziert auf einen Blick unterscheidbar.
 
 ## Multiplayer und Grenzfaelle
 
@@ -83,7 +85,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.15`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.16`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|

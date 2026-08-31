@@ -6,6 +6,7 @@
 - Crafting Terminal: Spieleroberflaeche fuer Suche, Einlagerung, Entnahme und manuelles Crafting aus Netzwerkbestaenden.
 - Inventory Connector: Bindet angrenzende Kisten, Faesser, Shulkerboxen und kompatible Mod-Inventare ein, ohne deren Inhalte zu verschieben.
 - Rohrpostrohr/Rohrpostblende: Verbindet Controller, Terminals und Connectoren ueber groessere Lageranlagen. Neue Rezepte und das Kreativmenue nutzen `pneumatic_pipe`; die alte interne ID `inventory_cable` bleibt nur als Legacy-Kompatibilitaet fuer bestehende Testwelten lesbar.
+- Gerichtete Rohrpost: Rohre zeigen und verbinden nur noch zu Lumungus-Storage-Geraeten oder anderen Rohren, nicht automatisch zu jedem angrenzenden Block.
 - Drive Bay und 16k Storage Cell: Bereits implementierter Prototyp, der als optionaler Massenspeicher erhalten bleiben kann, aber nicht mehr Voraussetzung fuer das Netzwerk ist.
 - Wireless Storage Controller I/II/III: Geplante drahtlose Netzbruecken fuer kurze Distanz, gleiche Dimension und mehrere Dimensionen.
 - Lager-Output: Soll Items aus dem Storage-Netzwerk in ein angrenzendes Inventar ausgeben.
@@ -21,6 +22,7 @@ Die Storage-Bloecke sollen wie eine Mischung aus Item-Rohrpost und Computertechn
 - dunkle Frontplatten
 - gruene Monitor-/Statusflaechen
 - runde, farbige Rohrsegmente statt flacher Kabel
+- klar unterscheidbare Maschinenfronten: Controller mit Anzeige, Terminal mit CRT, Bay mit Zellenschaechten, Output mit Pfeil, Breaker mit Bohrkopf, Placer mit Platzierarm
 - sichtbare Anschlussstuecke an Controller, Terminals, Maschinen und Inventaren
 - spaeter eigene Pixel-Texturen mit Tasten, LEDs, kleinen Lueftungsschlitzen und CRT-Anmutung
 

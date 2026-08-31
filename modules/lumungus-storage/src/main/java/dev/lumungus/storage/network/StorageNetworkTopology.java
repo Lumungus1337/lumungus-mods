@@ -1,6 +1,7 @@
 package dev.lumungus.storage.network;
 
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
+import dev.lumungus.storage.block.InventoryCableBlock;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
 import java.util.ArrayDeque;
 import java.util.Collections;
@@ -91,7 +92,7 @@ public final class StorageNetworkTopology {
             BlockPos current = pending.removeFirst();
             for (Direction direction : Direction.values()) {
                 BlockPos neighbor = current.relative(direction);
-                if (level.isLoaded(neighbor) && isNetworkNode(level, neighbor)) {
+                if (level.isLoaded(neighbor) && areConnected(level, current, direction, neighbor)) {
                     BlockPos stableNeighbor = neighbor.immutable();
                     if (visited.add(stableNeighbor)) {
                         pending.addLast(stableNeighbor);
@@ -141,19 +142,38 @@ public final class StorageNetworkTopology {
 
     private static boolean isNetworkNode(Level level, BlockPos pos) {
         Block block = level.getBlockState(pos).getBlock();
+        return isDeviceNode(block)
+                || block == LumungusStorageBlocks.PNEUMATIC_PIPE
+                || block == LumungusStorageBlocks.INVENTORY_CABLE;
+    }
+
+    public static boolean isDeviceNode(Block block) {
         return block == LumungusStorageBlocks.STORAGE_CONTROLLER
                 || block == LumungusStorageBlocks.CRAFTING_TERMINAL
                 || block == LumungusStorageBlocks.DRIVE_BAY
                 || block == LumungusStorageBlocks.INVENTORY_CONNECTOR
                 || block == LumungusStorageBlocks.INVENTORY_TRIM
-                || block == LumungusStorageBlocks.PNEUMATIC_PIPE
-                || block == LumungusStorageBlocks.INVENTORY_CABLE
                 || block == LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT
                 || block == LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_DIMENSION
                 || block == LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL
                 || block == LumungusStorageBlocks.STORAGE_OUTPUT
                 || block == LumungusStorageBlocks.STORAGE_BREAKER
                 || block == LumungusStorageBlocks.STORAGE_PLACER;
+    }
+
+    private static boolean areConnected(Level level, BlockPos current, Direction direction, BlockPos neighbor) {
+        Block block = level.getBlockState(neighbor).getBlock();
+        if (!isNetworkNode(level, neighbor)) {
+            return false;
+        }
+
+        if (InventoryCableBlock.isPipe(level.getBlockState(current))) {
+            return InventoryCableBlock.connects(level.getBlockState(current), direction);
+        }
+        if (InventoryCableBlock.isPipe(level.getBlockState(neighbor))) {
+            return InventoryCableBlock.connects(level.getBlockState(neighbor), direction.getOpposite());
+        }
+        return isDeviceNode(block);
     }
 
     private static boolean insideCube(BlockPos first, BlockPos second, int radius) {

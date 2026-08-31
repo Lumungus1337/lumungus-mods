@@ -1,0 +1,23 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "pipe": "lumungus_storage:block/pipe_green_flow",
+    "rim": "lumungus_storage:block/pipe_rim",
+    "shine": "lumungus_storage:block/pipe_green_flow",
+    "particle": "lumungus_storage:block/pipe_green_flow"
+  },
+  "elements": [
+    {
+      "from": [6, 6, 0],
+      "to": [10, 10, 6],
+      "faces": {
+        "down": { "texture": "#pipe" },
+        "up": { "texture": "#shine" },
+        "north": { "texture": "#rim" },
+        "south": { "texture": "#pipe" },
+        "west": { "texture": "#pipe" },
+        "east": { "texture": "#pipe" }
+      }
+    }
+  ]
+}

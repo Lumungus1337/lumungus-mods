@@ -1,6 +1,7 @@
 package dev.lumungus.storage.gametest;
 
 import dev.lumungus.core.api.inventory.TransferMode;
+import dev.lumungus.storage.block.InventoryCableBlock;
 import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
 import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
 import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
@@ -14,6 +15,7 @@ import dev.lumungus.storage.registry.LumungusStorageBlocks;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Set;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
@@ -30,6 +32,7 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.Blocks;
@@ -163,6 +166,32 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
 
         context.assertTrue(connector.refreshControllerLink(), "Connector did not link across the chunk boundary");
         context.assertValueEqual(controller.count(new ItemStack(Items.REDSTONE)), 23L, "Cross-chunk item count");
+        context.succeed();
+    }
+
+    @GameTest(padding = 8)
+    public void pneumaticPipeConnectsOnlyToStorageNodes(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 1);
+        BlockPos pipePos = new BlockPos(2, 1, 1);
+        BlockPos connectorPos = new BlockPos(3, 1, 1);
+        BlockPos chestPos = new BlockPos(2, 1, 2);
+
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(pipePos, LumungusStorageBlocks.PNEUMATIC_PIPE);
+        context.setBlock(connectorPos, LumungusStorageBlocks.INVENTORY_CONNECTOR);
+        context.setBlock(chestPos, Blocks.CHEST);
+
+        BlockState pipeState = context.getLevel().getBlockState(context.absolutePos(pipePos));
+        context.assertTrue(pipeState.getValue(InventoryCableBlock.WEST), "Pipe did not connect to controller");
+        context.assertTrue(pipeState.getValue(InventoryCableBlock.EAST), "Pipe did not connect to connector");
+        context.assertTrue(!pipeState.getValue(InventoryCableBlock.SOUTH), "Pipe connected to a normal chest");
+        context.assertTrue(!pipeState.getValue(InventoryCableBlock.NORTH), "Pipe connected to air");
+        context.assertTrue(!pipeState.getValue(InventoryCableBlock.UP), "Pipe connected upward without a storage node");
+        context.assertTrue(!pipeState.getValue(InventoryCableBlock.DOWN), "Pipe connected downward into the floor");
+
+        Set<BlockPos> nodes = StorageNetworkTopology.connectedNodes(context.getLevel(), context.absolutePos(controllerPos));
+        context.assertTrue(nodes.contains(context.absolutePos(connectorPos)), "Pipe network did not reach connector");
+        context.assertTrue(!nodes.contains(context.absolutePos(chestPos)), "Pipe network included a normal chest");
         context.succeed();
     }
 

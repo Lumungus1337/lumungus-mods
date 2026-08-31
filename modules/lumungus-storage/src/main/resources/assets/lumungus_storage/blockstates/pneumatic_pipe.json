@@ -1,7 +1,11 @@
 {
-  "variants": {
-    "": {
-      "model": "lumungus_storage:block/pneumatic_pipe"
-    }
-  }
+  "multipart": [
+    { "apply": { "model": "lumungus_storage:block/pipe_center" } },
+    { "when": { "north": "true" }, "apply": { "model": "lumungus_storage:block/pipe_connection_north" } },
+    { "when": { "south": "true" }, "apply": { "model": "lumungus_storage:block/pipe_connection_south" } },
+    { "when": { "west": "true" }, "apply": { "model": "lumungus_storage:block/pipe_connection_west" } },
+    { "when": { "east": "true" }, "apply": { "model": "lumungus_storage:block/pipe_connection_east" } },
+    { "when": { "up": "true" }, "apply": { "model": "lumungus_storage:block/pipe_connection_up" } },
+    { "when": { "down": "true" }, "apply": { "model": "lumungus_storage:block/pipe_connection_down" } }
+  ]
 }
