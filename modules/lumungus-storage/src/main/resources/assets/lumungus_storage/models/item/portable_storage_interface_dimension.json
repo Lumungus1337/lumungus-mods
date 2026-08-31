@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "lumungus_storage:item/copper_wrench"
+  }
+}

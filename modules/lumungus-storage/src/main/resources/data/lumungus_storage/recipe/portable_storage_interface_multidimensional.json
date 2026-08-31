@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "minecraft:oxidized_copper",
+    "E": "minecraft:ender_eye",
+    "R": "minecraft:redstone_block",
+    "T": "lumungus_storage:portable_storage_interface_dimension"
+  },
+  "pattern": [
+    "CEC",
+    "RTR",
+    "CEC"
+  ],
+  "result": {
+    "id": "lumungus_storage:portable_storage_interface_multidimensional"
+  }
+}

@@ -1,6 +1,7 @@
 package dev.lumungus.storage.registry;
 
 import dev.lumungus.storage.LumungusStorage;
+import dev.lumungus.storage.data.BoundStorageController;
 import dev.lumungus.storage.data.StorageCellData;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
@@ -16,6 +17,15 @@ public final class LumungusStorageDataComponents {
             DataComponentType.<StorageCellData>builder()
                     .persistent(StorageCellData.CODEC)
                     .networkSynchronized(ByteBufCodecs.fromCodecWithRegistries(StorageCellData.CODEC))
+                    .cacheEncoding()
+                    .build()
+    );
+
+    public static final DataComponentType<BoundStorageController> BOUND_STORAGE_CONTROLLER = register(
+            "bound_storage_controller",
+            DataComponentType.<BoundStorageController>builder()
+                    .persistent(BoundStorageController.CODEC)
+                    .networkSynchronized(ByteBufCodecs.fromCodecWithRegistries(BoundStorageController.CODEC))
                     .cacheEncoding()
                     .build()
     );

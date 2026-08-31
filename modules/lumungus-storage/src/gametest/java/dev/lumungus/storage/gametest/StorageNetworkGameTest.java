@@ -188,6 +188,39 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     }
 
     @GameTest(padding = 32)
+    public void portableStorageInterfaceCanUseControllerAsTerminalAnchor(GameTestHelper context) {
+        context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(WORK_DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(WORK_DRIVE_BAY, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                WORK_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        controller.insert(new ItemStack(Items.COPPER_INGOT, 42), TransferMode.EXECUTE);
+
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        BlockPos controllerPos = context.absolutePos(WORK_CONTROLLER);
+        LumungusCraftingMenu menu = new LumungusCraftingMenu(
+                6,
+                player.getInventory(),
+                ContainerLevelAccess.create(context.getLevel(), controllerPos),
+                controllerPos
+        );
+
+        menu.handleTerminalAction(new TerminalActionPayload(
+                6,
+                TerminalActionPayload.Action.EXTRACT_STACK_TO_CURSOR,
+                new ItemStack(Items.COPPER_INGOT)
+        ));
+
+        context.assertValueEqual(menu.getCarried().getCount(), 42, "Portable interface carried amount");
+        context.assertValueEqual(controller.count(new ItemStack(Items.COPPER_INGOT)), 0L, "Portable interface network amount");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
     public void topologyCacheInvalidatesOnlyTheChangedComponent(GameTestHelper context) {
         BlockPos firstStart = new BlockPos(1, 1, 13);
         BlockPos secondStart = new BlockPos(8, 1, 13);

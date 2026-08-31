@@ -1,8 +1,10 @@
 package dev.lumungus.storage.registry;
 
+import dev.lumungus.storage.block.WirelessStorageControllerBlock;
 import dev.lumungus.storage.LumungusStorage;
 import dev.lumungus.storage.data.StorageCellData;
 import dev.lumungus.storage.item.CopperWrenchItem;
+import dev.lumungus.storage.item.PortableStorageInterfaceItem;
 import dev.lumungus.storage.item.StorageCellItem;
 import java.util.function.Function;
 import net.minecraft.core.Registry;
@@ -23,6 +25,30 @@ public final class LumungusStorageItems {
             properties -> new StorageCellItem(properties
                     .stacksTo(1)
                     .component(LumungusStorageDataComponents.STORAGE_CELL_DATA, StorageCellData.EMPTY))
+    );
+
+    public static final Item PORTABLE_STORAGE_INTERFACE_SHORT = register(
+            "portable_storage_interface_short",
+            properties -> new PortableStorageInterfaceItem(
+                    properties.stacksTo(1),
+                    WirelessStorageControllerBlock.WirelessTier.SHORT_RANGE
+            )
+    );
+
+    public static final Item PORTABLE_STORAGE_INTERFACE_DIMENSION = register(
+            "portable_storage_interface_dimension",
+            properties -> new PortableStorageInterfaceItem(
+                    properties.stacksTo(1),
+                    WirelessStorageControllerBlock.WirelessTier.SAME_DIMENSION
+            )
+    );
+
+    public static final Item PORTABLE_STORAGE_INTERFACE_MULTIDIMENSIONAL = register(
+            "portable_storage_interface_multidimensional",
+            properties -> new PortableStorageInterfaceItem(
+                    properties.stacksTo(1),
+                    WirelessStorageControllerBlock.WirelessTier.MULTIDIMENSIONAL
+            )
     );
 
     private LumungusStorageItems() {

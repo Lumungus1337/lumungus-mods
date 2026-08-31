@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "G": "minecraft:glass_pane",
+    "R": "minecraft:redstone",
+    "T": "lumungus_storage:crafting_terminal"
+  },
+  "pattern": [
+    "CGC",
+    "RTR",
+    " C "
+  ],
+  "result": {
+    "id": "lumungus_storage:portable_storage_interface_short"
+  }
+}

@@ -10,7 +10,6 @@ import dev.lumungus.storage.block.entity.WirelessStorageControllerBlockEntity;
 import dev.lumungus.storage.network.TerminalActionPayload;
 import dev.lumungus.storage.network.TerminalResourceEntry;
 import dev.lumungus.storage.network.TerminalSnapshotPayload;
-import dev.lumungus.storage.registry.LumungusStorageBlocks;
 import dev.lumungus.storage.registry.LumungusStorageMenus;
 import dev.lumungus.storage.storage.ShulkerBoxTransfer;
 import java.util.ArrayList;
@@ -300,7 +299,17 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, LumungusStorageBlocks.CRAFTING_TERMINAL);
+        return access.evaluate((level, pos) -> {
+            if (level.getBlockEntity(pos) instanceof StorageControllerBlockEntity) {
+                return true;
+            }
+            boolean validAnchor = level.getBlockEntity(pos) instanceof CraftingTerminalBlockEntity
+                    || level.getBlockEntity(pos) instanceof WirelessStorageControllerBlockEntity;
+            double centerX = pos.getX() + 0.5D;
+            double centerY = pos.getY() + 0.5D;
+            double centerZ = pos.getZ() + 0.5D;
+            return validAnchor && player.distanceToSqr(centerX, centerY, centerZ) <= 64.0D;
+        }, true);
     }
 
     @Override
@@ -397,6 +406,9 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
             }
             if (level.getBlockEntity(pos) instanceof WirelessStorageControllerBlockEntity wireless) {
                 return Optional.ofNullable(wireless.linkedController());
+            }
+            if (level.getBlockEntity(pos) instanceof StorageControllerBlockEntity controller) {
+                return Optional.of(controller);
             }
             return Optional.<StorageControllerBlockEntity>empty();
         }, Optional.<StorageControllerBlockEntity>empty());
