@@ -11,6 +11,9 @@
     "lumungus_storage:wireless_storage_controller_short",
     "lumungus_storage:wireless_storage_controller_dimension",
     "lumungus_storage:wireless_storage_controller_multidimensional",
+    "lumungus_storage:wireless_inventory_connector_short",
+    "lumungus_storage:wireless_inventory_connector_dimension",
+    "lumungus_storage:wireless_inventory_connector_multidimensional",
     "lumungus_storage:storage_output",
     "lumungus_storage:storage_breaker",
     "lumungus_storage:storage_placer"

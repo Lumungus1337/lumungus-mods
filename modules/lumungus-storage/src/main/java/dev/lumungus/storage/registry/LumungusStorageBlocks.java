@@ -10,6 +10,7 @@ import dev.lumungus.storage.block.StorageControllerBlock;
 import dev.lumungus.storage.block.StorageOutputBlock;
 import dev.lumungus.storage.block.StoragePlacerBlock;
 import dev.lumungus.storage.block.WirelessStorageControllerBlock;
+import dev.lumungus.storage.block.WirelessInventoryConnectorBlock;
 import java.util.function.Function;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -82,6 +83,30 @@ public final class LumungusStorageBlocks {
             properties -> new WirelessStorageControllerBlock(
                     properties,
                     WirelessStorageControllerBlock.WirelessTier.MULTIDIMENSIONAL
+            )
+    );
+
+    public static final Block WIRELESS_INVENTORY_CONNECTOR_SHORT = registerBlockWithItem(
+            "wireless_inventory_connector_short",
+            properties -> new WirelessInventoryConnectorBlock(
+                    properties,
+                    WirelessInventoryConnectorBlock.WirelessConnectorTier.SHORT_RANGE
+            )
+    );
+
+    public static final Block WIRELESS_INVENTORY_CONNECTOR_DIMENSION = registerBlockWithItem(
+            "wireless_inventory_connector_dimension",
+            properties -> new WirelessInventoryConnectorBlock(
+                    properties,
+                    WirelessInventoryConnectorBlock.WirelessConnectorTier.SAME_DIMENSION
+            )
+    );
+
+    public static final Block WIRELESS_INVENTORY_CONNECTOR_MULTIDIMENSIONAL = registerBlockWithItem(
+            "wireless_inventory_connector_multidimensional",
+            properties -> new WirelessInventoryConnectorBlock(
+                    properties,
+                    WirelessInventoryConnectorBlock.WirelessConnectorTier.MULTIDIMENSIONAL
             )
     );
 

@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "lumungus_storage:block/wireless_inventory_connector_multidimensional"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "lumungus_storage:wireless_inventory_connector_multidimensional"
+        }
+      ]
+    }
+  ]
+}

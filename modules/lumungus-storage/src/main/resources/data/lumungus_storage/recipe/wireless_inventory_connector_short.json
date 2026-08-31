@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "minecraft:copper_block",
+    "G": "minecraft:glass_pane",
+    "P": "lumungus_storage:inventory_connector",
+    "R": "minecraft:redstone",
+    "W": "lumungus_storage:wireless_storage_controller_short"
+  },
+  "pattern": [
+    "CGC",
+    "RWR",
+    "CPC"
+  ],
+  "result": {
+    "id": "lumungus_storage:wireless_inventory_connector_short"
+  }
+}

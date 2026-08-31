@@ -7,6 +7,7 @@ import dev.lumungus.core.api.storage.StorageCapacity;
 import dev.lumungus.core.api.storage.StorageProvider;
 import dev.lumungus.core.api.storage.StorageSnapshot;
 import dev.lumungus.storage.network.StorageNetworkTopology;
+import dev.lumungus.storage.network.WirelessInventoryConnectorRegistry;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import dev.lumungus.storage.storage.ShulkerBoxTransfer;
 import java.util.ArrayList;
@@ -65,6 +66,11 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
             } else if (level.getBlockEntity(candidate) instanceof InventoryConnectorBlockEntity connector
                     && connector.refreshControllerLink()
                     && connector.isLinkedTo(this)) {
+                linkedInventoryConnectors++;
+            }
+        }
+        for (WirelessInventoryConnectorBlockEntity connector : WirelessInventoryConnectorRegistry.linkedTo(this)) {
+            if (!connector.endpoints().isEmpty()) {
                 linkedInventoryConnectors++;
             }
         }
@@ -355,6 +361,12 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
                         endpoint.access()
                 ));
             }
+        }
+        for (WirelessInventoryConnectorBlockEntity connector : WirelessInventoryConnectorRegistry.linkedTo(this)) {
+            connector.endpoints().forEach(endpoint -> physicalInventories.putIfAbsent(
+                    endpoint.key(),
+                    endpoint.access()
+            ));
         }
         return new NetworkStorageAccesses(driveBays, List.copyOf(physicalInventories.values()));
     }

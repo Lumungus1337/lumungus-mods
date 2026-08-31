@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "lumungus_storage:block/wireless_inventory_connector_dimension"
+    }
+  }
+}

@@ -9,6 +9,7 @@ import dev.lumungus.storage.block.entity.StorageBreakerBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.block.entity.StorageOutputBlockEntity;
 import dev.lumungus.storage.block.entity.StoragePlacerBlockEntity;
+import dev.lumungus.storage.block.entity.WirelessInventoryConnectorBlockEntity;
 import dev.lumungus.storage.block.entity.WirelessStorageControllerBlockEntity;
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
 import dev.lumungus.storage.menu.DriveBayMenu;
@@ -217,6 +218,42 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
 
         context.assertValueEqual(menu.getCarried().getCount(), 42, "Portable interface carried amount");
         context.assertValueEqual(controller.count(new ItemStack(Items.COPPER_INGOT)), 0L, "Portable interface network amount");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void wirelessInventoryConnectorLinksRemoteChestThroughWirelessController(GameTestHelper context) {
+        context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        BlockPos wirelessControllerPos = new BlockPos(8, 1, 18);
+        BlockPos wirelessConnectorPos = new BlockPos(14, 1, 18);
+        BlockPos chestPos = new BlockPos(15, 1, 18);
+        context.setBlock(wirelessControllerPos, LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT);
+        context.setBlock(wirelessConnectorPos, LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_SHORT);
+        context.setBlock(chestPos, Blocks.CHEST);
+
+        WirelessStorageControllerBlockEntity wirelessController = context.getBlockEntity(
+                wirelessControllerPos,
+                WirelessStorageControllerBlockEntity.class
+        );
+        WirelessInventoryConnectorBlockEntity wirelessConnector = context.getBlockEntity(
+                wirelessConnectorPos,
+                WirelessInventoryConnectorBlockEntity.class
+        );
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                WORK_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        ChestBlockEntity chest = context.getBlockEntity(chestPos, ChestBlockEntity.class);
+        chest.setItem(0, new ItemStack(Items.EMERALD, 18));
+
+        context.assertTrue(wirelessController.refreshControllerLink(), "Wireless controller did not link");
+        context.assertTrue(wirelessConnector.refreshControllerLink(), "Wireless inventory connector did not link");
+        context.assertValueEqual(wirelessConnector.endpoints().size(), 1, "Wireless inventory endpoints");
+        context.assertValueEqual(controller.count(new ItemStack(Items.EMERALD)), 18L, "Wireless chest storage count");
+
+        ItemStack remainder = controller.insert(new ItemStack(Items.EMERALD, 5), TransferMode.EXECUTE);
+        context.assertTrue(remainder.isEmpty(), "Wireless chest insert remainder");
+        context.assertValueEqual(controller.count(new ItemStack(Items.EMERALD)), 23L, "Wireless chest post-insert count");
         context.succeed();
     }
 

@@ -156,6 +156,9 @@ public final class StorageNetworkTopology {
                 || block == LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT
                 || block == LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_DIMENSION
                 || block == LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL
+                || block == LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_SHORT
+                || block == LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_DIMENSION
+                || block == LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_MULTIDIMENSIONAL
                 || block == LumungusStorageBlocks.STORAGE_OUTPUT
                 || block == LumungusStorageBlocks.STORAGE_BREAKER
                 || block == LumungusStorageBlocks.STORAGE_PLACER;

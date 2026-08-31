@@ -4,14 +4,14 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.21`
+- Version: `0.1.0-uat.22`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.21.zip`
-- Abnahmestatus: `AUTOMATED_SERVER_PASS`; Arbeitszyklen und tragbare Storage Interfaces sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.22.zip`
+- Abnahmestatus: `AUTOMATED_SERVER_PASS`; Arbeitszyklen, tragbare Storage Interfaces und Wireless Inventory Connectoren sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
 
@@ -79,6 +79,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-16p Terminal-Neuentwurf:** Das Crafting Terminal nutzt klare getrennte Bereiche fuer Lager, Aktionen, Crafting und Spielerinventar; lange Titel und Mengenanzeigen bleiben innerhalb ihrer Flaechen.
 - [ ] **UAT-16q Arbeitsbloecke:** Lager-Output exportiert Items in ein Nachbarinventar, Lager-Breaker baut gefilterte Bloecke unter sich ab und lagert Drops ein, Lager-Placer setzt gefilterte Bloecke aus dem Lager, und Wireless Storage Controller I verbindet sich mit einem Controller in kurzer Distanz.
 - [ ] **UAT-16r Tragbare Interfaces:** Tragbares Storage Interface I/II/III erscheinen im Kreativmenue, sind craftbar, koennen per Shift-Rechtsklick an einen Storage Controller gebunden werden und oeffnen per Rechtsklick das Storage Terminal innerhalb ihrer jeweiligen Reichweite.
+- [ ] **UAT-16s Wireless Inventory Connectoren:** Wireless Inventaranschluss I/II/III erscheinen im Kreativmenue, sind craftbar, droppen beim Abbau, reagieren auf den Kupfer-Schraubenschluessel und verbinden entfernte Kisten/Faesser ueber einen erreichbaren Wireless Storage Controller mit dem Lager.
 
 ## Multiplayer und Grenzfaelle
 
@@ -89,7 +90,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.21`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.22`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|
