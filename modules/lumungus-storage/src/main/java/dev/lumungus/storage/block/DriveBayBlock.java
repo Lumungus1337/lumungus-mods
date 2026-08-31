@@ -75,9 +75,16 @@ public final class DriveBayBlock extends BaseEntityBlock {
             return InteractionResult.PASS;
         }
 
-        if (!driveBay.hasCell() && heldStack.is(LumungusStorageItems.STORAGE_CELL_16K)) {
+        if (heldStack.is(LumungusStorageItems.STORAGE_CELL_16K)) {
+            int before = heldStack.getCount();
             player.setItemInHand(hand, driveBay.insertCell(heldStack, TransferMode.EXECUTE));
-            player.sendSystemMessage(Component.translatable("message.lumungus_storage.drive_bay.cell_inserted"));
+            player.sendSystemMessage(Component.translatable(
+                    before == player.getItemInHand(hand).getCount()
+                            ? "message.lumungus_storage.drive_bay.cell_slots_full"
+                            : "message.lumungus_storage.drive_bay.cell_inserted",
+                    driveBay.cellCount(),
+                    DriveBayBlockEntity.CELL_SLOTS
+            ));
             return InteractionResult.SUCCESS;
         }
 
@@ -119,7 +126,11 @@ public final class DriveBayBlock extends BaseEntityBlock {
                 player.sendSystemMessage(Component.translatable("message.lumungus_storage.drive_bay.no_cell"));
             } else {
                 player.getInventory().placeItemBackInInventory(removed);
-                player.sendSystemMessage(Component.translatable("message.lumungus_storage.drive_bay.cell_removed"));
+                player.sendSystemMessage(Component.translatable(
+                        "message.lumungus_storage.drive_bay.cell_removed",
+                        driveBay.cellCount(),
+                        DriveBayBlockEntity.CELL_SLOTS
+                ));
             }
             return InteractionResult.SUCCESS;
         }

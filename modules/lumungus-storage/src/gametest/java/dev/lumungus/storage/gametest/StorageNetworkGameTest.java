@@ -405,6 +405,41 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     }
 
     @GameTest(padding = 32)
+    public void driveBayAcceptsEightStorageCells(GameTestHelper context) {
+        context.setBlock(DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        DriveBayBlockEntity driveBay = context.getBlockEntity(DRIVE_BAY, DriveBayBlockEntity.class);
+
+        for (int index = 0; index < DriveBayBlockEntity.CELL_SLOTS; index++) {
+            ItemStack remainder = driveBay.insertCell(
+                    new ItemStack(LumungusStorageItems.STORAGE_CELL_16K),
+                    TransferMode.EXECUTE
+            );
+            context.assertTrue(remainder.isEmpty(), "Cell " + index + " was not inserted");
+        }
+
+        ItemStack rejected = driveBay.insertCell(
+                new ItemStack(LumungusStorageItems.STORAGE_CELL_16K),
+                TransferMode.EXECUTE
+        );
+        context.assertValueEqual(rejected.getCount(), 1, "Ninth Cell should be rejected");
+        context.assertValueEqual(driveBay.cellCount(), DriveBayBlockEntity.CELL_SLOTS, "Filled Cell slots");
+        context.assertValueEqual(driveBay.freeCellSlots(), 0, "Free Cell slots");
+        context.assertValueEqual(
+                driveBay.capacity().maxTotalAmount(),
+                8L * 16_384L,
+                "Drive Bay total capacity"
+        );
+
+        ItemStack insertedRemainder = driveBay.insert(new ItemStack(Items.COBBLESTONE, 64), TransferMode.EXECUTE);
+        context.assertTrue(insertedRemainder.isEmpty(), "Multi-Cell insert failed");
+        ItemStack extracted = driveBay.extract(new ItemStack(Items.COBBLESTONE), 64, TransferMode.EXECUTE);
+        context.assertValueEqual(extracted.getCount(), 64, "Multi-Cell extract");
+        context.assertValueEqual(driveBay.removeCell(TransferMode.EXECUTE).getCount(), 1, "Removed Cell");
+        context.assertValueEqual(driveBay.cellCount(), DriveBayBlockEntity.CELL_SLOTS - 1, "Cell count after removal");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
     public void partialShiftCraftPreservesEveryResultItem(GameTestHelper context) {
         context.setBlock(CRAFTING_TERMINAL, LumungusStorageBlocks.CRAFTING_TERMINAL);
         ServerPlayer player = context.makeMockServerPlayerInLevel();

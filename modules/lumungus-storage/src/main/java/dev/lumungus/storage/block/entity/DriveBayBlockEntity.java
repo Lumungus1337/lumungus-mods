@@ -23,12 +23,15 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 public final class DriveBayBlockEntity extends BlockEntity implements StorageAccess, StorageProvider {
+    public static final int CELL_SLOTS = 8;
+
     private static final String CELL_KEY = "cell";
+    private static final String CELLS_KEY = "cells";
     private static final String CONTROLLER_POS_KEY = "controller_pos";
     private static final String NETWORK_ID_KEY = "network_id";
     private static final StorageCapacity EMPTY_CAPACITY = new StorageCapacity(0, 0);
 
-    private ItemStack cell = ItemStack.EMPTY;
+    private List<ItemStack> cells = emptyCells();
     private BlockPos controllerPos;
     private UUID networkId;
 
@@ -37,11 +40,23 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
     }
 
     public boolean hasCell() {
-        return !cell.isEmpty();
+        return cells.stream().anyMatch(cell -> !cell.isEmpty());
     }
 
     public ItemStack cell() {
-        return cell.copy();
+        return cells.stream()
+                .filter(cell -> !cell.isEmpty())
+                .findFirst()
+                .map(ItemStack::copy)
+                .orElse(ItemStack.EMPTY);
+    }
+
+    public int cellCount() {
+        return (int) cells.stream().filter(cell -> !cell.isEmpty()).count();
+    }
+
+    public int freeCellSlots() {
+        return CELL_SLOTS - cellCount();
     }
 
     public boolean refreshControllerLink() {
@@ -78,28 +93,33 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
     }
 
     public ItemStack insertCell(ItemStack candidate, TransferMode mode) {
-        if (hasCell() || candidate.isEmpty() || !candidate.is(LumungusStorageItems.STORAGE_CELL_16K)) {
+        if (candidate.isEmpty() || !candidate.is(LumungusStorageItems.STORAGE_CELL_16K)) {
             return candidate.copy();
         }
 
+        int slot = firstEmptyCellSlot();
+        if (slot < 0) {
+            return candidate.copy();
+        }
         ItemStack remainder = candidate.getCount() == 1
                 ? ItemStack.EMPTY
                 : candidate.copyWithCount(candidate.getCount() - 1);
         if (mode == TransferMode.EXECUTE) {
-            cell = candidate.copyWithCount(1);
+            cells.set(slot, candidate.copyWithCount(1));
             setChanged();
         }
         return remainder;
     }
 
     public ItemStack removeCell(TransferMode mode) {
-        if (!hasCell()) {
+        int slot = lastFilledCellSlot();
+        if (slot < 0) {
             return ItemStack.EMPTY;
         }
 
-        ItemStack removed = cell.copy();
+        ItemStack removed = cells.get(slot).copy();
         if (mode == TransferMode.EXECUTE) {
-            cell = ItemStack.EMPTY;
+            cells.set(slot, ItemStack.EMPTY);
             setChanged();
         }
         return removed;
@@ -112,22 +132,49 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
 
     @Override
     public StorageCapacity capacity() {
-        return hasCell() ? StorageCellData.CAPACITY : EMPTY_CAPACITY;
+        StorageCapacity capacity = EMPTY_CAPACITY;
+        for (ItemStack cell : cells) {
+            if (!cell.isEmpty()) {
+                capacity = new StorageCapacity(
+                        capacity.maxTotalAmount() + StorageCellData.CAPACITY.maxTotalAmount(),
+                        capacity.maxDistinctTypes() + StorageCellData.CAPACITY.maxDistinctTypes()
+                );
+            }
+        }
+        return capacity;
     }
 
     @Override
     public StorageSnapshot snapshot() {
-        return hasCell() ? cellData().snapshot() : new StorageSnapshot(0, 0);
+        List<ResourceAmount> resources = storedResources();
+        return new StorageSnapshot(
+                resources.stream().mapToLong(ResourceAmount::amount).sum(),
+                resources.size()
+        );
     }
 
     @Override
     public List<ResourceAmount> storedResources() {
-        return hasCell() ? cellData().storedResources() : List.of();
+        List<ResourceAmount> resources = new java.util.ArrayList<>();
+        for (ItemStack cell : cells) {
+            if (!cell.isEmpty()) {
+                for (ResourceAmount resource : StorageCellItem.getData(cell).storedResources()) {
+                    mergeResource(resources, resource);
+                }
+            }
+        }
+        return List.copyOf(resources);
     }
 
     @Override
     public long count(ItemStack template) {
-        return hasCell() ? cellData().count(template) : 0;
+        long amount = 0;
+        for (ItemStack cell : cells) {
+            if (!cell.isEmpty()) {
+                amount += StorageCellItem.getData(cell).count(template);
+            }
+        }
+        return amount;
     }
 
     @Override
@@ -136,12 +183,24 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
             return stack.copy();
         }
 
-        StorageCellData.InsertResult result = cellData().insert(stack);
-        if (mode == TransferMode.EXECUTE && result.remainder().getCount() != stack.getCount()) {
-            StorageCellItem.setData(cell, result.data());
-            setChanged();
+        ItemStack remainder = stack.copy();
+        for (int index = 0; index < cells.size(); index++) {
+            ItemStack cell = cells.get(index);
+            if (cell.isEmpty()) {
+                continue;
+            }
+            StorageCellData.InsertResult result = StorageCellItem.getData(cell).insert(remainder);
+            if (mode == TransferMode.EXECUTE && result.remainder().getCount() != remainder.getCount()) {
+                StorageCellItem.setData(cell, result.data());
+                cells.set(index, cell);
+                setChanged();
+            }
+            remainder = result.remainder();
+            if (remainder.isEmpty()) {
+                break;
+            }
         }
-        return result.remainder();
+        return remainder;
     }
 
     @Override
@@ -150,18 +209,43 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
             return ItemStack.EMPTY;
         }
 
-        StorageCellData.ExtractResult result = cellData().extract(template, maxAmount);
-        if (mode == TransferMode.EXECUTE && !result.extracted().isEmpty()) {
-            StorageCellItem.setData(cell, result.data());
-            setChanged();
+        long requested = Math.min(maxAmount, template.getMaxStackSize());
+        ItemStack extracted = ItemStack.EMPTY;
+        for (int index = 0; index < cells.size() && extracted.getCount() < requested; index++) {
+            ItemStack cell = cells.get(index);
+            if (cell.isEmpty()) {
+                continue;
+            }
+
+            StorageCellData.ExtractResult result = StorageCellItem.getData(cell).extract(
+                    template,
+                    requested - extracted.getCount()
+            );
+            if (!result.extracted().isEmpty()) {
+                if (extracted.isEmpty()) {
+                    extracted = result.extracted();
+                } else {
+                    extracted.grow(result.extracted().getCount());
+                }
+                if (mode == TransferMode.EXECUTE) {
+                    StorageCellItem.setData(cell, result.data());
+                    cells.set(index, cell);
+                    setChanged();
+                }
+            }
         }
-        return result.extracted();
+        return extracted;
     }
 
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        if (level != null && !level.isClientSide() && hasCell()) {
-            Block.popResource(level, pos, removeCell(TransferMode.EXECUTE));
+        if (level != null && !level.isClientSide()) {
+            for (int index = 0; index < CELL_SLOTS; index++) {
+                ItemStack removed = removeCell(TransferMode.EXECUTE);
+                if (!removed.isEmpty()) {
+                    Block.popResource(level, pos, removed);
+                }
+            }
         }
         super.preRemoveSideEffects(pos, state);
     }
@@ -169,18 +253,19 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
-        cell = input.read(CELL_KEY, ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
+        cells = normalizeCells(input.read(CELLS_KEY, ItemStack.OPTIONAL_CODEC.listOf())
+                .orElseGet(() -> input.read(CELL_KEY, ItemStack.OPTIONAL_CODEC)
+                        .filter(cell -> !cell.isEmpty())
+                        .map(List::of)
+                        .orElseGet(List::of)));
         controllerPos = input.read(CONTROLLER_POS_KEY, BlockPos.CODEC).orElse(null);
         networkId = input.read(NETWORK_ID_KEY, UUIDUtil.CODEC).orElse(null);
-        if (!cell.isEmpty() && !cell.is(LumungusStorageItems.STORAGE_CELL_16K)) {
-            cell = ItemStack.EMPTY;
-        }
     }
 
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
-        output.store(CELL_KEY, ItemStack.OPTIONAL_CODEC, cell);
+        output.store(CELLS_KEY, ItemStack.OPTIONAL_CODEC.listOf(), cells);
         output.storeNullable(CONTROLLER_POS_KEY, BlockPos.CODEC, controllerPos);
         output.storeNullable(NETWORK_ID_KEY, UUIDUtil.CODEC, networkId);
     }
@@ -216,7 +301,56 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
         }
     }
 
-    private StorageCellData cellData() {
-        return StorageCellItem.getData(cell);
+    private int firstEmptyCellSlot() {
+        for (int index = 0; index < cells.size(); index++) {
+            if (cells.get(index).isEmpty()) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private int lastFilledCellSlot() {
+        for (int index = cells.size() - 1; index >= 0; index--) {
+            if (!cells.get(index).isEmpty()) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private static List<ItemStack> normalizeCells(List<ItemStack> loadedCells) {
+        List<ItemStack> normalized = emptyCells();
+        int targetIndex = 0;
+        for (ItemStack loadedCell : loadedCells) {
+            if (targetIndex >= CELL_SLOTS) {
+                break;
+            }
+            if (!loadedCell.isEmpty() && loadedCell.is(LumungusStorageItems.STORAGE_CELL_16K)) {
+                normalized.set(targetIndex, loadedCell.copyWithCount(1));
+                targetIndex++;
+            }
+        }
+        return normalized;
+    }
+
+    private static List<ItemStack> emptyCells() {
+        List<ItemStack> emptyCells = new java.util.ArrayList<>(CELL_SLOTS);
+        for (int index = 0; index < CELL_SLOTS; index++) {
+            emptyCells.add(ItemStack.EMPTY);
+        }
+        return emptyCells;
+    }
+
+    private static void mergeResource(List<ResourceAmount> resources, ResourceAmount candidate) {
+        ItemStack candidateStack = candidate.stack();
+        for (int index = 0; index < resources.size(); index++) {
+            ResourceAmount current = resources.get(index);
+            if (ItemStack.isSameItemSameComponents(current.stack(), candidateStack)) {
+                resources.set(index, new ResourceAmount(candidateStack, current.amount() + candidate.amount()));
+                return;
+            }
+        }
+        resources.add(candidate);
     }
 }

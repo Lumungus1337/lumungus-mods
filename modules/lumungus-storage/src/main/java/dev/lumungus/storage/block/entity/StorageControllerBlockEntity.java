@@ -226,7 +226,11 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
 
                     moved += inserted;
                     movedStacks++;
-                    sourceRemaining -= extracted.getCount();
+                    sourceRemaining -= inserted;
+                    if (!insertRemainder.isEmpty()) {
+                        remaining += sourceRemaining;
+                        break;
+                    }
                 }
                 if (paused) {
                     break;
