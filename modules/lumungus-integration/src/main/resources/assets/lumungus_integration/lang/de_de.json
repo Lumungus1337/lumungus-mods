@@ -1,6 +1,9 @@
 {
   "command.lumungus_integration.migration.not_toms": "An dieser Position wurde kein geladener Tom's-Netzwerkblock gefunden.",
   "command.lumungus_integration.migration.blocks": "Tom's Dry Run: %1$s Netzwerkbloecke, davon %2$s konvertierbar und %3$s blockierend.",
+  "command.lumungus_integration.migration.segment": "Teilnetz %1$s/%2$s: %3$s bei %4$s, %5$s Bloecke (%6$s konvertierbar, %7$s blockierend).",
+  "command.lumungus_integration.migration.segment_inventory": "Teilnetz %1$s Bestand: %2$s Inventare, %3$s Slots, %4$s Items und %5$s Itemtypen.",
+  "command.lumungus_integration.migration.segment_truncated": "Teilnetz-Ausgabe auf %1$s von %2$s Eintraegen begrenzt; die Gesamtsumme bleibt vollstaendig.",
   "command.lumungus_integration.migration.unloaded": "Scan gestoppt: Das Netzwerk beruehrt einen ungeladenen Bereich. Alle betroffenen Chunks muessen geladen sein.",
   "command.lumungus_integration.migration.limit": "Scan gestoppt: Das Sicherheitslimit von %1$s Netzwerkbloecken wurde erreicht.",
   "command.lumungus_integration.migration.remote_pending.configured_resolved": "Der aktive Tom's-Fernkanal wurde vollstaendig erfasst.",

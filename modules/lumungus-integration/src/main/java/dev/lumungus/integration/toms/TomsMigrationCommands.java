@@ -5,6 +5,7 @@ import static net.minecraft.commands.Commands.literal;
 
 import com.mojang.brigadier.CommandDispatcher;
 import dev.lumungus.integration.migration.MigrationInventorySnapshot;
+import java.util.List;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -14,6 +15,7 @@ import net.minecraft.server.level.ServerLevel;
 
 public final class TomsMigrationCommands {
     private static final int MAX_SCAN_NODES = 100_000;
+    private static final int MAX_REPORTED_SEGMENTS = 100;
 
     private TomsMigrationCommands() {
     }
@@ -53,6 +55,7 @@ public final class TomsMigrationCommands {
                 remoteScan.convertibleCount(),
                 remoteScan.blockingCount()
         ), false);
+        reportSegmentTopology(source, remoteScan);
 
         if (remoteScan.segments().stream().anyMatch(segment -> segment.report().unloadedBoundary())) {
             source.sendFailure(Component.translatable("command.lumungus_integration.migration.unloaded"));
@@ -82,6 +85,7 @@ public final class TomsMigrationCommands {
             return 0;
         }
 
+        reportSegmentInventories(source, remoteScan);
         MigrationInventorySnapshot snapshot = TomsInventorySnapshotCollector.capture(
                 remoteScan.segments(), "Tom's Simple Storage dry run"
         );
@@ -100,5 +104,51 @@ public final class TomsMigrationCommands {
     }
 
     private record SegmentBlock(TomsNetworkSegment segment, TomsDryRunBlock block) {
+    }
+
+    private static void reportSegmentTopology(CommandSourceStack source, TomsRemoteScanResult scan) {
+        int reported = Math.min(scan.segments().size(), MAX_REPORTED_SEGMENTS);
+        for (int index = 0; index < reported; index++) {
+            TomsNetworkSegment segment = scan.segments().get(index);
+            TomsDryRunReport report = segment.report();
+            int displayIndex = index + 1;
+            source.sendSuccess(() -> Component.translatable(
+                    "command.lumungus_integration.migration.segment",
+                    displayIndex,
+                    scan.segments().size(),
+                    segment.level().dimension().identifier().toString(),
+                    report.start().toShortString(),
+                    report.blocks().size(),
+                    report.convertibleCount(),
+                    report.blockingCount()
+            ), false);
+        }
+        if (reported < scan.segments().size()) {
+            source.sendFailure(Component.translatable(
+                    "command.lumungus_integration.migration.segment_truncated",
+                    reported,
+                    scan.segments().size()
+            ));
+        }
+    }
+
+    private static void reportSegmentInventories(CommandSourceStack source, TomsRemoteScanResult scan) {
+        int reported = Math.min(scan.segments().size(), MAX_REPORTED_SEGMENTS);
+        for (int index = 0; index < reported; index++) {
+            TomsNetworkSegment segment = scan.segments().get(index);
+            MigrationInventorySnapshot snapshot = TomsInventorySnapshotCollector.capture(
+                    List.of(segment),
+                    "Tom's Simple Storage segment " + (index + 1)
+            );
+            int displayIndex = index + 1;
+            source.sendSuccess(() -> Component.translatable(
+                    "command.lumungus_integration.migration.segment_inventory",
+                    displayIndex,
+                    snapshot.endpointCount(),
+                    snapshot.slotCount(),
+                    snapshot.totalAmount(),
+                    snapshot.distinctTypes()
+            ), false);
+        }
     }
 }

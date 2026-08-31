@@ -44,6 +44,8 @@ Der Welt-Scanner kann inzwischen eine physisch zusammenhaengende Tom's-Komponent
 
 Der serverseitige Diagnosebefehl `/lumungus migration scan <x> <y> <z>` fuehrt den Nur-Lese-Scan an einem Tom's-Netzblock aus. Er meldet Blockanzahl, konvertierbare Bloecke, Blocker und bei einem vollstaendigen Netz Inventaranzahl, Slots, Gesamtmenge sowie Itemtypen. Die optionale Direktintegration erkennt bei Tom's `2.11.3`, ob ein Kabel-Connector tatsaechlich einen Fernkanal verwendet. Gewoehnliche Kabel-Connectoren duerfen den lokalen Snapshot passieren; aktive Fernkanaele werden ueber alle geladenen, erreichbaren Teilnetze und Dimensionen verfolgt. Nicht bereite oder ungeladene Verbindungen sperren die Freigabe weiterhin.
 
+Fuer den UAT gibt der Befehl jedes Teilnetz mit Dimension, Startposition, Blockzahlen und nach erfolgreicher Sicherheitspruefung mit seinen eigenen Bestandszahlen aus. Die abschliessende Gesamtsumme umfasst stets alle erfassten Teilnetze; nur die Chat-Detailliste wird bei mehr als 100 Teilnetzen gekuerzt.
+
 Tom's `26.2-2.11.3` ist als optionale Compile- und lokale Testabhaengigkeit festgelegt und wird nicht in das Lumungus-JAR eingebettet. Ein echter Fabric-GameTest startet beide Mods gemeinsam und prueft den Nur-Lese-Zugriff auf Kanal-ID und Laufzeitstatus eines realen Tom's-Connectors.
 
 Als Naechstes erhaelt der gemeinsame Fernnetz-Dry-Run einen detaillierten UAT-Bericht je Dimension und Teilnetz. Schreibende Konvertierung, Journal und Rollback bleiben gesperrt, bis der vollstaendige Bericht am Welt-Backup erfolgreich abgenommen wurde.
