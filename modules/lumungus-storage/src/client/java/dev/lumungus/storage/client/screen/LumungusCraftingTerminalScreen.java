@@ -30,6 +30,8 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
     private static final int BAY_MOVE_X = 174;
     private static final int BAY_MOVE_Y = 68;
     private static final int BAY_MOVE_WIDTH = 20;
+    private static final int SHULKER_MODE_Y = 92;
+    private static final int SHULKER_MODE_WIDTH = 28;
     private static final int SORT_X = 124;
     private static final int SORT_Y = 18;
     private static final int SORT_WIDTH = 44;
@@ -51,6 +53,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
 
     private EditBox searchBox;
     private SortMode sortMode = SortMode.NAME;
+    private boolean shulkerExtractMode;
     private int page;
 
     public LumungusCraftingTerminalScreen(
@@ -145,6 +148,14 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
                 18,
                 true
         );
+        drawButton(
+                graphics,
+                BAY_MOVE_X,
+                SHULKER_MODE_Y,
+                SHULKER_MODE_WIDTH,
+                18,
+                true
+        );
 
         drawVanillaSlotBackgrounds(graphics, left, top);
     }
@@ -167,6 +178,13 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         graphics.centeredText(font, ">", 159, PAGE_Y + 3, COLOR_GREEN);
         graphics.centeredText(font, "IN", DEPOSIT_X + 9, DEPOSIT_Y + 5, COLOR_AMBER);
         graphics.centeredText(font, "BAY", BAY_MOVE_X + BAY_MOVE_WIDTH / 2, BAY_MOVE_Y + 5, COLOR_GREEN);
+        graphics.centeredText(
+                font,
+                shulkerExtractMode ? "BOX" : "ITM",
+                BAY_MOVE_X + SHULKER_MODE_WIDTH / 2,
+                SHULKER_MODE_Y + 5,
+                shulkerExtractMode ? COLOR_AMBER : COLOR_GREEN
+        );
 
         List<ResourceAmount> resources = filteredResources();
         int pageCount = Math.max(1, (resources.size() + NETWORK_PAGE_SIZE - 1) / NETWORK_PAGE_SIZE);
@@ -266,6 +284,24 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
                     mouseX,
                     mouseY
             );
+            return;
+        }
+        if (isPointInside(
+                mouseX,
+                mouseY,
+                leftPos + BAY_MOVE_X,
+                topPos + SHULKER_MODE_Y,
+                SHULKER_MODE_WIDTH,
+                18
+        )) {
+            graphics.setTooltipForNextFrame(
+                    font,
+                    Component.translatable(shulkerExtractMode
+                            ? "gui.lumungus_storage.crafting_terminal.extract_mode_shulker"
+                            : "gui.lumungus_storage.crafting_terminal.extract_mode_items"),
+                    mouseX,
+                    mouseY
+            );
         }
     }
 
@@ -319,11 +355,26 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             sendAction(TerminalActionPayload.Action.MOVE_PHYSICAL_TO_DRIVE_BAYS, ItemStack.EMPTY);
             return true;
         }
+        if (isPointInside(
+                mouseX,
+                mouseY,
+                leftPos + BAY_MOVE_X,
+                topPos + SHULKER_MODE_Y,
+                SHULKER_MODE_WIDTH,
+                18
+        )) {
+            shulkerExtractMode = !shulkerExtractMode;
+            return true;
+        }
 
         ResourceAmount clicked = resourceAt(mouseX, mouseY);
         if (clicked != null) {
             TerminalActionPayload.Action action;
-            if (event.hasShiftDown()) {
+            if (shulkerExtractMode && event.hasShiftDown()) {
+                action = TerminalActionPayload.Action.EXTRACT_SHULKER_TO_INVENTORY;
+            } else if (shulkerExtractMode) {
+                action = TerminalActionPayload.Action.EXTRACT_SHULKER_TO_CURSOR;
+            } else if (event.hasShiftDown()) {
                 action = TerminalActionPayload.Action.EXTRACT_STACK_TO_INVENTORY;
             } else if (event.button() == 1) {
                 action = TerminalActionPayload.Action.EXTRACT_ONE_TO_CURSOR;

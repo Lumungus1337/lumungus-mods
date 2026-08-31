@@ -33,7 +33,7 @@ Die Gameplay-Module haengen von Core ab, aber Core soll nicht von den Gameplay-M
 | Modul | Rolle | Status |
 |---|---|---|
 | `lumungus-core` | Gemeinsame APIs, Basistypen und technische Infrastruktur | angelegt |
-| `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Rohrpostverbindungen, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.11` UAT Candidate; Drive-Bay-Menue mit 8 sichtbaren Cell-Slots |
+| `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Rohrpostverbindungen, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.12` UAT Candidate; volle Shulkerboxen werden entladen und koennen im Terminal wieder befuellt entnommen werden |
 | `lumungus-backpack` | Modularer Rucksack mit Upgrade-Slots und spaeter Jetpack-Upgrade | angelegt |
 | `lumungus-machines` | Maschinen- und Automationsmodule | angelegt |
 | `lumungus-autotrader` | Automatisierte Handelsablaeufe, Trading-Terminals und spaetere Storage-Anbindung | angelegt |
@@ -43,7 +43,7 @@ RailQuarry wird noch nicht migriert. Es ist als zukuenftiges Modul oder Feature 
 
 Autotrader wird ebenfalls noch nicht migriert, ist aber als eigenes Modul im Monorepo angelegt. Es soll optisch und spielerisch zur Lumungus-Linie passen: 90er-Computertechnik, klare Terminals, dunkle Frontplatten, gruene Statusanzeigen und sichtbare Rohrpost-Anbindung.
 
-Lumungus Storage verlangt keine Migration vorhandener Lagerbestaende in digitale Cells. Bestehende Kisten, Faesser, Shulkerboxen und kompatible Mod-Inventare bleiben die primaeren Speicherorte. Fuer bestehende Tom's-Simple-Storage-Anlagen ist ein einmaliger Migrationsassistent in `lumungus-integration` vorgesehen: Er uebernimmt das vorhandene Kabel-/Connector-Netz als Lumungus-Rohrpostnetz, ohne Items umzupacken. Nach erfolgreicher Validierung kann Tom's vollstaendig entfernt werden.
+Lumungus Storage verlangt keine Migration vorhandener Lagerbestaende in digitale Cells. Bestehende Kisten, Faesser und kompatible Mod-Inventare bleiben die primaeren Speicherorte. Befuellte Shulkerboxen werden beim aktiven Einlagern entladen; im Lager liegen danach nur einzelne Items und leere Shulkerboxen. Fuer bestehende Tom's-Simple-Storage-Anlagen ist ein einmaliger Migrationsassistent in `lumungus-integration` vorgesehen: Er uebernimmt das vorhandene Kabel-/Connector-Netz als Lumungus-Rohrpostnetz, ohne Items umzupacken. Nach erfolgreicher Validierung kann Tom's vollstaendig entfernt werden.
 
 Die gemeinsame Stilrichtung steht in [docs/VISUAL_IDENTITY.md](docs/VISUAL_IDENTITY.md): Lumungus nutzt sichtbare Item-Rohrpost, 90er-Computertechnik und eigene, leicht arcadehafte Werkstattoptik statt glatter Sci-Fi-Kabel.
 
@@ -79,7 +79,7 @@ Vorgeschlagene Strategie:
 
 - Gemeinsame Versionslinie fuer die Modreihe: `0.1.0`, `0.2.0`, `1.0.0`.
 - Snapshot-Versionen waehrend Entwicklung: `0.1.0-SNAPSHOT`.
-- UAT-Kandidaten vor einer Freigabe: `0.1.0-uat.1`, `0.1.0-uat.2`, `0.1.0-uat.3`, `0.1.0-uat.4`, `0.1.0-uat.5`, `0.1.0-uat.6`, `0.1.0-uat.7`, `0.1.0-uat.8`, `0.1.0-uat.9`, `0.1.0-uat.10`, `0.1.0-uat.11`.
+- UAT-Kandidaten vor einer Freigabe: `0.1.0-uat.1`, `0.1.0-uat.2`, `0.1.0-uat.3`, `0.1.0-uat.4`, `0.1.0-uat.5`, `0.1.0-uat.6`, `0.1.0-uat.7`, `0.1.0-uat.8`, `0.1.0-uat.9`, `0.1.0-uat.10`, `0.1.0-uat.11`, `0.1.0-uat.12`.
 - Tags pro Gesamtstand: `v0.1.0`.
 - Optional zusaetzliche Modul-Tags, falls Releases auseinanderlaufen: `core-v0.1.0`, `storage-v0.1.0`.
 - Breaking Changes in Core erhoehen mindestens die Minor-Version, nach `1.0.0` die Major-Version.

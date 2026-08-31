@@ -8,10 +8,12 @@ import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
 import dev.lumungus.storage.menu.DriveBayMenu;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
+import dev.lumungus.storage.network.TerminalActionPayload;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import java.lang.reflect.Method;
+import java.util.List;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
@@ -27,6 +29,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.Blocks;
@@ -468,6 +471,84 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
                 player.getInventory().countItem(LumungusStorageItems.STORAGE_CELL_16K) == 1,
                 "Player inventory did not receive the shifted Cell"
         );
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void controllerUnpacksFilledShulkerBoxesOnInsert(GameTestHelper context) {
+        context.setBlock(FIRST_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(DRIVE_BAY, DriveBayBlockEntity.class);
+        driveBay.insertCell(
+                new ItemStack(LumungusStorageItems.STORAGE_CELL_16K),
+                TransferMode.EXECUTE
+        );
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                FIRST_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+
+        ItemStack shulkerBox = new ItemStack(Items.SHULKER_BOX);
+        shulkerBox.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(
+                new ItemStack(Items.DIAMOND, 32),
+                new ItemStack(Items.COBBLESTONE, 64)
+        )));
+
+        ItemStack remainder = controller.insert(shulkerBox, TransferMode.EXECUTE);
+
+        context.assertTrue(remainder.isEmpty(), "Filled shulker was not accepted");
+        context.assertValueEqual(controller.count(new ItemStack(Items.DIAMOND)), 32L, "Unpacked diamonds");
+        context.assertValueEqual(controller.count(new ItemStack(Items.COBBLESTONE)), 64L, "Unpacked cobblestone");
+        context.assertValueEqual(controller.count(new ItemStack(Items.SHULKER_BOX)), 1L, "Returned empty shulker");
+        context.assertValueEqual(controller.count(shulkerBox), 0L, "Filled shulker should not remain stored");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void craftingTerminalPacksSelectedItemsIntoShulkerBox(GameTestHelper context) {
+        context.setBlock(FIRST_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        context.setBlock(CRAFTING_TERMINAL, LumungusStorageBlocks.CRAFTING_TERMINAL);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(DRIVE_BAY, DriveBayBlockEntity.class);
+        driveBay.insertCell(
+                new ItemStack(LumungusStorageItems.STORAGE_CELL_16K),
+                TransferMode.EXECUTE
+        );
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                FIRST_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        controller.insert(new ItemStack(Items.SHULKER_BOX), TransferMode.EXECUTE);
+        controller.insert(new ItemStack(Items.COBBLESTONE, 200), TransferMode.EXECUTE);
+
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        BlockPos playerPos = context.absolutePos(new BlockPos(2, 2, 2));
+        player.setPos(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5);
+        BlockPos terminalPos = context.absolutePos(CRAFTING_TERMINAL);
+        LumungusCraftingMenu menu = new LumungusCraftingMenu(
+                5,
+                player.getInventory(),
+                ContainerLevelAccess.create(context.getLevel(), terminalPos),
+                terminalPos
+        );
+
+        menu.handleTerminalAction(new TerminalActionPayload(
+                5,
+                TerminalActionPayload.Action.EXTRACT_SHULKER_TO_CURSOR,
+                new ItemStack(Items.COBBLESTONE)
+        ));
+
+        ItemStack carried = menu.getCarried();
+        context.assertTrue(carried.is(Items.SHULKER_BOX), "Cursor did not receive a shulker box");
+        ItemContainerContents contents = carried.get(DataComponents.CONTAINER);
+        int storedCobblestone = contents == null
+                ? 0
+                : contents.nonEmptyItemCopyStream().mapToInt(ItemStack::getCount).sum();
+        context.assertValueEqual(storedCobblestone, 200, "Packed shulker cobblestone");
+        context.assertValueEqual(controller.count(new ItemStack(Items.COBBLESTONE)), 0L, "Network cobblestone");
+        context.assertValueEqual(controller.count(new ItemStack(Items.SHULKER_BOX)), 0L, "Consumed empty shulker");
         context.succeed();
     }
 

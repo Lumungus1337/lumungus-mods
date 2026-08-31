@@ -8,6 +8,7 @@ import dev.lumungus.core.api.storage.StorageProvider;
 import dev.lumungus.core.api.storage.StorageSnapshot;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
+import dev.lumungus.storage.storage.ShulkerBoxTransfer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -134,14 +135,15 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
 
         List<StorageAccess> ordered = new ArrayList<>(storageAccesses().all());
         ordered.sort(Comparator.comparingInt(access -> access.contains(stack) ? 0 : 1));
-
-        ItemStack remainder = stack.copy();
-        for (StorageAccess storageAccess : ordered) {
-            remainder = storageAccess.insert(remainder, mode);
-            if (remainder.isEmpty()) {
-                break;
+        if (ShulkerBoxTransfer.isFilledShulkerBox(stack)) {
+            ItemStack remainder = insertUnpackedShulker(ordered, stack, mode);
+            if (mode == TransferMode.EXECUTE && remainder.isEmpty()) {
+                invalidateNetworkState();
             }
+            return remainder;
         }
+
+        ItemStack remainder = insertIntoAccesses(ordered, stack, mode);
         if (mode == TransferMode.EXECUTE && remainder.getCount() != stack.getCount()) {
             invalidateNetworkState();
         }
@@ -202,7 +204,11 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
                         break;
                     }
 
-                    ItemStack simulatedRemainder = insertIntoDriveBays(networkAccesses.driveBays(), extractable, TransferMode.SIMULATE);
+                    ItemStack simulatedRemainder = insertIntoDriveBays(
+                            networkAccesses.driveBays(),
+                            extractable,
+                            TransferMode.SIMULATE
+                    );
                     int movable = extractable.getCount() - simulatedRemainder.getCount();
                     if (movable <= 0) {
                         remaining += sourceRemaining;
@@ -258,14 +264,75 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
             ItemStack stack,
             TransferMode mode
     ) {
+        if (ShulkerBoxTransfer.isFilledShulkerBox(stack)) {
+            return insertUnpackedShulker(driveBays, stack, mode);
+        }
+        return insertIntoAccesses(driveBays, stack, mode);
+    }
+
+    private static ItemStack insertIntoAccesses(
+            List<StorageAccess> accesses,
+            ItemStack stack,
+            TransferMode mode
+    ) {
         ItemStack remainder = stack.copy();
-        for (StorageAccess driveBay : driveBays) {
+        for (StorageAccess driveBay : accesses) {
             remainder = driveBay.insert(remainder, mode);
             if (remainder.isEmpty()) {
                 break;
             }
         }
         return remainder;
+    }
+
+    private static ItemStack insertUnpackedShulker(
+            List<StorageAccess> accesses,
+            ItemStack shulkerBox,
+            TransferMode mode
+    ) {
+        List<ItemStack> parts = new ArrayList<>(ShulkerBoxTransfer.unpackedContents(shulkerBox));
+        parts.add(ShulkerBoxTransfer.emptyCopy(shulkerBox));
+        if (mode == TransferMode.SIMULATE) {
+            for (ItemStack part : parts) {
+                if (!insertIntoAccesses(accesses, part, TransferMode.SIMULATE).isEmpty()) {
+                    return shulkerBox.copy();
+                }
+            }
+            return ItemStack.EMPTY;
+        }
+
+        List<ItemStack> insertedParts = new ArrayList<>();
+        for (ItemStack part : parts) {
+            ItemStack remainder = insertIntoAccesses(accesses, part, TransferMode.EXECUTE);
+            int inserted = part.getCount() - remainder.getCount();
+            if (inserted > 0) {
+                insertedParts.add(part.copyWithCount(inserted));
+            }
+            if (!remainder.isEmpty()) {
+                rollbackInsertedParts(accesses, insertedParts);
+                return shulkerBox.copy();
+            }
+        }
+        return ItemStack.EMPTY;
+    }
+
+    private static void rollbackInsertedParts(List<StorageAccess> accesses, List<ItemStack> insertedParts) {
+        for (ItemStack insertedPart : insertedParts.reversed()) {
+            long remaining = insertedPart.getCount();
+            while (remaining > 0) {
+                ItemStack extracted = ItemStack.EMPTY;
+                for (StorageAccess access : accesses) {
+                    extracted = access.extract(insertedPart, remaining, TransferMode.EXECUTE);
+                    if (!extracted.isEmpty()) {
+                        break;
+                    }
+                }
+                if (extracted.isEmpty()) {
+                    break;
+                }
+                remaining -= extracted.getCount();
+            }
+        }
     }
 
     private NetworkStorageAccesses storageAccesses() {

@@ -11,6 +11,7 @@ import dev.lumungus.storage.network.TerminalResourceEntry;
 import dev.lumungus.storage.network.TerminalSnapshotPayload;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
 import dev.lumungus.storage.registry.LumungusStorageMenus;
+import dev.lumungus.storage.storage.ShulkerBoxTransfer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -209,6 +210,8 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
             case EXTRACT_STACK_TO_CURSOR -> extractToCursor(controller, payload.template(), false);
             case EXTRACT_ONE_TO_CURSOR -> extractToCursor(controller, payload.template(), true);
             case EXTRACT_STACK_TO_INVENTORY -> extractToInventory(controller, payload.template());
+            case EXTRACT_SHULKER_TO_CURSOR -> extractShulkerToCursor(controller, payload.template());
+            case EXTRACT_SHULKER_TO_INVENTORY -> extractShulkerToInventory(controller, payload.template());
             case DEPOSIT_CARRIED_STACK -> depositCarried(controller, false);
             case DEPOSIT_ONE_CARRIED -> depositCarried(controller, true);
             case MOVE_PHYSICAL_TO_DRIVE_BAYS -> movePhysicalInventoriesToDriveBays(controller);
@@ -443,6 +446,107 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
                 TransferMode.EXECUTE
         );
         player.getInventory().placeItemBackInInventory(extracted);
+    }
+
+    private void extractShulkerToCursor(StorageControllerBlockEntity controller, ItemStack template) {
+        if (!getCarried().isEmpty()) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.shulker_cursor_blocked"
+            ));
+            return;
+        }
+
+        ItemStack filledShulker = createFilledShulker(controller, template);
+        if (!filledShulker.isEmpty()) {
+            setCarried(filledShulker);
+        }
+    }
+
+    private void extractShulkerToInventory(StorageControllerBlockEntity controller, ItemStack template) {
+        ItemStack preview = new ItemStack(net.minecraft.world.item.Items.SHULKER_BOX);
+        if (inventorySpaceFor(preview) <= 0) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.shulker_inventory_full"
+            ));
+            return;
+        }
+
+        ItemStack filledShulker = createFilledShulker(controller, template);
+        if (!filledShulker.isEmpty()) {
+            player.getInventory().placeItemBackInInventory(filledShulker);
+        }
+    }
+
+    private ItemStack createFilledShulker(StorageControllerBlockEntity controller, ItemStack template) {
+        if (template.isEmpty() || ShulkerBoxTransfer.isShulkerBox(template)) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack emptyShulker = findEmptyShulker(controller);
+        if (emptyShulker.isEmpty()) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.no_empty_shulker"
+            ));
+            return ItemStack.EMPTY;
+        }
+
+        long available = controller.count(template);
+        int requested = (int) Math.min(available, ShulkerBoxTransfer.maxPackedAmount(template));
+        if (requested <= 0) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.no_items_for_shulker"
+            ));
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack reservedShulker = controller.extract(emptyShulker, 1, TransferMode.EXECUTE);
+        if (reservedShulker.isEmpty()) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.no_empty_shulker"
+            ));
+            return ItemStack.EMPTY;
+        }
+
+        List<ItemStack> contents = extractMany(controller, template, requested);
+        if (contents.isEmpty()) {
+            controller.insert(reservedShulker, TransferMode.EXECUTE);
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.no_items_for_shulker"
+            ));
+            return ItemStack.EMPTY;
+        }
+
+        return ShulkerBoxTransfer.filledShulker(reservedShulker, contents);
+    }
+
+    private ItemStack findEmptyShulker(StorageControllerBlockEntity controller) {
+        return controller.storedResources().stream()
+                .map(ResourceAmount::stack)
+                .filter(ShulkerBoxTransfer::isEmptyShulkerBox)
+                .findFirst()
+                .orElse(ItemStack.EMPTY);
+    }
+
+    private List<ItemStack> extractMany(
+            StorageControllerBlockEntity controller,
+            ItemStack template,
+            int amount
+    ) {
+        List<ItemStack> extractedStacks = new ArrayList<>();
+        int remaining = amount;
+        while (remaining > 0) {
+            ItemStack extracted = controller.extract(
+                    template,
+                    Math.min(remaining, template.getMaxStackSize()),
+                    TransferMode.EXECUTE
+            );
+            if (extracted.isEmpty()) {
+                break;
+            }
+            extractedStacks.add(extracted);
+            remaining -= extracted.getCount();
+        }
+        return List.copyOf(extractedStacks);
     }
 
     private void depositCarried(StorageControllerBlockEntity controller, boolean singleItem) {

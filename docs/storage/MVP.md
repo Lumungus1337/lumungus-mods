@@ -39,6 +39,8 @@ Seit dem ersten Entwicklungsschritt nach UAT.3 kann der Controller physische Inv
 - Mehrere Connectoren am selben Inventar werden dedupliziert; auch beide Haelften einer Doppeltruhe erhalten einen gemeinsamen Endpunkt-Schluessel.
 - Lesen, Einlagern und Entnehmen laufen transaktional ueber Fabric Transfer API. Simulationen veraendern den Bestand nicht und Item-Komponenten wie eigene Namen bleiben erhalten.
 - Gefuellte Storage Cells behalten ihren gesamten Inhalt beim Herausnehmen und Wiedereinsetzen.
+- Befuellte Shulkerboxen werden beim aktiven Einlagern ueber Controller oder Terminal entladen; das Netzwerk speichert danach den Inhalt als normale Items und die Shulkerbox als leere Box.
+- Das Crafting Terminal besitzt einen Entnahmemodus fuer befuellte Shulkerboxen: Es nimmt eine leere Shulkerbox aus dem Netzwerk und fuellt sie mit moeglichst vielen Exemplaren des angeklickten Items.
 - Items koennen direkt an einer Drive Bay, per Schnellaktion am Terminal oder in der Terminaloberflaeche eingelagert werden.
 - Ein leerer Rechtsklick entnimmt an der Drive Bay einen Stapel. Schleichen und Rechtsklick nimmt die Storage Cell heraus.
 - Ein normaler Rechtsklick oeffnet das Crafting Terminal. Schleichen und Rechtsklick lagert einen gehaltenen Stapel schnell ein oder entnimmt mit leerer Hand einen Netzwerkstapel.
