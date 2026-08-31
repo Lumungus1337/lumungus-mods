@@ -57,6 +57,7 @@ public record TerminalActionPayload(int containerId, Action action, ItemStack te
         EXTRACT_ONE_TO_CURSOR,
         EXTRACT_STACK_TO_INVENTORY,
         DEPOSIT_CARRIED_STACK,
-        DEPOSIT_ONE_CARRIED
+        DEPOSIT_ONE_CARRIED,
+        MOVE_PHYSICAL_TO_DRIVE_BAYS
     }
 }

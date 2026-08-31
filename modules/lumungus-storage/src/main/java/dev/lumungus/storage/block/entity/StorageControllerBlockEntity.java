@@ -26,6 +26,7 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
     public static final int SCAN_RADIUS = 8;
 
     private static final String NETWORK_ID_KEY = "network_id";
+    private static final int MAX_BAY_MOVE_STACKS_PER_ACTION = 8192;
 
     private UUID networkId = UUID.randomUUID();
     private long cachedNetworkStateTick = Long.MIN_VALUE;
@@ -96,11 +97,11 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
             return cachedNetworkState;
         }
 
-        List<StorageAccess> storageAccesses = storageAccesses();
+        NetworkStorageAccesses networkAccesses = storageAccesses();
         List<ResourceAmount> aggregated = new ArrayList<>();
         long maxTotal = 0;
         int maxTypes = 0;
-        for (StorageAccess storageAccess : storageAccesses) {
+        for (StorageAccess storageAccess : networkAccesses.all()) {
             StorageCapacity accessCapacity = storageAccess.capacity();
             maxTotal += accessCapacity.maxTotalAmount();
             maxTypes += accessCapacity.maxDistinctTypes();
@@ -122,7 +123,7 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
 
     @Override
     public long count(ItemStack template) {
-        return storageAccesses().stream().mapToLong(access -> access.count(template)).sum();
+        return storageAccesses().all().stream().mapToLong(access -> access.count(template)).sum();
     }
 
     @Override
@@ -131,7 +132,7 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
             return ItemStack.EMPTY;
         }
 
-        List<StorageAccess> ordered = new ArrayList<>(storageAccesses());
+        List<StorageAccess> ordered = new ArrayList<>(storageAccesses().all());
         ordered.sort(Comparator.comparingInt(access -> access.contains(stack) ? 0 : 1));
 
         ItemStack remainder = stack.copy();
@@ -155,7 +156,7 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
 
         long requested = Math.min(maxAmount, template.getMaxStackSize());
         ItemStack result = ItemStack.EMPTY;
-        for (StorageAccess storageAccess : storageAccesses()) {
+        for (StorageAccess storageAccess : storageAccesses().all()) {
             ItemStack part = storageAccess.extract(template, requested - result.getCount(), mode);
             if (!part.isEmpty()) {
                 if (result.isEmpty()) {
@@ -174,18 +175,107 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
         return result;
     }
 
-    private List<StorageAccess> storageAccesses() {
-        if (level == null || level.isClientSide()) {
-            return List.of();
+    public BayMoveResult movePhysicalInventoriesIntoDriveBays() {
+        NetworkStorageAccesses networkAccesses = storageAccesses();
+        if (networkAccesses.driveBays().isEmpty() || networkAccesses.physicalInventories().isEmpty()) {
+            return new BayMoveResult(0, 0, networkAccesses.physicalInventories().size(), networkAccesses.driveBays().size(), false);
         }
 
-        List<StorageAccess> storageAccesses = new ArrayList<>();
+        long moved = 0;
+        long remaining = 0;
+        int movedStacks = 0;
+        boolean paused = false;
+        for (StorageAccess physicalInventory : networkAccesses.physicalInventories()) {
+            for (ResourceAmount resource : physicalInventory.storedResources()) {
+                ItemStack template = resource.stack();
+                long sourceRemaining = resource.amount();
+                while (sourceRemaining > 0) {
+                    if (movedStacks >= MAX_BAY_MOVE_STACKS_PER_ACTION) {
+                        paused = true;
+                        remaining += sourceRemaining;
+                        break;
+                    }
+
+                    int requested = (int) Math.min(template.getMaxStackSize(), sourceRemaining);
+                    ItemStack extractable = physicalInventory.extract(template, requested, TransferMode.SIMULATE);
+                    if (extractable.isEmpty()) {
+                        break;
+                    }
+
+                    ItemStack simulatedRemainder = insertIntoDriveBays(networkAccesses.driveBays(), extractable, TransferMode.SIMULATE);
+                    int movable = extractable.getCount() - simulatedRemainder.getCount();
+                    if (movable <= 0) {
+                        remaining += sourceRemaining;
+                        break;
+                    }
+
+                    ItemStack extracted = physicalInventory.extract(template, movable, TransferMode.EXECUTE);
+                    if (extracted.isEmpty()) {
+                        break;
+                    }
+
+                    ItemStack insertRemainder = insertIntoDriveBays(networkAccesses.driveBays(), extracted, TransferMode.EXECUTE);
+                    int inserted = extracted.getCount() - insertRemainder.getCount();
+                    if (!insertRemainder.isEmpty()) {
+                        physicalInventory.insert(insertRemainder, TransferMode.EXECUTE);
+                    }
+                    if (inserted <= 0) {
+                        remaining += sourceRemaining;
+                        break;
+                    }
+
+                    moved += inserted;
+                    movedStacks++;
+                    sourceRemaining -= extracted.getCount();
+                }
+                if (paused) {
+                    break;
+                }
+            }
+            if (paused) {
+                break;
+            }
+        }
+
+        if (moved > 0) {
+            invalidateNetworkState();
+        }
+        return new BayMoveResult(
+                moved,
+                remaining,
+                networkAccesses.physicalInventories().size(),
+                networkAccesses.driveBays().size(),
+                paused
+        );
+    }
+
+    private static ItemStack insertIntoDriveBays(
+            List<StorageAccess> driveBays,
+            ItemStack stack,
+            TransferMode mode
+    ) {
+        ItemStack remainder = stack.copy();
+        for (StorageAccess driveBay : driveBays) {
+            remainder = driveBay.insert(remainder, mode);
+            if (remainder.isEmpty()) {
+                break;
+            }
+        }
+        return remainder;
+    }
+
+    private NetworkStorageAccesses storageAccesses() {
+        if (level == null || level.isClientSide()) {
+            return new NetworkStorageAccesses(List.of(), List.of());
+        }
+
+        List<StorageAccess> driveBays = new ArrayList<>();
         Map<BlockPos, StorageAccess> physicalInventories = new LinkedHashMap<>();
         for (BlockPos candidate : StorageNetworkTopology.reachableNodes(level, worldPosition, SCAN_RADIUS)) {
             if (level.getBlockEntity(candidate) instanceof DriveBayBlockEntity driveBay
                     && driveBay.refreshControllerLink()
                     && driveBay.isLinkedTo(this)) {
-                storageAccesses.add(driveBay.storageAccess());
+                driveBays.add(driveBay.storageAccess());
             } else if (level.getBlockEntity(candidate) instanceof InventoryConnectorBlockEntity connector
                     && connector.refreshControllerLink()
                     && connector.isLinkedTo(this)) {
@@ -195,8 +285,7 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
                 ));
             }
         }
-        storageAccesses.addAll(physicalInventories.values());
-        return storageAccesses;
+        return new NetworkStorageAccesses(driveBays, List.copyOf(physicalInventories.values()));
     }
 
     private static void mergeResource(List<ResourceAmount> aggregated, ResourceAmount candidate) {
@@ -231,6 +320,15 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
     public record NetworkStatus(int linkedTerminals, int linkedDriveBays, int linkedInventoryConnectors) {
     }
 
+    public record BayMoveResult(
+            long movedItems,
+            long remainingItems,
+            int physicalInventories,
+            int driveBays,
+            boolean paused
+    ) {
+    }
+
     public record NetworkState(
             List<ResourceAmount> resources,
             StorageSnapshot snapshot,
@@ -243,6 +341,20 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
         @Override
         public List<ResourceAmount> resources() {
             return resources;
+        }
+    }
+
+    private record NetworkStorageAccesses(List<StorageAccess> driveBays, List<StorageAccess> physicalInventories) {
+        private NetworkStorageAccesses {
+            driveBays = List.copyOf(driveBays);
+            physicalInventories = List.copyOf(physicalInventories);
+        }
+
+        private List<StorageAccess> all() {
+            List<StorageAccess> all = new ArrayList<>(driveBays.size() + physicalInventories.size());
+            all.addAll(driveBays);
+            all.addAll(physicalInventories);
+            return all;
         }
     }
 }

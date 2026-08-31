@@ -27,6 +27,9 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
     private static final int NETWORK_Y = 44;
     private static final int DEPOSIT_X = 174;
     private static final int DEPOSIT_Y = 44;
+    private static final int BAY_MOVE_X = 174;
+    private static final int BAY_MOVE_Y = 68;
+    private static final int BAY_MOVE_WIDTH = 20;
     private static final int SORT_X = 124;
     private static final int SORT_Y = 18;
     private static final int SORT_WIDTH = 44;
@@ -134,6 +137,14 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
                 depositHovered ? 0xFF664F20 : COLOR_FRAME
         );
         graphics.outline(depositLeft, depositTop, 18, 18, COLOR_AMBER);
+        drawButton(
+                graphics,
+                BAY_MOVE_X,
+                BAY_MOVE_Y,
+                BAY_MOVE_WIDTH,
+                18,
+                true
+        );
 
         drawVanillaSlotBackgrounds(graphics, left, top);
     }
@@ -155,6 +166,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         graphics.centeredText(font, "<", 18, PAGE_Y + 3, COLOR_GREEN);
         graphics.centeredText(font, ">", 159, PAGE_Y + 3, COLOR_GREEN);
         graphics.centeredText(font, "IN", DEPOSIT_X + 9, DEPOSIT_Y + 5, COLOR_AMBER);
+        graphics.centeredText(font, "BAY", BAY_MOVE_X + BAY_MOVE_WIDTH / 2, BAY_MOVE_Y + 5, COLOR_GREEN);
 
         List<ResourceAmount> resources = filteredResources();
         int pageCount = Math.max(1, (resources.size() + NETWORK_PAGE_SIZE - 1) / NETWORK_PAGE_SIZE);
@@ -238,6 +250,22 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
                     mouseX,
                     mouseY
             );
+            return;
+        }
+        if (isPointInside(
+                mouseX,
+                mouseY,
+                leftPos + BAY_MOVE_X,
+                topPos + BAY_MOVE_Y,
+                BAY_MOVE_WIDTH,
+                18
+        )) {
+            graphics.setTooltipForNextFrame(
+                    font,
+                    Component.translatable("gui.lumungus_storage.crafting_terminal.move_to_bays"),
+                    mouseX,
+                    mouseY
+            );
         }
     }
 
@@ -278,6 +306,17 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
                             : TerminalActionPayload.Action.DEPOSIT_CARRIED_STACK,
                     ItemStack.EMPTY
             );
+            return true;
+        }
+        if (isPointInside(
+                mouseX,
+                mouseY,
+                leftPos + BAY_MOVE_X,
+                topPos + BAY_MOVE_Y,
+                BAY_MOVE_WIDTH,
+                18
+        )) {
+            sendAction(TerminalActionPayload.Action.MOVE_PHYSICAL_TO_DRIVE_BAYS, ItemStack.EMPTY);
             return true;
         }
 

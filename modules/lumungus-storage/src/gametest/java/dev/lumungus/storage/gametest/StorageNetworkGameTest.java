@@ -287,6 +287,33 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     }
 
     @GameTest(padding = 32)
+    public void controllerMovesPhysicalInventoryContentsIntoDriveBays(GameTestHelper context) {
+        context.setBlock(PHYSICAL_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(new BlockPos(4, 1, 3), LumungusStorageBlocks.DRIVE_BAY);
+        context.setBlock(FIRST_INVENTORY_CONNECTOR, LumungusStorageBlocks.INVENTORY_CONNECTOR);
+        context.setBlock(CONNECTED_CHEST, Blocks.CHEST);
+
+        ChestBlockEntity chest = context.getBlockEntity(CONNECTED_CHEST, ChestBlockEntity.class);
+        chest.setItem(0, new ItemStack(Items.COBBLESTONE, 64));
+        chest.setItem(1, new ItemStack(Items.DIAMOND, 3));
+
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                PHYSICAL_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        DriveBayBlockEntity driveBay = context.getBlockEntity(new BlockPos(4, 1, 3), DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+
+        StorageControllerBlockEntity.BayMoveResult result = controller.movePhysicalInventoriesIntoDriveBays();
+
+        context.assertValueEqual(result.movedItems(), 67L, "Moved items");
+        context.assertValueEqual(driveBay.count(new ItemStack(Items.COBBLESTONE)), 64L, "Drive Bay cobblestone");
+        context.assertValueEqual(driveBay.count(new ItemStack(Items.DIAMOND)), 3L, "Drive Bay diamonds");
+        context.assertTrue(chest.isEmpty(), "Source chest was not emptied");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
     public void physicalInventoryAdapterIsTransactionalAndComponentSafe(GameTestHelper context) {
         context.setBlock(PHYSICAL_CHEST, Blocks.CHEST);
         ChestBlockEntity chest = context.getBlockEntity(PHYSICAL_CHEST, ChestBlockEntity.class);

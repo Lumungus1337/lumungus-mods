@@ -4,13 +4,13 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.8`
+- Version: `0.1.0-uat.9`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.8.zip`
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.9.zip`
 - Abnahmestatus: `AUTOMATED_SERVER_PASS`; der Client-UAT aus `0.1.0-uat.3` bleibt die letzte visuelle Referenz, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
@@ -65,6 +65,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-16b Rezepte:** Controller, Crafting Terminal, Drive Bay, Inventaranschluss, Rohrpostrohr, Rohrpostblende, Storage Cell und Kupfer-Schraubenschluessel sind im Survival-Modus craftbar; Kupfer ist der primaere Metallbestandteil.
 - [ ] **UAT-16c Standard-Abbau:** Lumungus-Storage-Bloecke verhalten sich beim normalen Abbauen wie technische Metallbloecke und droppen mit Spitzhacke korrekt.
 - [ ] **UAT-16d Schraubenschluessel:** Der Kupfer-Schraubenschluessel baut Lumungus-Storage-Bloecke sofort mit normalen Drops ab und verliert Haltbarkeit.
+- [ ] **UAT-16e Drive-Bay-Transfer:** Der `BAY`-Knopf im Crafting Terminal verschiebt Items aus angeschlossenen Kisten/Faessern in erreichbare Drive Bays mit eingesetzten Cells; nicht verschiebbare Items bleiben in den Quellinventaren.
 
 ## Multiplayer und Grenzfaelle
 
@@ -75,7 +76,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.8`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.9`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|

@@ -211,6 +211,7 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
             case EXTRACT_STACK_TO_INVENTORY -> extractToInventory(controller, payload.template());
             case DEPOSIT_CARRIED_STACK -> depositCarried(controller, false);
             case DEPOSIT_ONE_CARRIED -> depositCarried(controller, true);
+            case MOVE_PHYSICAL_TO_DRIVE_BAYS -> movePhysicalInventoriesToDriveBays(controller);
         }
         broadcastChanges();
     }
@@ -458,6 +459,24 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         }
         carried.shrink(inserted);
         setCarried(carried.isEmpty() ? ItemStack.EMPTY : carried);
+    }
+
+    private void movePhysicalInventoriesToDriveBays(StorageControllerBlockEntity controller) {
+        StorageControllerBlockEntity.BayMoveResult result = controller.movePhysicalInventoriesIntoDriveBays();
+        player.sendSystemMessage(Component.translatable(
+                result.movedItems() > 0
+                        ? "message.lumungus_storage.crafting_terminal.bay_move_done"
+                        : "message.lumungus_storage.crafting_terminal.bay_move_empty",
+                result.movedItems(),
+                result.physicalInventories(),
+                result.driveBays()
+        ));
+        if (result.paused()) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.bay_move_paused",
+                    result.remainingItems()
+            ));
+        }
     }
 
     private int inventorySpaceFor(ItemStack template) {
