@@ -6,6 +6,7 @@ import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
 import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
+import dev.lumungus.storage.menu.DriveBayMenu;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
@@ -436,6 +437,37 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.assertValueEqual(extracted.getCount(), 64, "Multi-Cell extract");
         context.assertValueEqual(driveBay.removeCell(TransferMode.EXECUTE).getCount(), 1, "Removed Cell");
         context.assertValueEqual(driveBay.cellCount(), DriveBayBlockEntity.CELL_SLOTS - 1, "Cell count after removal");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void driveBayMenuShiftMovesStorageCells(GameTestHelper context) {
+        context.setBlock(DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        DriveBayBlockEntity driveBay = context.getBlockEntity(DRIVE_BAY, DriveBayBlockEntity.class);
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        player.getInventory().setItem(9, new ItemStack(LumungusStorageItems.STORAGE_CELL_16K));
+
+        BlockPos driveBayPos = context.absolutePos(DRIVE_BAY);
+        DriveBayMenu menu = new DriveBayMenu(4, player.getInventory(), driveBay, driveBayPos);
+        int playerCellSlot = -1;
+        for (int index = DriveBayMenu.PLAYER_INVENTORY_SLOT_START; index < menu.slots.size(); index++) {
+            if (menu.slots.get(index).hasItem()) {
+                playerCellSlot = index;
+                break;
+            }
+        }
+
+        context.assertTrue(playerCellSlot >= 0, "Player Cell slot not found");
+        menu.quickMoveStack(player, playerCellSlot);
+        context.assertValueEqual(driveBay.cellCount(), 1, "Shift-click did not insert a Cell");
+        context.assertTrue(player.getInventory().getItem(9).isEmpty(), "Player inventory kept shifted Cell");
+
+        menu.quickMoveStack(player, DriveBayMenu.CELL_SLOT_START);
+        context.assertValueEqual(driveBay.cellCount(), 0, "Shift-click did not remove a Cell");
+        context.assertTrue(
+                player.getInventory().countItem(LumungusStorageItems.STORAGE_CELL_16K) == 1,
+                "Player inventory did not receive the shifted Cell"
+        );
         context.succeed();
     }
 

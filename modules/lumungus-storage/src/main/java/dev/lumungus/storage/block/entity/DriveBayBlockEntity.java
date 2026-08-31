@@ -13,16 +13,25 @@ import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import java.util.List;
 import java.util.UUID;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import dev.lumungus.storage.menu.DriveBayMenu;
 
-public final class DriveBayBlockEntity extends BlockEntity implements StorageAccess, StorageProvider {
+public final class DriveBayBlockEntity extends BlockEntity implements StorageAccess, StorageProvider, ExtendedMenuProvider<BlockPos> {
     public static final int CELL_SLOTS = 8;
 
     private static final String CELL_KEY = "cell";
@@ -49,6 +58,29 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
                 .findFirst()
                 .map(ItemStack::copy)
                 .orElse(ItemStack.EMPTY);
+    }
+
+    public Container cellContainer() {
+        return new CellContainer();
+    }
+
+    public ItemStack getCellSlot(int index) {
+        if (index < 0 || index >= CELL_SLOTS) {
+            return ItemStack.EMPTY;
+        }
+        return cells.get(index);
+    }
+
+    public void setCellSlot(int index, ItemStack stack) {
+        if (index < 0 || index >= CELL_SLOTS) {
+            return;
+        }
+
+        ItemStack normalized = stack.isEmpty() || !stack.is(LumungusStorageItems.STORAGE_CELL_16K)
+                ? ItemStack.EMPTY
+                : stack.copyWithCount(1);
+        cells.set(index, normalized);
+        setChanged();
     }
 
     public int cellCount() {
@@ -352,5 +384,92 @@ public final class DriveBayBlockEntity extends BlockEntity implements StorageAcc
             }
         }
         resources.add(candidate);
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("container.lumungus_storage.drive_bay");
+    }
+
+    @Override
+    public BlockPos getScreenOpeningData(ServerPlayer player) {
+        return worldPosition;
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        if (level == null) {
+            return null;
+        }
+        return new DriveBayMenu(containerId, inventory, this, worldPosition);
+    }
+
+    private final class CellContainer implements Container {
+        @Override
+        public int getContainerSize() {
+            return CELL_SLOTS;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return !hasCell();
+        }
+
+        @Override
+        public ItemStack getItem(int index) {
+            return getCellSlot(index);
+        }
+
+        @Override
+        public ItemStack removeItem(int index, int count) {
+            ItemStack removed = ContainerHelper.removeItem(cells, index, count);
+            if (!removed.isEmpty()) {
+                setChanged();
+            }
+            return removed;
+        }
+
+        @Override
+        public ItemStack removeItemNoUpdate(int index) {
+            if (index < 0 || index >= CELL_SLOTS) {
+                return ItemStack.EMPTY;
+            }
+            ItemStack removed = cells.get(index);
+            cells.set(index, ItemStack.EMPTY);
+            return removed;
+        }
+
+        @Override
+        public void setItem(int index, ItemStack stack) {
+            setCellSlot(index, stack);
+        }
+
+        @Override
+        public void setChanged() {
+            DriveBayBlockEntity.this.setChanged();
+        }
+
+        @Override
+        public boolean stillValid(Player player) {
+            return Container.stillValidBlockEntity(DriveBayBlockEntity.this, player);
+        }
+
+        @Override
+        public boolean canPlaceItem(int index, ItemStack stack) {
+            return stack.is(LumungusStorageItems.STORAGE_CELL_16K);
+        }
+
+        @Override
+        public int getMaxStackSize() {
+            return 1;
+        }
+
+        @Override
+        public void clearContent() {
+            for (int index = 0; index < CELL_SLOTS; index++) {
+                cells.set(index, ItemStack.EMPTY);
+            }
+            setChanged();
+        }
     }
 }

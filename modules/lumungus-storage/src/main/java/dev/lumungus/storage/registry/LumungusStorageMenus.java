@@ -1,6 +1,7 @@
 package dev.lumungus.storage.registry;
 
 import dev.lumungus.storage.LumungusStorage;
+import dev.lumungus.storage.menu.DriveBayMenu;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
 import net.minecraft.core.BlockPos;
@@ -15,6 +16,10 @@ public final class LumungusStorageMenus {
     public static final ExtendedMenuType<LumungusCraftingMenu, BlockPos> CRAFTING_TERMINAL = register(
             "crafting_terminal",
             new ExtendedMenuType<>(LumungusCraftingMenu::new, BlockPos.STREAM_CODEC)
+    );
+    public static final ExtendedMenuType<DriveBayMenu, BlockPos> DRIVE_BAY = register(
+            "drive_bay",
+            new ExtendedMenuType<>(DriveBayMenu::new, BlockPos.STREAM_CODEC)
     );
 
     private LumungusStorageMenus() {
