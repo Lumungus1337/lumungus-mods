@@ -2,6 +2,8 @@
 
 Status: verbindliche Stilrichtung fuer neue Bloecke, Items, Menues und spaetere Texturen
 
+Aktueller Konzeptbogen: [Lumungus Storage Plumber Pipe Concept](storage/images/lumungus-storage-plumber-pipe-concept-uat12.png)
+
 ## Leitidee
 
 Lumungus soll sich nicht wie ein weiteres glattes Sci-Fi-Lagersystem anfuehlen.
@@ -37,11 +39,40 @@ Storage- und Maschinenbloecke sollen wie robuste, leicht verspielte Werkstatt-
 Hardware wirken:
 
 - Rohrteile: satte Farben, dunkle Schattenfugen, helle Kanten, klare Oeffnungen
-- Controller: groesseres Bedienfeld, seitliche Rohranschluesse, Status-LEDs
+- Controller: anthrazitfarbener Maschinenkoerper, Kupferplatten, seitliche
+  Rohranschluesse, gruene CRT-Statusflaeche und kleine Kontrolllampen
 - Terminals: dunkler Bildschirm, gruene oder bernsteinfarbene CRT-Anzeige,
   grobe Tasten, kleine Labelstreifen
+- Drive Bay: sichtbares Cell-Rack, Kupferrahmen, gruene Speicherzylinder oder
+  Leuchtfenster, klare Vorderseite fuer schnellen Wiedererkennungswert
+- Inventaranschluss: robuste Rohrkupplung mit dunkler Frontplatte und einem
+  tiefen Anschlussloch, damit sofort klar ist, wo Items ein- und auslaufen
 - Maschinen: sichtbare Ein- und Ausgangsrohre, Fortschrittsanzeige, Wartungsklappe
 - Autotrader: Kassenterminal-/Bon-Drucker-Gefuehl mit Handelsstatus und Rohranschluss
+
+## Materialpalette
+
+- Kupfer wird als Hauptmaterial genutzt: roh/orange fuer aktive Technik,
+  angelaufen/braun fuer Rahmen und Abdeckplatten, oxidiert/gruen fuer Rohre,
+  Speicherzellen und wichtige Akzente.
+- Anthrazit ist das tragende Maschinenmaterial fuer Kanten, Rueckseiten,
+  Schraubplatten, Luefter und Schattenfugen.
+- Gruenes CRT-Licht bleibt das Lumungus-Signal fuer Netzwerk, Status und
+  interaktive Flaechen.
+- Bernstein/Orange wird sparsam fuer Warnlampen, aktive Knopfe und
+  Energie-/Transferzustand verwendet.
+
+## Texturregeln
+
+- Jede Blockseite braucht eine grosse Hauptform, die auch bei 16x16 oder 32x32
+  Texturen lesbar bleibt.
+- Details wie Schrauben, Nieten, Luefter und Anzeigen duerfen die Silhouette
+  unterstuetzen, aber nicht die komplette Flaeche verrauschen.
+- Vorderseiten muessen pro Block eindeutig sein: Terminal = Bildschirm und
+  Tastatur, Controller = zentrale Anzeige, Bay = Cell-Rack, Anschluss = Rohrkupplung.
+- Rohre sollen rund wirken, aber als Minecraft-Bloecke klare Kanten behalten.
+- Kein modernes Glas-/Neon-Sci-Fi; die Optik bleibt Werkstatt, Klempnertechnik,
+  Rohrpost und 90er-Computer.
 
 ## Menues
 
