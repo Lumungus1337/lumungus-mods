@@ -18,6 +18,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import org.lwjgl.glfw.GLFW;
 
 public final class LumungusCraftingTerminalScreen extends AbstractContainerScreen<LumungusCraftingMenu> {
     private static final int NETWORK_COLUMNS = 7;
@@ -382,7 +383,11 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (searchBox != null && searchBox.isFocused() && searchBox.keyPressed(event)) {
+        if (searchBox != null && searchBox.isFocused()) {
+            if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
+                return super.keyPressed(event);
+            }
+            searchBox.keyPressed(event);
             return true;
         }
         return super.keyPressed(event);
