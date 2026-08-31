@@ -27,7 +27,7 @@ public final class LumungusStorageCreativeTabs {
                 STORAGE_TAB,
                 FabricCreativeModeTab.builder()
                         .title(Component.translatable("itemGroup.lumungus_storage.storage"))
-                        .icon(() -> new ItemStack(LumungusStorageBlocks.INVENTORY_CABLE))
+                        .icon(() -> new ItemStack(LumungusStorageBlocks.PNEUMATIC_PIPE))
                         .displayItems((context, output) -> addStorageEntries(output))
                         .build()
         );
@@ -47,7 +47,7 @@ public final class LumungusStorageCreativeTabs {
         output.accept(LumungusStorageBlocks.DRIVE_BAY);
         output.accept(LumungusStorageBlocks.INVENTORY_CONNECTOR);
         output.accept(LumungusStorageBlocks.INVENTORY_TRIM);
-        output.accept(LumungusStorageBlocks.INVENTORY_CABLE);
+        output.accept(LumungusStorageBlocks.PNEUMATIC_PIPE);
         output.accept(LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT);
         output.accept(LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_DIMENSION);
         output.accept(LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL);

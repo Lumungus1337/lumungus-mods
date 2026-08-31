@@ -4,7 +4,7 @@
   "key": {
     "C": "minecraft:copper_block",
     "D": "minecraft:dispenser",
-    "P": "lumungus_storage:inventory_cable",
+    "P": "lumungus_storage:pneumatic_pipe",
     "R": "minecraft:redstone"
   },
   "pattern": [

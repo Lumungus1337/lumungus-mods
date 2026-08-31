@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "lumungus_storage:block/pneumatic_pipe"
+    }
+  }
+}

@@ -49,9 +49,16 @@ public final class LumungusStorageBlocks {
             InventoryConnectorBlock::new
     );
 
+    public static final Block PNEUMATIC_PIPE = registerBlockWithItem(
+            "pneumatic_pipe",
+            InventoryCableBlock::new,
+            true
+    );
+
     public static final Block INVENTORY_CABLE = registerBlockWithItem(
             "inventory_cable",
-            InventoryCableBlock::new
+            InventoryCableBlock::new,
+            true
     );
 
     public static final Block WIRELESS_STORAGE_CONTROLLER_SHORT = registerBlockWithItem(
@@ -101,18 +108,29 @@ public final class LumungusStorageBlocks {
     }
 
     private static Block registerBlockWithItem(String path, Function<BlockBehaviour.Properties, Block> factory) {
+        return registerBlockWithItem(path, factory, false);
+    }
+
+    private static Block registerBlockWithItem(
+            String path,
+            Function<BlockBehaviour.Properties, Block> factory,
+            boolean noOcclusion
+    ) {
         Identifier id = Identifier.fromNamespaceAndPath(LumungusStorage.MOD_ID, path);
         ResourceKey<Block> blockKey = ResourceKey.create(Registries.BLOCK, id);
         ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, id);
 
-        Block block = factory.apply(
-                BlockBehaviour.Properties.of()
-                        .setId(blockKey)
-                        .mapColor(MapColor.METAL)
-                        .strength(2.5F, 6.0F)
-                        .requiresCorrectToolForDrops()
-                        .sound(SoundType.METAL)
-        );
+        BlockBehaviour.Properties properties = BlockBehaviour.Properties.of()
+                .setId(blockKey)
+                .mapColor(MapColor.METAL)
+                .strength(2.5F, 6.0F)
+                .requiresCorrectToolForDrops()
+                .sound(SoundType.METAL);
+        if (noOcclusion) {
+            properties = properties.noOcclusion();
+        }
+
+        Block block = factory.apply(properties);
 
         Registry.register(BuiltInRegistries.BLOCK, blockKey, block);
         Registry.register(BuiltInRegistries.ITEM, itemKey, new BlockItem(block, new Item.Properties().setId(itemKey)));

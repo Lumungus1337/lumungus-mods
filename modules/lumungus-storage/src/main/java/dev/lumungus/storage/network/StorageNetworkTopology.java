@@ -146,6 +146,7 @@ public final class StorageNetworkTopology {
                 || block == LumungusStorageBlocks.DRIVE_BAY
                 || block == LumungusStorageBlocks.INVENTORY_CONNECTOR
                 || block == LumungusStorageBlocks.INVENTORY_TRIM
+                || block == LumungusStorageBlocks.PNEUMATIC_PIPE
                 || block == LumungusStorageBlocks.INVENTORY_CABLE
                 || block == LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT
                 || block == LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_DIMENSION
