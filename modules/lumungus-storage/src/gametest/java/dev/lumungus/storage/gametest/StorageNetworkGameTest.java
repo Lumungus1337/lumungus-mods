@@ -353,12 +353,12 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
-    @GameTest(padding = 260)
+    @GameTest(padding = 128)
     public void dimensionWirelessInventoryConnectorIgnoresShortRangeLimit(GameTestHelper context) {
-        BlockPos controllerPos = new BlockPos(1, 1, 220);
-        BlockPos wirelessControllerPos = new BlockPos(96, 1, 220);
-        BlockPos wirelessConnectorPos = new BlockPos(240, 1, 220);
-        BlockPos chestPos = new BlockPos(241, 1, 220);
+        BlockPos controllerPos = new BlockPos(1, 1, 64);
+        BlockPos wirelessControllerPos = new BlockPos(60, 1, 64);
+        BlockPos wirelessConnectorPos = new BlockPos(120, 1, 64);
+        BlockPos chestPos = new BlockPos(121, 1, 64);
         context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
         context.setBlock(wirelessControllerPos, LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_DIMENSION);
         context.setBlock(wirelessConnectorPos, LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_DIMENSION);
