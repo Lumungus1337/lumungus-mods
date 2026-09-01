@@ -1,13 +1,18 @@
 package dev.lumungus.machines.block.entity;
 
 import com.mojang.serialization.Codec;
+import dev.lumungus.machines.production.AutocrafterRecipeExecutor;
+import dev.lumungus.machines.production.AutocrafterState;
 import dev.lumungus.machines.registry.LumungusMachinesBlockEntities;
+import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.wireless.WirelessModuleBinding;
 import dev.lumungus.storage.wireless.WirelessModuleHost;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -25,9 +30,16 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
     private long targetAmount;
     private long completedAmount;
     private ItemStack wirelessModule = ItemStack.EMPTY;
+    private AutocrafterState state = AutocrafterState.IDLE;
 
     public AutocrafterBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusMachinesBlockEntities.AUTOCRAFTER, pos, state);
+    }
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, AutocrafterBlockEntity autocrafter) {
+        if (level.getGameTime() % 20 == 0) {
+            autocrafter.runCraftCycle();
+        }
     }
 
     public void configure(Identifier recipeId, ItemStack target, long targetAmount) {
@@ -38,6 +50,7 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
         this.target = target.copyWithCount(1);
         this.targetAmount = targetAmount;
         this.completedAmount = 0;
+        this.state = AutocrafterState.IDLE;
         setChanged();
     }
 
@@ -69,6 +82,44 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
         setChanged();
     }
 
+    public AutocrafterState state() {
+        return state;
+    }
+
+    public void runCraftCycle() {
+        if (!(level instanceof ServerLevel serverLevel) || target.isEmpty() || targetAmount <= 0) {
+            state = AutocrafterState.IDLE;
+            return;
+        }
+        if (completedAmount >= targetAmount) {
+            state = AutocrafterState.COMPLETE;
+            return;
+        }
+        if (wirelessModule.isEmpty()) {
+            state = AutocrafterState.NO_MODULE;
+            return;
+        }
+
+        StorageControllerBlockEntity controller = WirelessModuleBinding.resolve(serverLevel, wirelessModule);
+        if (controller == null) {
+            state = AutocrafterState.NO_CONTROLLER;
+            return;
+        }
+
+        AutocrafterRecipeExecutor.CraftResult result = AutocrafterRecipeExecutor.craftOnce(
+                serverLevel,
+                worldPosition,
+                controller,
+                recipeId,
+                target,
+                targetAmount - completedAmount
+        );
+        recipeId = result.recipeId();
+        completedAmount += result.producedAmount();
+        state = completedAmount >= targetAmount ? AutocrafterState.COMPLETE : result.state();
+        setChanged();
+    }
+
     public Component statusText() {
         if (target.isEmpty()) {
             return Component.translatable("message.lumungus_machines.autocrafter.unconfigured");
@@ -77,7 +128,8 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
                 "message.lumungus_machines.autocrafter.status",
                 target.getHoverName(),
                 completedAmount,
-                targetAmount
+                targetAmount,
+                Component.translatable(state.translationKey())
         );
     }
 
@@ -92,6 +144,7 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
             return false;
         }
         wirelessModule = module.copyWithCount(1);
+        state = AutocrafterState.IDLE;
         setChanged();
         return true;
     }
@@ -100,6 +153,7 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
     public ItemStack removeWirelessModule() {
         ItemStack removed = wirelessModule;
         wirelessModule = ItemStack.EMPTY;
+        state = AutocrafterState.NO_MODULE;
         setChanged();
         return removed;
     }
@@ -125,8 +179,10 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
             target = ItemStack.EMPTY;
             targetAmount = 0;
             completedAmount = 0;
+            state = AutocrafterState.IDLE;
         } else {
             completedAmount = Math.clamp(completedAmount, 0, targetAmount);
+            state = completedAmount >= targetAmount ? AutocrafterState.COMPLETE : AutocrafterState.IDLE;
         }
     }
 

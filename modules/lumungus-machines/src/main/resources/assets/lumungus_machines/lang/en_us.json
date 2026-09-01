@@ -3,5 +3,14 @@
   "itemGroup.lumungus_machines.machines": "Lumungus Machines",
   "message.lumungus_machines.autocrafter.target_set": "Autocrafter target: %1$s x %2$s.",
   "message.lumungus_machines.autocrafter.unconfigured": "Autocrafter is waiting for a pattern recipe.",
-  "message.lumungus_machines.autocrafter.status": "Autocrafter: %1$s, progress %2$s/%3$s."
+  "message.lumungus_machines.autocrafter.status": "Autocrafter: %1$s, progress %2$s/%3$s, %4$s.",
+  "message.lumungus_machines.autocrafter.state.idle": "ready",
+  "message.lumungus_machines.autocrafter.state.no_module": "no wireless module",
+  "message.lumungus_machines.autocrafter.state.no_controller": "storage unavailable",
+  "message.lumungus_machines.autocrafter.state.no_recipe": "no matching recipe",
+  "message.lumungus_machines.autocrafter.state.missing_ingredients": "waiting for materials",
+  "message.lumungus_machines.autocrafter.state.output_blocked": "storage full",
+  "message.lumungus_machines.autocrafter.state.invalid_target_amount": "target amount does not match recipe output",
+  "message.lumungus_machines.autocrafter.state.working": "producing",
+  "message.lumungus_machines.autocrafter.state.complete": "complete"
 }

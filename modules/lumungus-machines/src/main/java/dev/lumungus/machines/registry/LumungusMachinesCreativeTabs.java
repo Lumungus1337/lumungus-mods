@@ -1,6 +1,7 @@
 package dev.lumungus.machines.registry;
 
 import dev.lumungus.machines.LumungusMachines;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,8 +28,9 @@ public final class LumungusMachinesCreativeTabs {
                 FabricCreativeModeTab.builder()
                         .title(Component.translatable("itemGroup.lumungus_machines.machines"))
                         .icon(() -> new ItemStack(LumungusMachinesBlocks.AUTOCRAFTER))
-                        .displayItems((context, output) -> output.accept(LumungusMachinesBlocks.AUTOCRAFTER))
                         .build()
         );
+        CreativeModeTabEvents.modifyOutputEvent(MACHINES_TAB)
+                .register(output -> output.accept(LumungusMachinesBlocks.AUTOCRAFTER));
     }
 }

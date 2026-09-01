@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "lumungus_machines_gametest",
+  "version": "1.0.0",
+  "name": "Lumungus Machines Game Tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.lumungus.machines.gametest.AutocrafterGameTest"
+    ]
+  }
+}

@@ -1,6 +1,7 @@
 package dev.lumungus.storage.registry;
 
 import dev.lumungus.storage.LumungusStorage;
+import java.util.function.Consumer;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.minecraft.core.Registry;
@@ -11,6 +12,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 
 public final class LumungusStorageCreativeTabs {
     public static final ResourceKey<CreativeModeTab> STORAGE_TAB = ResourceKey.create(
@@ -28,19 +30,19 @@ public final class LumungusStorageCreativeTabs {
                 FabricCreativeModeTab.builder()
                         .title(Component.translatable("itemGroup.lumungus_storage.storage"))
                         .icon(() -> new ItemStack(LumungusStorageBlocks.PNEUMATIC_PIPE))
-                        .displayItems((context, output) -> addStorageEntries(output))
                         .build()
         );
+        CreativeModeTabEvents.modifyOutputEvent(STORAGE_TAB).register(output -> addStorageEntries(output::accept));
         CreativeModeTabEvents.MODIFY_OUTPUT_ALL.register((tab, output) -> {
             Identifier tabId = BuiltInRegistries.CREATIVE_MODE_TAB.getKey(tab);
             if (tabId != null && ("functional_blocks".equals(tabId.getPath()) || "search".equals(tabId.getPath()))) {
-                addStorageEntries(output);
+                addStorageEntries(output::accept);
             }
         });
         LumungusStorage.LOGGER.info("Registered Lumungus Storage creative tab");
     }
 
-    private static void addStorageEntries(CreativeModeTab.Output output) {
+    private static void addStorageEntries(Consumer<ItemLike> output) {
         output.accept(LumungusStorageItems.COPPER_WRENCH);
         output.accept(LumungusStorageItems.WIRELESS_NETWORK_MODULE);
         output.accept(LumungusStorageBlocks.STORAGE_CONTROLLER);

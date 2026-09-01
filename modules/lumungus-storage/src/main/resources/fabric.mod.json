@@ -9,6 +9,7 @@
   ],
   "license": "UNDECIDED",
   "environment": "*",
+  "accessWidener": "lumungus_storage.accesswidener",
   "entrypoints": {
     "main": [
       "dev.lumungus.storage.LumungusStorage"

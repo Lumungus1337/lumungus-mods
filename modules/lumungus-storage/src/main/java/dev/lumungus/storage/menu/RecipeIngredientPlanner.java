@@ -7,11 +7,11 @@ import java.util.Optional;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
-final class RecipeIngredientPlanner {
+public final class RecipeIngredientPlanner {
     private RecipeIngredientPlanner() {
     }
 
-    static Optional<List<PlannedSlot>> plan(
+    public static Optional<List<PlannedSlot>> plan(
             List<IngredientSlot> ingredients,
             List<AvailableResource> available,
             int crafts
@@ -85,11 +85,11 @@ final class RecipeIngredientPlanner {
         return matches;
     }
 
-    record IngredientSlot(int slot, Ingredient ingredient) {
+    public record IngredientSlot(int slot, Ingredient ingredient) {
     }
 
-    record AvailableResource(ItemStack stack, long amount) {
-        AvailableResource {
+    public record AvailableResource(ItemStack stack, long amount) {
+        public AvailableResource {
             stack = stack.copyWithCount(1);
         }
 
@@ -99,8 +99,8 @@ final class RecipeIngredientPlanner {
         }
     }
 
-    record PlannedSlot(int slot, ItemStack stack) {
-        PlannedSlot {
+    public record PlannedSlot(int slot, ItemStack stack) {
+        public PlannedSlot {
             stack = stack.copy();
         }
 
@@ -110,4 +110,3 @@ final class RecipeIngredientPlanner {
         }
     }
 }
-
