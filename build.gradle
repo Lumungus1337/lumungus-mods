@@ -36,11 +36,16 @@ configure(project(":lumungus-backpack")) {
 configure(project(":lumungus-machines")) {
     configureLumungusModule(project)
 
+    loom {
+        accessWidenerPath = file("src/main/resources/lumungus_machines.accesswidener")
+    }
+
     fabricApi {
         configureTests {
             createSourceSet = true
             modId = "lumungus_machines_gametest"
             enableGameTests = true
+            enableClientGameTests = true
             eula = true
         }
     }
@@ -137,7 +142,8 @@ tasks.register("storageUatBundle", Zip) {
         ":lumungus-storage:check",
         ":lumungus-machines:jar",
         ":lumungus-machines:check",
-        ":lumungus-machines:runGameTest"
+        ":lumungus-machines:runGameTest",
+        ":lumungus-machines:runClientGameTest"
     )
 
     archiveFileName = "lumungus-storage-${project.version}.zip"

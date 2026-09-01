@@ -9,9 +9,13 @@
   ],
   "license": "UNDECIDED",
   "environment": "*",
+  "accessWidener": "lumungus_machines.accesswidener",
   "entrypoints": {
     "main": [
       "dev.lumungus.machines.LumungusMachines"
+    ],
+    "client": [
+      "dev.lumungus.machines.client.LumungusMachinesClient"
     ]
   },
   "depends": {

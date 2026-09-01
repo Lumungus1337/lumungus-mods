@@ -64,6 +64,55 @@ public final class AutocrafterGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
+    @GameTest(padding = 16)
+    public void pauseAndTargetAmountControlProduction(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 1);
+        BlockPos driveBayPos = new BlockPos(2, 1, 1);
+        BlockPos autocrafterPos = new BlockPos(10, 1, 1);
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(driveBayPos, LumungusStorageBlocks.DRIVE_BAY);
+        context.setBlock(autocrafterPos, LumungusMachinesBlocks.AUTOCRAFTER);
+
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                controllerPos,
+                StorageControllerBlockEntity.class
+        );
+        DriveBayBlockEntity driveBay = context.getBlockEntity(driveBayPos, DriveBayBlockEntity.class);
+        AutocrafterBlockEntity autocrafter = context.getBlockEntity(
+                autocrafterPos,
+                AutocrafterBlockEntity.class
+        );
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        context.assertTrue(
+                controller.insert(new ItemStack(Items.OAK_LOG), TransferMode.EXECUTE).isEmpty(),
+                "Test log should fit into the storage network"
+        );
+
+        ItemStack module = new ItemStack(LumungusStorageItems.WIRELESS_NETWORK_MODULE);
+        module.set(LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER, new BoundStorageController(
+                context.getLevel().dimension().identifier(),
+                context.absolutePos(controllerPos),
+                controller.getNetworkId()
+        ));
+        context.assertTrue(autocrafter.installWirelessModule(module), "Primed module should install");
+        autocrafter.setTarget(new ItemStack(Items.OAK_PLANKS), 8);
+        autocrafter.setPaused(true);
+
+        autocrafter.runCraftCycle();
+        context.assertTrue(controller.count(new ItemStack(Items.OAK_LOG)) == 1, "Paused machine must not consume items");
+        context.assertTrue(autocrafter.completedAmount() == 0, "Paused machine must not advance");
+        context.assertTrue(autocrafter.state() == AutocrafterState.PAUSED, "Machine should report paused state");
+
+        autocrafter.setTargetAmount(4);
+        autocrafter.setPaused(false);
+        autocrafter.runCraftCycle();
+        context.assertTrue(controller.count(new ItemStack(Items.OAK_LOG)) == 0, "Restarted machine should consume log");
+        context.assertTrue(controller.count(new ItemStack(Items.OAK_PLANKS)) == 4, "Restarted machine should store result");
+        context.assertTrue(autocrafter.completedAmount() == 4, "Edited target amount should be respected");
+        context.assertTrue(autocrafter.state() == AutocrafterState.COMPLETE, "Machine should complete edited target");
+        context.succeed();
+    }
+
     @Override
     public void invokeTestMethod(GameTestHelper context, Method method) throws ReflectiveOperationException {
         method.invoke(this, context);

@@ -7,6 +7,9 @@
   "entrypoints": {
     "fabric-gametest": [
       "dev.lumungus.machines.gametest.AutocrafterGameTest"
+    ],
+    "fabric-client-gametest": [
+      "dev.lumungus.machines.gametest.AutocrafterClientGameTest"
     ]
   }
 }

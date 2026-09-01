@@ -28,6 +28,26 @@ public final class AutocrafterRecipeExecutor {
     private AutocrafterRecipeExecutor() {
     }
 
+    public static RecipePreview preview(ServerLevel level, Identifier configuredRecipe, ItemStack target) {
+        SelectedRecipe selected = findRecipe(level, configuredRecipe, target);
+        if (selected == null) {
+            return RecipePreview.empty();
+        }
+        CraftingInput input = representativeInput(selected.recipe());
+        if (input == null) {
+            return RecipePreview.empty();
+        }
+        List<ItemStack> ingredients = emptyGrid();
+        for (IngredientSlot ingredient : recipeIngredients(selected.recipe())) {
+            ItemStack representative = ingredient.ingredient().items()
+                    .findFirst()
+                    .map(ItemStack::new)
+                    .orElse(ItemStack.EMPTY);
+            ingredients.set(ingredient.slot(), representative);
+        }
+        return new RecipePreview(selected.id(), ingredients, selected.recipe().assemble(input));
+    }
+
     public static CraftResult craftOnce(
             ServerLevel level,
             BlockPos machinePos,
@@ -235,6 +255,27 @@ public final class AutocrafterRecipeExecutor {
     }
 
     public record CraftResult(AutocrafterState state, Identifier recipeId, int producedAmount) {
+    }
+
+    public record RecipePreview(Identifier recipeId, List<ItemStack> ingredients, ItemStack result) {
+        public RecipePreview {
+            ingredients = ingredients.stream().map(ItemStack::copy).toList();
+            result = result.copy();
+        }
+
+        public static RecipePreview empty() {
+            return new RecipePreview(null, emptyGrid(), ItemStack.EMPTY);
+        }
+
+        @Override
+        public List<ItemStack> ingredients() {
+            return ingredients.stream().map(ItemStack::copy).toList();
+        }
+
+        @Override
+        public ItemStack result() {
+            return result.copy();
+        }
     }
 
     private record SelectedRecipe(Identifier id, CraftingRecipe recipe) {

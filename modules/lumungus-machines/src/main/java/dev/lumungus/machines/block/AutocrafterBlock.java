@@ -79,6 +79,7 @@ public final class AutocrafterBlock extends BaseEntityBlock {
                 heldStack.getHoverName(),
                 autocrafter.targetAmount()
         ));
+        player.openMenu(autocrafter);
         return InteractionResult.SUCCESS;
     }
 
@@ -94,7 +95,7 @@ public final class AutocrafterBlock extends BaseEntityBlock {
             if (player.isSecondaryUseActive() && WirelessModuleInteractions.tryRemove(autocrafter, player)) {
                 return InteractionResult.SUCCESS;
             }
-            player.sendSystemMessage(autocrafter.statusText());
+            player.openMenu(autocrafter);
         }
         return InteractionResult.SUCCESS;
     }

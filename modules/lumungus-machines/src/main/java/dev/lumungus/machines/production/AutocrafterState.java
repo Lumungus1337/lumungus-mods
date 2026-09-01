@@ -2,6 +2,7 @@ package dev.lumungus.machines.production;
 
 public enum AutocrafterState {
     IDLE,
+    PAUSED,
     NO_MODULE,
     NO_CONTROLLER,
     NO_RECIPE,

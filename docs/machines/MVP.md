@@ -4,9 +4,9 @@
 
 Phase 3 ist gestartet. Lumungus Core enthaelt den gemeinsamen Vertrag fuer Produktionsauftrag, Zielmenge, erlaubte Rezepte, Fortschritt, fehlende Materialien und Maschinenstatus. Lumungus Machines besitzt eine kapazitaetsbegrenzte Produktionswarteschlange mit stabiler Reihenfolge, Schutz vor doppelten Auftraegen, monotonem Fortschritt und validierten Zustandswechseln.
 
-Der erste Autocrafter-Block ist registriert, im Kreativmenue sichtbar und besitzt ein kupferlastiges Survival-Rezept. Seine BlockEntity speichert Rezept-ID, Zielitem, Zielmenge und Fortschritt dauerhaft. Per Rechtsklick mit einem Item kann ein Ziel gesetzt und mit leerer Hand der Status abgefragt werden. Mit einem gepraegten Wireless-Netzwerkmodul sucht er ein passendes normales Crafting-Rezept, entnimmt die Zutaten transaktionssicher aus dem gebundenen Lager und lagert Ergebnis sowie Rezeptreste wieder ein.
+Der erste Autocrafter-Block ist registriert, im Kreativmenue sichtbar und besitzt ein kupferlastiges Survival-Rezept. Seine BlockEntity speichert Rezept-ID, Zielitem, Zielmenge, Pausenzustand und Fortschritt dauerhaft. Per Rechtsklick mit einem Item wird das Ziel gesetzt und das Bedienmenue geoeffnet. Das Menue zeigt das 3x3-Rezept samt Ergebnis, nimmt eine Zielmenge bis 9.999.999 an und bietet Start/Pause. Mit einem gepraegten Wireless-Netzwerkmodul sucht der Autocrafter ein passendes normales Crafting-Rezept, entnimmt die Zutaten transaktionssicher aus dem gebundenen Lager und lagert Ergebnis sowie Rezeptreste wieder ein.
 
-Als naechster Schritt folgt das Bedienmenue mit 3x3-Muster, Mengenfeld und Start-/Stopp-Steuerung. Danach folgen die direkte Rezeptuebernahme aus JEI und die rekursive Planung von Zwischenprodukten.
+Als naechste getrennte Ausbaustufe folgen die direkte Rezeptuebernahme aus JEI und die rekursive Planung von Zwischenprodukten.
 
 ## Produktionsauftraege
 

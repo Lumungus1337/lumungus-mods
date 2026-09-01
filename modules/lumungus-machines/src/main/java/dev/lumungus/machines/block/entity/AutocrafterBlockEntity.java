@@ -1,6 +1,7 @@
 package dev.lumungus.machines.block.entity;
 
 import com.mojang.serialization.Codec;
+import dev.lumungus.machines.menu.AutocrafterMenu;
 import dev.lumungus.machines.production.AutocrafterRecipeExecutor;
 import dev.lumungus.machines.production.AutocrafterState;
 import dev.lumungus.machines.registry.LumungusMachinesBlockEntities;
@@ -10,7 +11,12 @@ import dev.lumungus.storage.wireless.WirelessModuleHost;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -18,12 +24,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-public final class AutocrafterBlockEntity extends BlockEntity implements WirelessModuleHost {
+public final class AutocrafterBlockEntity extends BlockEntity implements WirelessModuleHost, ExtendedMenuProvider<BlockPos> {
     private static final String RECIPE_KEY = "recipe";
     private static final String TARGET_KEY = "target";
     private static final String TARGET_AMOUNT_KEY = "target_amount";
     private static final String COMPLETED_AMOUNT_KEY = "completed_amount";
     private static final String WIRELESS_MODULE_KEY = "wireless_module";
+    private static final String PAUSED_KEY = "paused";
 
     private Identifier recipeId;
     private ItemStack target = ItemStack.EMPTY;
@@ -31,6 +38,7 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
     private long completedAmount;
     private ItemStack wirelessModule = ItemStack.EMPTY;
     private AutocrafterState state = AutocrafterState.IDLE;
+    private boolean paused;
 
     public AutocrafterBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusMachinesBlockEntities.AUTOCRAFTER, pos, state);
@@ -50,6 +58,7 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
         this.target = target.copyWithCount(1);
         this.targetAmount = targetAmount;
         this.completedAmount = 0;
+        this.paused = false;
         this.state = AutocrafterState.IDLE;
         setChanged();
     }
@@ -86,9 +95,39 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
         return state;
     }
 
+    public boolean paused() {
+        return paused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
+        this.state = paused ? AutocrafterState.PAUSED : AutocrafterState.IDLE;
+        setChanged();
+    }
+
+    public void setTargetAmount(long targetAmount) {
+        if (target.isEmpty() || targetAmount <= 0 || targetAmount > 9_999_999L) {
+            return;
+        }
+        this.targetAmount = targetAmount;
+        this.completedAmount = Math.min(completedAmount, targetAmount);
+        this.state = completedAmount >= targetAmount ? AutocrafterState.COMPLETE : AutocrafterState.IDLE;
+        setChanged();
+    }
+
+    public void resetProgress() {
+        completedAmount = 0;
+        state = paused ? AutocrafterState.PAUSED : AutocrafterState.IDLE;
+        setChanged();
+    }
+
     public void runCraftCycle() {
         if (!(level instanceof ServerLevel serverLevel) || target.isEmpty() || targetAmount <= 0) {
             state = AutocrafterState.IDLE;
+            return;
+        }
+        if (paused) {
+            state = AutocrafterState.PAUSED;
             return;
         }
         if (completedAmount >= targetAmount) {
@@ -174,6 +213,7 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
         targetAmount = input.read(TARGET_AMOUNT_KEY, Codec.LONG).orElse(0L);
         completedAmount = input.read(COMPLETED_AMOUNT_KEY, Codec.LONG).orElse(0L);
         wirelessModule = input.read(WIRELESS_MODULE_KEY, ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
+        paused = input.read(PAUSED_KEY, Codec.BOOL).orElse(false);
         if (target.isEmpty() || targetAmount <= 0) {
             recipeId = null;
             target = ItemStack.EMPTY;
@@ -182,7 +222,9 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
             state = AutocrafterState.IDLE;
         } else {
             completedAmount = Math.clamp(completedAmount, 0, targetAmount);
-            state = completedAmount >= targetAmount ? AutocrafterState.COMPLETE : AutocrafterState.IDLE;
+            state = paused
+                    ? AutocrafterState.PAUSED
+                    : completedAmount >= targetAmount ? AutocrafterState.COMPLETE : AutocrafterState.IDLE;
         }
     }
 
@@ -194,5 +236,21 @@ public final class AutocrafterBlockEntity extends BlockEntity implements Wireles
         output.store(TARGET_AMOUNT_KEY, Codec.LONG, targetAmount);
         output.store(COMPLETED_AMOUNT_KEY, Codec.LONG, completedAmount);
         output.store(WIRELESS_MODULE_KEY, ItemStack.OPTIONAL_CODEC, wirelessModule);
+        output.store(PAUSED_KEY, Codec.BOOL, paused);
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("container.lumungus_machines.autocrafter");
+    }
+
+    @Override
+    public BlockPos getScreenOpeningData(ServerPlayer player) {
+        return worldPosition;
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return level == null ? null : new AutocrafterMenu(containerId, inventory, this, worldPosition);
     }
 }
