@@ -1,0 +1,7 @@
+{
+  "block.lumungus_machines.autocrafter": "Lumungus Autocrafter",
+  "itemGroup.lumungus_machines.machines": "Lumungus Machines",
+  "message.lumungus_machines.autocrafter.target_set": "Autocrafter target: %1$s x %2$s.",
+  "message.lumungus_machines.autocrafter.unconfigured": "Autocrafter is waiting for a pattern recipe.",
+  "message.lumungus_machines.autocrafter.status": "Autocrafter: %1$s, progress %2$s/%3$s."
+}

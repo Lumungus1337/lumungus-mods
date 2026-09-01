@@ -35,7 +35,7 @@ Die Gameplay-Module haengen von Core ab, aber Core soll nicht von den Gameplay-M
 | `lumungus-core` | Gemeinsame APIs, Basistypen und technische Infrastruktur | Produktionsauftraege, Fortschritt und Maschinenvertrag implementiert |
 | `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Rohrpostverbindungen, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.35` UAT Candidate; gebundene tragbare Interfaces bleiben ihrem Lager treu |
 | `lumungus-backpack` | Modularer Rucksack mit Upgrade-Slots und spaeter Jetpack-Upgrade | angelegt |
-| `lumungus-machines` | Maschinen- und Automationsmodule | Phase 3 gestartet; validierte Produktionswarteschlange implementiert |
+| `lumungus-machines` | Maschinen- und Automationsmodule | Phase 3; Autocrafter-Block, persistenter Auftrag und validierte Produktionswarteschlange implementiert |
 | `lumungus-autotrader` | Automatisierte Handelsablaeufe, Trading-Terminals und spaetere Storage-Anbindung | angelegt |
 | `lumungus-integration` | Cross-Mod-Integration zwischen Lumungus-Modulen und optional externen Mods | Tom's-2.11.3-Nur-Lese-Scanner fuer den Migrations-UAT |
 
