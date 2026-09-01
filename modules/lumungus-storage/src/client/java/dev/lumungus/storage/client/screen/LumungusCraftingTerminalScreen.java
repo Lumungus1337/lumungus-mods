@@ -69,6 +69,8 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
     private static final int COLOR_TEXT = 0xFF242726;
     private static final int COLOR_TEXT_DIM = 0xFF5B605D;
 
+    private static String lastSearchValueForTests = "";
+
     private EditBox searchBox;
     private SortMode sortMode = SortMode.NAME;
     private boolean shulkerExtractMode;
@@ -102,11 +104,15 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         searchBox.setTextColor(COLOR_GREEN);
         searchBox.setTextColorUneditable(COLOR_GREEN_DIM);
         searchBox.setHint(Component.translatable("gui.lumungus_storage.crafting_terminal.search"));
-        searchBox.setResponder(value -> page = 0);
+        searchBox.setResponder(value -> {
+            page = 0;
+            lastSearchValueForTests = value;
+        });
         searchBox.setCanLoseFocus(false);
         addRenderableWidget(searchBox);
         setInitialFocus(searchBox);
         searchBox.setFocused(true);
+        lastSearchValueForTests = searchBox.getValue();
     }
 
     @Override
@@ -293,6 +299,10 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    public static String lastSearchValueForTests() {
+        return lastSearchValueForTests;
     }
 
     private TerminalActionPayload.Action actionForResourceClick(MouseButtonEvent event) {

@@ -83,6 +83,11 @@ public final class StorageClientGameTest implements FabricClientGameTest {
             context.waitFor(client -> client.player != null
                     && client.player.containerMenu instanceof LumungusCraftingMenu menu
                     && menu.networkResources().size() == 5);
+            context.getInput().typeChars("stein");
+            context.waitFor(client -> "stein".equals(LumungusCraftingTerminalScreen.lastSearchValueForTests()));
+            context.getInput().pressKey(options -> options.keyInventory);
+            context.waitTicks(2);
+            context.waitForScreen(LumungusCraftingTerminalScreen.class);
             context.waitTicks(20);
             for (int frame = 1; frame <= 5; frame++) {
                 context.takeScreenshot("lumungus-storage-terminal-uat3-0" + frame);
