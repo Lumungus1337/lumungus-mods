@@ -4,16 +4,16 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.35`
+- Version: `0.1.0-uat.36`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.35.zip`
-- Abnahmestatus: `AUTOMATED_CLIENT_AND_SERVER_PASS`; Arbeitszyklen mit und ohne Filter, gerichtete Arbeitsseiten, Redstone-Pause, Breaker-Schutz, Tooltips, feste Bindung tragbarer Storage Interfaces, Wireless Inventory Connectoren, Wireless-Reichweiten jenseits der Kurzdistanz, Terminal-Suchfeld-Hotkeys und Rohrpost-Sackgassen sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.36.zip`
+- Abnahmestatus: `AUTOMATED_CLIENT_AND_SERVER_PASS`; Arbeitszyklen mit und ohne Filter, feste Funkmodul-Bindung, gerichtete Arbeitsseiten, Redstone-Pause, Breaker-Schutz, Tooltips, feste Bindung tragbarer Storage Interfaces, Wireless Inventory Connectoren, Wireless-Reichweiten jenseits der Kurzdistanz, Terminal-Suchfeld-Hotkeys und Rohrpost-Sackgassen sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
-Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
+Das Testpaket enthaelt `lumungus-core`, `lumungus-storage` und `lumungus-machines` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
 
 ## Entwickler-Preflight
 
@@ -27,8 +27,8 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | Netzwerk-Crafting | `PASS` | Ein Rezept nutzt einen Stamm aus dem Netzwerk und erzeugt vier Bretter. |
 | JEI-Transfer | `PASS` | Der Lumungus-Transferknopf befuellt das 3x3-Raster serverseitig aus dem Netzwerk. |
 | Automatisierte Logiktests | `PASS` | JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
-| Server-GameTests | `PASS uat.35` | 31 reale GameTests pruefen unter anderem physische Inventare, Arbeitsbloecke, Funkverbindungen, Rohrpostrohre, Chunk-Grenzen, Lastfaelle und Crafting. |
-| Client-GameTest | `PASS uat.35` | Der Fabric-Client startet mit JEI; Terminal-Suche und Hotkey-Fokus bestehen den Clienttest. |
+| Server-GameTests | `PASS uat.36` | 32 reale GameTests pruefen unter anderem physische Inventare, Arbeitsbloecke, Funkmodule, Funkverbindungen, Rohrpostrohre, Chunk-Grenzen, Lastfaelle und Crafting. |
+| Client-GameTest | `PASS uat.36` | Der Fabric-Client startet mit JEI; Terminal-Suche und Hotkey-Fokus bestehen den Clienttest. |
 | Rezepte und Werkzeug | `PASS` | Die Phase-1-Bloecke und Werkzeuge sind registriert, craftbar, per Spitzhacke abbaubar und im Schraubenschluessel-Tag enthalten. |
 
 ## Testaufbau
@@ -84,6 +84,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-16u Gerichtete Arbeitsseiten:** Lager-Output exportiert nur zur sichtbaren Arbeitsseite, Lager-Breaker/Placer arbeiten nur in ihrer gesetzten Richtung, und Shift-Rechtsklick mit dem Kupfer-Schraubenschluessel richtet die Arbeitsseite neu aus.
 - [ ] **UAT-16v Arbeitsblock-Sicherheit:** Output, Breaker und Placer pausieren bei Redstone-Signal; der Breaker baut keine Lumungus-Storage-Geraete oder Rohrpostknoten ab.
 - [ ] **UAT-16w Bedienhilfen:** Storage-Bloecke, Wireless-Stufen, Arbeitsbloecke, Kupfer-Schraubenschluessel und tragbare Interfaces zeigen kurze Tooltips; Arbeitsblock-Statusmeldungen nennen Filter, Arbeitsrichtung, Redstone-Status und fehlende Controller.
+- [ ] **UAT-16x Funkmodule:** Ein Wireless-Netzwerkmodul wird per Rechtsklick auf den Wireless Storage Controller auf dessen Lager gepraegt. Das gepraegte Modul laesst sich in Output, Breaker, Placer und Autocrafter einsetzen; diese Bloecke behalten exakt dieses Lager auch ohne Rohrverbindung bei. Shift-Rechtsklick mit leerer Hand entnimmt das Modul, und beim Abbau wird es mit seiner Bindung gedroppt.
 
 ## Multiplayer und Grenzfaelle
 
@@ -94,7 +95,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.35`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.36`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|

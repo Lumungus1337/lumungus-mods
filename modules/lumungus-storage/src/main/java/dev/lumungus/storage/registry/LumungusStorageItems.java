@@ -6,6 +6,7 @@ import dev.lumungus.storage.data.StorageCellData;
 import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.item.PortableStorageInterfaceItem;
 import dev.lumungus.storage.item.StorageCellItem;
+import dev.lumungus.storage.item.WirelessNetworkModuleItem;
 import java.util.function.Function;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -25,6 +26,11 @@ public final class LumungusStorageItems {
             properties -> new StorageCellItem(properties
                     .stacksTo(1)
                     .component(LumungusStorageDataComponents.STORAGE_CELL_DATA, StorageCellData.EMPTY))
+    );
+
+    public static final Item WIRELESS_NETWORK_MODULE = register(
+            "wireless_network_module",
+            properties -> new WirelessNetworkModuleItem(properties.stacksTo(1))
     );
 
     public static final Item PORTABLE_STORAGE_INTERFACE_SHORT = register(

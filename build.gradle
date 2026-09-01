@@ -115,12 +115,14 @@ void configureLumungusModule(Project moduleProject) {
 
 tasks.register("storageUatBundle", Zip) {
     group = "distribution"
-    description = "Builds the Lumungus Storage UAT bundle with Core, Storage, and the test checklist."
+    description = "Builds the Lumungus Storage UAT bundle with Core, Storage, Machines, and the test checklist."
     dependsOn(
         ":lumungus-core:jar",
         ":lumungus-core:check",
         ":lumungus-storage:jar",
-        ":lumungus-storage:check"
+        ":lumungus-storage:check",
+        ":lumungus-machines:jar",
+        ":lumungus-machines:check"
     )
 
     archiveFileName = "lumungus-storage-${project.version}.zip"
@@ -130,6 +132,9 @@ tasks.register("storageUatBundle", Zip) {
         into "mods"
     }
     from({ project(":lumungus-storage").tasks.named("jar").get().archiveFile.get().asFile }) {
+        into "mods"
+    }
+    from({ project(":lumungus-machines").tasks.named("jar").get().archiveFile.get().asFile }) {
         into "mods"
     }
     from("docs/storage") {

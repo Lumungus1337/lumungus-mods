@@ -33,9 +33,9 @@ Die Gameplay-Module haengen von Core ab, aber Core soll nicht von den Gameplay-M
 | Modul | Rolle | Status |
 |---|---|---|
 | `lumungus-core` | Gemeinsame APIs, Basistypen und technische Infrastruktur | Produktionsauftraege, Fortschritt und Maschinenvertrag implementiert |
-| `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Rohrpostverbindungen, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.35` UAT Candidate; gebundene tragbare Interfaces bleiben ihrem Lager treu |
+| `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Rohrpostverbindungen, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.36` UAT Candidate; praegbare Funkmodule verbinden Arbeitsbloecke mit einem festen Lager |
 | `lumungus-backpack` | Modularer Rucksack mit Upgrade-Slots und spaeter Jetpack-Upgrade | angelegt |
-| `lumungus-machines` | Maschinen- und Automationsmodule | Phase 3; Autocrafter-Block, persistenter Auftrag und validierte Produktionswarteschlange implementiert |
+| `lumungus-machines` | Maschinen- und Automationsmodule | Phase 3; Autocrafter-Block mit Funkmodul-Aufnahme, persistenter Auftrag und validierte Produktionswarteschlange implementiert |
 | `lumungus-autotrader` | Automatisierte Handelsablaeufe, Trading-Terminals und spaetere Storage-Anbindung | angelegt |
 | `lumungus-integration` | Cross-Mod-Integration zwischen Lumungus-Modulen und optional externen Mods | Tom's-2.11.3-Nur-Lese-Scanner fuer den Migrations-UAT |
 
@@ -60,7 +60,7 @@ Jedes Modul ist ein eigenes Gradle-Subprojekt mit eigener `fabric.mod.json`. Dad
 ```
 
 `storageUatBundle` erzeugt unter `build/uat/` ein Testpaket mit den getrennten
-Core- und Storage-JARs sowie der UAT-Checkliste.
+Core-, Storage- und Machines-JARs sowie der UAT-Checkliste.
 
 `tomsMigrationUatBundle` erzeugt ein separates, schreibgeschuetztes Testpaket
 mit Core, Storage und Integration. Es enthaelt Tom's Simple Storage bewusst

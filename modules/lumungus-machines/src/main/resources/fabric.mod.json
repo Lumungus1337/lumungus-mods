@@ -19,6 +19,7 @@
     "minecraft": "${minecraft_version}",
     "java": ">=25",
     "fabric-api": "*",
-    "lumungus_core": "${version}"
+    "lumungus_core": "${version}",
+    "lumungus_storage": "${version}"
   }
 }

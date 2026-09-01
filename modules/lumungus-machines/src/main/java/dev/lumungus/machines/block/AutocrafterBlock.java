@@ -2,6 +2,8 @@ package dev.lumungus.machines.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.lumungus.machines.block.entity.AutocrafterBlockEntity;
+import dev.lumungus.storage.registry.LumungusStorageItems;
+import dev.lumungus.storage.wireless.WirelessModuleInteractions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -49,6 +51,11 @@ public final class AutocrafterBlock extends BaseEntityBlock {
             return InteractionResult.PASS;
         }
 
+        if (heldStack.is(LumungusStorageItems.WIRELESS_NETWORK_MODULE)) {
+            WirelessModuleInteractions.tryInstall(autocrafter, heldStack, player);
+            return InteractionResult.SUCCESS;
+        }
+
         autocrafter.setTarget(heldStack, Math.max(1, heldStack.getCount()));
         player.sendSystemMessage(Component.translatable(
                 "message.lumungus_machines.autocrafter.target_set",
@@ -67,6 +74,9 @@ public final class AutocrafterBlock extends BaseEntityBlock {
             BlockHitResult hit
     ) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof AutocrafterBlockEntity autocrafter) {
+            if (player.isSecondaryUseActive() && WirelessModuleInteractions.tryRemove(autocrafter, player)) {
+                return InteractionResult.SUCCESS;
+            }
             player.sendSystemMessage(autocrafter.statusText());
         }
         return InteractionResult.SUCCESS;

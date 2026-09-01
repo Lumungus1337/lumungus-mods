@@ -313,6 +313,42 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     }
 
     @GameTest(padding = 32)
+    public void primedWirelessModuleLinksAnIsolatedWorkBlock(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 27);
+        BlockPos driveBayPos = new BlockPos(2, 1, 27);
+        BlockPos outputPos = new BlockPos(12, 1, 27);
+        BlockPos outputChestPos = outputPos.east();
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(driveBayPos, LumungusStorageBlocks.DRIVE_BAY);
+        context.setBlock(outputPos, LumungusStorageBlocks.STORAGE_OUTPUT.defaultBlockState()
+                .setValue(StorageOutputBlock.FACING, Direction.EAST));
+        context.setBlock(outputChestPos, Blocks.CHEST);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(driveBayPos, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                controllerPos,
+                StorageControllerBlockEntity.class
+        );
+        controller.insert(new ItemStack(Items.EMERALD, 24), TransferMode.EXECUTE);
+
+        ItemStack module = new ItemStack(LumungusStorageItems.WIRELESS_NETWORK_MODULE);
+        module.set(LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER, new BoundStorageController(
+                context.getLevel().dimension().identifier(),
+                context.absolutePos(controllerPos),
+                controller.getNetworkId()
+        ));
+        StorageOutputBlockEntity output = context.getBlockEntity(outputPos, StorageOutputBlockEntity.class);
+        context.assertTrue(output.installWirelessModule(module), "Primed wireless module was rejected");
+        output.exportOneStack();
+
+        ChestBlockEntity chest = context.getBlockEntity(outputChestPos, ChestBlockEntity.class);
+        context.assertValueEqual(chest.getItem(0).getCount(), 24, "Wireless Output item count");
+        context.assertValueEqual(controller.count(new ItemStack(Items.EMERALD)), 0L, "Wireless network remainder");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
     public void wirelessStorageControllerOpensALinkedStorageNetwork(GameTestHelper context) {
         context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
         context.setBlock(WORK_DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);

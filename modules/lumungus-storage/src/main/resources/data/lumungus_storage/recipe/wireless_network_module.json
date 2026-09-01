@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "E": "minecraft:ender_pearl",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "CRC",
+    "RER",
+    "CRC"
+  ],
+  "result": {
+    "id": "lumungus_storage:wireless_network_module"
+  }
+}

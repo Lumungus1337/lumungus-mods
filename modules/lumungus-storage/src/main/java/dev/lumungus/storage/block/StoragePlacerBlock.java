@@ -5,6 +5,7 @@ import dev.lumungus.storage.block.entity.StoragePlacerBlockEntity;
 import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageItems;
+import dev.lumungus.storage.wireless.WirelessModuleInteractions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -123,6 +124,12 @@ public final class StoragePlacerBlock extends BaseEntityBlock {
             }
             return CopperWrenchItem.dismantle(heldStack, level, pos, player);
         }
+        if (heldStack.is(LumungusStorageItems.WIRELESS_NETWORK_MODULE)) {
+            if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StoragePlacerBlockEntity placer) {
+                WirelessModuleInteractions.tryInstall(placer, heldStack, player);
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StoragePlacerBlockEntity placer) {
             placer.setFilter(heldStack);
             player.sendSystemMessage(Component.translatable(
@@ -143,6 +150,9 @@ public final class StoragePlacerBlock extends BaseEntityBlock {
     ) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StoragePlacerBlockEntity placer) {
             if (player.isSecondaryUseActive()) {
+                if (WirelessModuleInteractions.tryRemove(placer, player)) {
+                    return InteractionResult.SUCCESS;
+                }
                 placer.clearFilter();
                 player.sendSystemMessage(Component.translatable("message.lumungus_storage.placer.filter_cleared"));
                 return InteractionResult.SUCCESS;

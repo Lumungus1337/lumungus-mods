@@ -2,6 +2,8 @@ package dev.lumungus.machines.block.entity;
 
 import com.mojang.serialization.Codec;
 import dev.lumungus.machines.registry.LumungusMachinesBlockEntities;
+import dev.lumungus.storage.wireless.WirelessModuleBinding;
+import dev.lumungus.storage.wireless.WirelessModuleHost;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -11,16 +13,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-public final class AutocrafterBlockEntity extends BlockEntity {
+public final class AutocrafterBlockEntity extends BlockEntity implements WirelessModuleHost {
     private static final String RECIPE_KEY = "recipe";
     private static final String TARGET_KEY = "target";
     private static final String TARGET_AMOUNT_KEY = "target_amount";
     private static final String COMPLETED_AMOUNT_KEY = "completed_amount";
+    private static final String WIRELESS_MODULE_KEY = "wireless_module";
 
     private Identifier recipeId;
     private ItemStack target = ItemStack.EMPTY;
     private long targetAmount;
     private long completedAmount;
+    private ItemStack wirelessModule = ItemStack.EMPTY;
 
     public AutocrafterBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusMachinesBlockEntities.AUTOCRAFTER, pos, state);
@@ -78,12 +82,44 @@ public final class AutocrafterBlockEntity extends BlockEntity {
     }
 
     @Override
+    public ItemStack wirelessModule() {
+        return wirelessModule.copy();
+    }
+
+    @Override
+    public boolean installWirelessModule(ItemStack module) {
+        if (!wirelessModule.isEmpty() || !WirelessModuleBinding.isPrimedModule(module)) {
+            return false;
+        }
+        wirelessModule = module.copyWithCount(1);
+        setChanged();
+        return true;
+    }
+
+    @Override
+    public ItemStack removeWirelessModule() {
+        ItemStack removed = wirelessModule;
+        wirelessModule = ItemStack.EMPTY;
+        setChanged();
+        return removed;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null && !level.isClientSide()) {
+            dropWirelessModule(level, pos);
+        }
+        super.preRemoveSideEffects(pos, state);
+    }
+
+    @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         recipeId = input.read(RECIPE_KEY, Identifier.CODEC).orElse(null);
         target = input.read(TARGET_KEY, ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
         targetAmount = input.read(TARGET_AMOUNT_KEY, Codec.LONG).orElse(0L);
         completedAmount = input.read(COMPLETED_AMOUNT_KEY, Codec.LONG).orElse(0L);
+        wirelessModule = input.read(WIRELESS_MODULE_KEY, ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
         if (target.isEmpty() || targetAmount <= 0) {
             recipeId = null;
             target = ItemStack.EMPTY;
@@ -101,5 +137,6 @@ public final class AutocrafterBlockEntity extends BlockEntity {
         output.store(TARGET_KEY, ItemStack.OPTIONAL_CODEC, target);
         output.store(TARGET_AMOUNT_KEY, Codec.LONG, targetAmount);
         output.store(COMPLETED_AMOUNT_KEY, Codec.LONG, completedAmount);
+        output.store(WIRELESS_MODULE_KEY, ItemStack.OPTIONAL_CODEC, wirelessModule);
     }
 }

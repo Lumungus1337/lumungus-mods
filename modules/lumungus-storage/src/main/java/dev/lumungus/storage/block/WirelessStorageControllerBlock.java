@@ -7,6 +7,8 @@ import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.network.WirelessStorageControllerRegistry;
 import dev.lumungus.storage.registry.LumungusStorageItems;
+import dev.lumungus.storage.data.BoundStorageController;
+import dev.lumungus.storage.registry.LumungusStorageDataComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -91,6 +93,27 @@ public final class WirelessStorageControllerBlock extends BaseEntityBlock {
     ) {
         if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
             return CopperWrenchItem.dismantle(heldStack, level, pos, player);
+        }
+        if (heldStack.is(LumungusStorageItems.WIRELESS_NETWORK_MODULE)) {
+            if (!level.isClientSide() && level.getBlockEntity(pos) instanceof WirelessStorageControllerBlockEntity wireless) {
+                StorageControllerBlockEntity controller = wireless.linkedController();
+                if (controller == null) {
+                    player.sendSystemMessage(Component.translatable(
+                            "message.lumungus_storage.wireless_module.controller_unlinked"
+                    ));
+                } else {
+                    heldStack.set(LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER, new BoundStorageController(
+                            controller.getLevel().dimension().identifier(),
+                            controller.getBlockPos().immutable(),
+                            controller.getNetworkId()
+                    ));
+                    player.sendSystemMessage(Component.translatable(
+                            "message.lumungus_storage.wireless_module.primed",
+                            controller.getNetworkLabel()
+                    ));
+                }
+            }
+            return InteractionResult.SUCCESS;
         }
         return useWithoutItem(state, level, pos, player, hit);
     }

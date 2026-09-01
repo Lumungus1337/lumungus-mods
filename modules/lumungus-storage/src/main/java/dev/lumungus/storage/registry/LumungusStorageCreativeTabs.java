@@ -42,6 +42,7 @@ public final class LumungusStorageCreativeTabs {
 
     private static void addStorageEntries(CreativeModeTab.Output output) {
         output.accept(LumungusStorageItems.COPPER_WRENCH);
+        output.accept(LumungusStorageItems.WIRELESS_NETWORK_MODULE);
         output.accept(LumungusStorageBlocks.STORAGE_CONTROLLER);
         output.accept(LumungusStorageBlocks.CRAFTING_TERMINAL);
         output.accept(LumungusStorageBlocks.DRIVE_BAY);

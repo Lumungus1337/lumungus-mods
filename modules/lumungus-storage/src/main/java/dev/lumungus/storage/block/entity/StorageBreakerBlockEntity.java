@@ -5,6 +5,8 @@ import dev.lumungus.storage.block.StorageBreakerBlock;
 import dev.lumungus.storage.block.WorkBlockPower;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
+import dev.lumungus.storage.wireless.WirelessModuleBinding;
+import dev.lumungus.storage.wireless.WirelessModuleHost;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -22,15 +24,17 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
-public final class StorageBreakerBlockEntity extends BlockEntity {
+public final class StorageBreakerBlockEntity extends BlockEntity implements WirelessModuleHost {
     private static final String FILTER_KEY = "filter";
     private static final String CONTROLLER_POS_KEY = "controller_pos";
     private static final String NETWORK_ID_KEY = "network_id";
+    private static final String WIRELESS_MODULE_KEY = "wireless_module";
     private static final int WORK_INTERVAL_TICKS = 20;
 
     private ItemStack filter = ItemStack.EMPTY;
     private BlockPos controllerPos;
     private UUID networkId;
+    private ItemStack wirelessModule = ItemStack.EMPTY;
 
     public StorageBreakerBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusStorageBlockEntities.STORAGE_BREAKER, pos, state);
@@ -58,6 +62,15 @@ public final class StorageBreakerBlockEntity extends BlockEntity {
     public boolean refreshControllerLink() {
         if (level == null || level.isClientSide()) {
             return false;
+        }
+        if (!wirelessModule.isEmpty()) {
+            StorageControllerBlockEntity controller = WirelessModuleBinding.resolve(level, wirelessModule);
+            if (controller == null) {
+                clearControllerLink();
+                return false;
+            }
+            linkTo(controller);
+            return true;
         }
         if (hasValidControllerLink()) {
             return true;
@@ -134,6 +147,10 @@ public final class StorageBreakerBlockEntity extends BlockEntity {
         if (!refreshControllerLink() || level == null || controllerPos == null) {
             return null;
         }
+        if (!wirelessModule.isEmpty()) {
+            StorageControllerBlockEntity controller = WirelessModuleBinding.resolve(level, wirelessModule);
+            return controller != null && isLinkedTo(controller) ? controller : null;
+        }
         if (level.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller
                 && isLinkedTo(controller)) {
             return controller;
@@ -173,11 +190,45 @@ public final class StorageBreakerBlockEntity extends BlockEntity {
     }
 
     @Override
+    public ItemStack wirelessModule() {
+        return wirelessModule.copy();
+    }
+
+    @Override
+    public boolean installWirelessModule(ItemStack module) {
+        if (!wirelessModule.isEmpty() || !WirelessModuleBinding.isPrimedModule(module)) {
+            return false;
+        }
+        wirelessModule = module.copyWithCount(1);
+        clearControllerLink();
+        setChanged();
+        return true;
+    }
+
+    @Override
+    public ItemStack removeWirelessModule() {
+        ItemStack removed = wirelessModule;
+        wirelessModule = ItemStack.EMPTY;
+        clearControllerLink();
+        setChanged();
+        return removed;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null && !level.isClientSide()) {
+            dropWirelessModule(level, pos);
+        }
+        super.preRemoveSideEffects(pos, state);
+    }
+
+    @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         filter = input.read(FILTER_KEY, ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
         controllerPos = input.read(CONTROLLER_POS_KEY, BlockPos.CODEC).orElse(null);
         networkId = input.read(NETWORK_ID_KEY, UUIDUtil.CODEC).orElse(null);
+        wirelessModule = input.read(WIRELESS_MODULE_KEY, ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
     }
 
     @Override
@@ -186,5 +237,6 @@ public final class StorageBreakerBlockEntity extends BlockEntity {
         output.store(FILTER_KEY, ItemStack.OPTIONAL_CODEC, filter);
         output.storeNullable(CONTROLLER_POS_KEY, BlockPos.CODEC, controllerPos);
         output.storeNullable(NETWORK_ID_KEY, UUIDUtil.CODEC, networkId);
+        output.store(WIRELESS_MODULE_KEY, ItemStack.OPTIONAL_CODEC, wirelessModule);
     }
 }
