@@ -94,10 +94,10 @@ public final class PortableStorageInterfaceItem extends Item {
         }
 
         ItemStack stack = player.getItemInHand(hand);
-        StorageControllerBlockEntity controller = boundController(stack, serverPlayer);
-        if (controller == null) {
-            controller = nearestController(serverPlayer);
-        }
+        BoundStorageController bound = stack.get(LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER);
+        StorageControllerBlockEntity controller = bound == null
+                ? nearestController(serverPlayer)
+                : boundController(bound, serverPlayer);
         if (controller == null) {
             serverPlayer.sendSystemMessage(Component.translatable(
                     "message.lumungus_storage.portable_interface.unlinked",
@@ -116,12 +116,7 @@ public final class PortableStorageInterfaceItem extends Item {
         return InteractionResult.SUCCESS;
     }
 
-    private StorageControllerBlockEntity boundController(ItemStack stack, ServerPlayer player) {
-        BoundStorageController bound = stack.get(LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER);
-        if (bound == null) {
-            return null;
-        }
-
+    private StorageControllerBlockEntity boundController(BoundStorageController bound, ServerPlayer player) {
         MinecraftServer server = player.level().getServer();
         if (server == null) {
             return null;

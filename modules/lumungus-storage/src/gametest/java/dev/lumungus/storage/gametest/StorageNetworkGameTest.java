@@ -14,16 +14,19 @@ import dev.lumungus.storage.block.entity.StorageOutputBlockEntity;
 import dev.lumungus.storage.block.entity.StoragePlacerBlockEntity;
 import dev.lumungus.storage.block.entity.WirelessInventoryConnectorBlockEntity;
 import dev.lumungus.storage.block.entity.WirelessStorageControllerBlockEntity;
+import dev.lumungus.storage.data.BoundStorageController;
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
 import dev.lumungus.storage.menu.DriveBayMenu;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
 import dev.lumungus.storage.network.TerminalActionPayload;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
+import dev.lumungus.storage.registry.LumungusStorageDataComponents;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
@@ -261,6 +264,55 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     }
 
     @GameTest(padding = 32)
+    public void unfilteredStorageWorkBlocksUseAvailableResources(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 21);
+        BlockPos driveBayPos = new BlockPos(2, 1, 21);
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(driveBayPos, LumungusStorageBlocks.DRIVE_BAY);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(driveBayPos, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                controllerPos,
+                StorageControllerBlockEntity.class
+        );
+
+        BlockPos outputPos = new BlockPos(3, 1, 21);
+        BlockPos outputChestPos = outputPos.east();
+        context.setBlock(outputPos, LumungusStorageBlocks.STORAGE_OUTPUT.defaultBlockState()
+                .setValue(StorageOutputBlock.FACING, Direction.EAST));
+        context.setBlock(outputChestPos, Blocks.CHEST);
+        controller.insert(new ItemStack(Items.COPPER_INGOT, 18), TransferMode.EXECUTE);
+        StorageOutputBlockEntity output = context.getBlockEntity(outputPos, StorageOutputBlockEntity.class);
+        output.exportOneStack();
+        ChestBlockEntity outputChest = context.getBlockEntity(outputChestPos, ChestBlockEntity.class);
+        context.assertValueEqual(outputChest.getItem(0).getCount(), 18, "Unfiltered Output item count");
+
+        BlockPos breakerPos = new BlockPos(6, 1, 21);
+        BlockPos breakerTargetPos = breakerPos.east();
+        context.setBlock(breakerPos, LumungusStorageBlocks.STORAGE_BREAKER.defaultBlockState()
+                .setValue(StorageBreakerBlock.FACING, Direction.EAST));
+        context.setBlock(breakerTargetPos, Blocks.DIRT);
+        StorageBreakerBlockEntity breaker = context.getBlockEntity(breakerPos, StorageBreakerBlockEntity.class);
+        breaker.breakBelow();
+        context.assertTrue(context.getLevel().getBlockState(context.absolutePos(breakerTargetPos)).isAir(),
+                "Unfiltered Breaker left its target in place");
+        context.assertValueEqual(controller.count(new ItemStack(Items.DIRT)), 1L, "Unfiltered Breaker stored drop");
+        controller.extract(new ItemStack(Items.DIRT), 1, TransferMode.EXECUTE);
+
+        BlockPos placerPos = new BlockPos(9, 1, 21);
+        BlockPos placerTargetPos = placerPos.east();
+        context.setBlock(placerPos, LumungusStorageBlocks.STORAGE_PLACER.defaultBlockState()
+                .setValue(StoragePlacerBlock.FACING, Direction.EAST));
+        controller.insert(new ItemStack(Items.STONE, 2), TransferMode.EXECUTE);
+        StoragePlacerBlockEntity placer = context.getBlockEntity(placerPos, StoragePlacerBlockEntity.class);
+        placer.placeBelow();
+        context.assertTrue(context.getLevel().getBlockState(context.absolutePos(placerTargetPos)).is(Blocks.STONE),
+                "Unfiltered Placer did not place an available block");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
     public void wirelessStorageControllerOpensALinkedStorageNetwork(GameTestHelper context) {
         context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
         context.setBlock(WORK_DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
@@ -314,6 +366,38 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
 
         context.assertValueEqual(menu.getCarried().getCount(), 42, "Portable interface carried amount");
         context.assertValueEqual(controller.count(new ItemStack(Items.COPPER_INGOT)), 0L, "Portable interface network amount");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void boundPortableInterfaceNeverFallsBackToAnotherNetwork(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 24);
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                controllerPos,
+                StorageControllerBlockEntity.class
+        );
+
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        ItemStack portable = new ItemStack(LumungusStorageItems.PORTABLE_STORAGE_INTERFACE_SHORT);
+        portable.set(LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER, new BoundStorageController(
+                context.getLevel().dimension().identifier(),
+                context.absolutePos(controllerPos),
+                UUID.randomUUID()
+        ));
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, portable);
+
+        LumungusStorageItems.PORTABLE_STORAGE_INTERFACE_SHORT.use(
+                context.getLevel(),
+                player,
+                net.minecraft.world.InteractionHand.MAIN_HAND
+        );
+
+        context.assertTrue(
+                !(player.containerMenu instanceof LumungusCraftingMenu),
+                "Invalid binding silently opened a different nearby storage network"
+        );
+        context.assertTrue(controller != null, "Nearby controller missing");
         context.succeed();
     }
 

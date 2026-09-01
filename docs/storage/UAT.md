@@ -4,14 +4,14 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.34`
+- Version: `0.1.0-uat.35`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.34.zip`
-- Abnahmestatus: `AUTOMATED_CLIENT_AND_SERVER_PASS`; Arbeitszyklen, gerichtete Arbeitsseiten, Redstone-Pause, Breaker-Schutz, Tooltips, tragbare Storage Interfaces, Wireless Inventory Connectoren, Wireless-Reichweiten jenseits der Kurzdistanz, Terminal-Suchfeld-Hotkeys und Rohrpost-Sackgassen sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.35.zip`
+- Abnahmestatus: `AUTOMATED_CLIENT_AND_SERVER_PASS`; Arbeitszyklen mit und ohne Filter, gerichtete Arbeitsseiten, Redstone-Pause, Breaker-Schutz, Tooltips, feste Bindung tragbarer Storage Interfaces, Wireless Inventory Connectoren, Wireless-Reichweiten jenseits der Kurzdistanz, Terminal-Suchfeld-Hotkeys und Rohrpost-Sackgassen sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core` und `lumungus-storage` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
 
@@ -26,10 +26,10 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | Terminal | `PASS` | Oeffnen, Suche, Sortierung, Cursor-Einlagerung und Stapelentnahme funktionieren. |
 | Netzwerk-Crafting | `PASS` | Ein Rezept nutzt einen Stamm aus dem Netzwerk und erzeugt vier Bretter. |
 | JEI-Transfer | `PASS` | Der Lumungus-Transferknopf befuellt das 3x3-Raster serverseitig aus dem Netzwerk. |
-| Automatisierte Logiktests | `PASS` | Elf JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
-| Server-GameTests | `PASS` | Dreizehn reale GameTests pruefen unter anderem physische Inventare, Rohrpostrohre, Blenden, Chunk-Grenzen, Lastfaelle und Crafting. |
-| Client-GameTest | `SMOKE uat.7` | Der Fabric-Client startet mit den neuen Lumungus-Assets ohne fehlende Lumungus-Modell- oder Texturwarnungen. |
-| Rezepte und Werkzeug | `PENDING uat.8` | Kupferlastige Rezepte, fokussierte Crafting-Terminal-Suche, Spitzhacken-Abbau und Kupfer-Schraubenschluessel werden im naechsten Client-Smoke geprueft. |
+| Automatisierte Logiktests | `PASS` | JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
+| Server-GameTests | `PASS uat.35` | 31 reale GameTests pruefen unter anderem physische Inventare, Arbeitsbloecke, Funkverbindungen, Rohrpostrohre, Chunk-Grenzen, Lastfaelle und Crafting. |
+| Client-GameTest | `PASS uat.35` | Der Fabric-Client startet mit JEI; Terminal-Suche und Hotkey-Fokus bestehen den Clienttest. |
+| Rezepte und Werkzeug | `PASS` | Die Phase-1-Bloecke und Werkzeuge sind registriert, craftbar, per Spitzhacke abbaubar und im Schraubenschluessel-Tag enthalten. |
 
 ## Testaufbau
 
@@ -94,7 +94,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.34`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.35`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|
