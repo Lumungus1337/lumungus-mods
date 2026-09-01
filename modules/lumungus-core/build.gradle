@@ -1,1 +1,9 @@
 // Core intentionally has no Lumungus module dependencies.
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter:${junit_version}"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junit_version}"
+}
+
+tasks.named("test") {
+    useJUnitPlatform()
+}

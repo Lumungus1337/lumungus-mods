@@ -1,5 +1,11 @@
 # Lumungus Machines MVP
 
+## Implementierungsstand
+
+Phase 3 ist gestartet. Lumungus Core enthaelt den gemeinsamen Vertrag fuer Produktionsauftrag, Zielmenge, erlaubte Rezepte, Fortschritt, fehlende Materialien und Maschinenstatus. Lumungus Machines besitzt eine kapazitaetsbegrenzte Produktionswarteschlange mit stabiler Reihenfolge, Schutz vor doppelten Auftraegen, monotonem Fortschritt und validierten Zustandswechseln.
+
+Als naechster Schritt folgt der Autocrafter-Block mit persistentem Musterrezept und Zielmenge. Danach wird die Warteschlange mit dem Storage-Netzwerk verbunden, damit Zutaten reserviert und Ergebnisse eingelagert werden koennen.
+
 ## Produktionsauftraege
 
 Lumungus Machines soll mengenbasierte Produktionsauftraege aus dem Crafting Terminal, dem Build Clipboard und spaeter weiteren Lumungus-Modulen ausfuehren. Ein Auftrag enthaelt mindestens Zielgegenstand, Zielmenge, erlaubte Rezepte und den aktuellen Fortschritt.
