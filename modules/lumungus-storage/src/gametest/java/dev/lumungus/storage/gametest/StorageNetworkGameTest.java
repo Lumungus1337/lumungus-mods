@@ -437,6 +437,28 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
+    @GameTest
+    public void unboundPortableInterfaceDoesNotScanForNearbyNetworks(GameTestHelper context) {
+        context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        player.setItemInHand(
+                net.minecraft.world.InteractionHand.MAIN_HAND,
+                new ItemStack(LumungusStorageItems.PORTABLE_STORAGE_INTERFACE_MULTIDIMENSIONAL)
+        );
+
+        LumungusStorageItems.PORTABLE_STORAGE_INTERFACE_MULTIDIMENSIONAL.use(
+                context.getLevel(),
+                player,
+                net.minecraft.world.InteractionHand.MAIN_HAND
+        );
+
+        context.assertTrue(
+                !(player.containerMenu instanceof LumungusCraftingMenu),
+                "Unbound portable interface opened a nearby storage network"
+        );
+        context.succeed();
+    }
+
     @GameTest(padding = 32)
     public void wirelessInventoryConnectorLinksRemoteChestThroughWirelessController(GameTestHelper context) {
         context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);

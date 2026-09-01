@@ -4,9 +4,7 @@ import dev.lumungus.storage.block.WirelessStorageControllerBlock;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.data.BoundStorageController;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
-import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageDataComponents;
-import java.util.Comparator;
 import java.util.function.Consumer;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.minecraft.core.BlockPos;
@@ -95,9 +93,15 @@ public final class PortableStorageInterfaceItem extends Item {
 
         ItemStack stack = player.getItemInHand(hand);
         BoundStorageController bound = stack.get(LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER);
-        StorageControllerBlockEntity controller = bound == null
-                ? nearestController(serverPlayer)
-                : boundController(bound, serverPlayer);
+        if (bound == null) {
+            serverPlayer.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.portable_interface.unlinked",
+                    tier.label()
+            ));
+            return InteractionResult.SUCCESS;
+        }
+
+        StorageControllerBlockEntity controller = boundController(bound, serverPlayer);
         if (controller == null) {
             serverPlayer.sendSystemMessage(Component.translatable(
                     "message.lumungus_storage.portable_interface.unlinked",
@@ -141,17 +145,6 @@ public final class PortableStorageInterfaceItem extends Item {
             return controller;
         }
         return null;
-    }
-
-    private StorageControllerBlockEntity nearestController(ServerPlayer player) {
-        ServerLevel level = player.level();
-        return StorageNetworkTopology.reachableControllers(level, player.blockPosition(), tier.searchRadius()).stream()
-                .filter(pos -> tier.canReach(true, player.blockPosition(), pos))
-                .map(level::getBlockEntity)
-                .filter(StorageControllerBlockEntity.class::isInstance)
-                .map(StorageControllerBlockEntity.class::cast)
-                .min(Comparator.comparingDouble(controller -> player.blockPosition().distSqr(controller.getBlockPos())))
-                .orElse(null);
     }
 
     private static Component describePosition(BlockPos pos) {
