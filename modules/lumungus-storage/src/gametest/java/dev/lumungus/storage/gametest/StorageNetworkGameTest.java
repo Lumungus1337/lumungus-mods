@@ -387,28 +387,34 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
 
     @GameTest(padding = 32)
     public void topologyCacheInvalidatesOnlyTheChangedComponent(GameTestHelper context) {
-        BlockPos firstStart = new BlockPos(1, 1, 13);
-        BlockPos secondStart = new BlockPos(8, 1, 13);
+        BlockPos firstController = new BlockPos(1, 1, 13);
+        BlockPos firstStart = new BlockPos(2, 1, 13);
+        BlockPos secondController = new BlockPos(8, 1, 13);
+        BlockPos secondStart = new BlockPos(9, 1, 13);
+        context.setBlock(firstController, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(secondController, LumungusStorageBlocks.STORAGE_CONTROLLER);
         for (int offset = 0; offset < 3; offset++) {
             context.setBlock(firstStart.offset(offset, 0, 0), LumungusStorageBlocks.INVENTORY_CABLE);
             context.setBlock(secondStart.offset(offset, 0, 0), LumungusStorageBlocks.INVENTORY_CABLE);
         }
+        context.setBlock(firstStart.offset(3, 0, 0), LumungusStorageBlocks.INVENTORY_CONNECTOR);
+        context.setBlock(secondStart.offset(3, 0, 0), LumungusStorageBlocks.INVENTORY_CONNECTOR);
 
         StorageNetworkTopology.invalidate(context.getLevel());
-        BlockPos absoluteFirst = context.absolutePos(firstStart);
-        BlockPos absoluteSecond = context.absolutePos(secondStart);
+        BlockPos absoluteFirst = context.absolutePos(firstController);
+        BlockPos absoluteSecond = context.absolutePos(secondController);
         StorageNetworkTopology.connectedNodes(context.getLevel(), absoluteFirst);
         StorageNetworkTopology.connectedNodes(context.getLevel(), absoluteSecond);
         context.assertValueEqual(
                 StorageNetworkTopology.cacheStats(context.getLevel()).cachedNodes(),
-                6,
-                "Two cached cable components"
+                10,
+                "Two cached storage components"
         );
 
-        context.setBlock(firstStart.offset(3, 0, 0), LumungusStorageBlocks.INVENTORY_CABLE);
+        context.setBlock(firstStart.offset(1, 0, 0), Blocks.AIR);
         context.assertValueEqual(
                 StorageNetworkTopology.cacheStats(context.getLevel()).cachedNodes(),
-                3,
+                5,
                 "Unaffected cached component"
         );
         long hitsBefore = StorageNetworkTopology.cacheStats(context.getLevel()).hits();
@@ -498,6 +504,30 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         Set<BlockPos> nodes = StorageNetworkTopology.connectedNodes(context.getLevel(), context.absolutePos(controllerPos));
         context.assertTrue(nodes.contains(context.absolutePos(connectorPos)), "Pipe network did not reach connector");
         context.assertTrue(!nodes.contains(context.absolutePos(chestPos)), "Pipe network included a normal chest");
+        context.succeed();
+    }
+
+    @GameTest(padding = 8)
+    public void pneumaticPipeIgnoresDeadSideBranches(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 3);
+        BlockPos pipePos = new BlockPos(2, 1, 3);
+        BlockPos connectorPos = new BlockPos(3, 1, 3);
+        BlockPos deadBranchPos = new BlockPos(2, 1, 4);
+
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(pipePos, LumungusStorageBlocks.PNEUMATIC_PIPE);
+        context.setBlock(connectorPos, LumungusStorageBlocks.INVENTORY_CONNECTOR);
+        context.setBlock(deadBranchPos, LumungusStorageBlocks.PNEUMATIC_PIPE);
+
+        BlockState pipeState = context.getLevel().getBlockState(context.absolutePos(pipePos));
+        context.assertTrue(pipeState.getValue(InventoryCableBlock.WEST), "Pipe did not connect to controller");
+        context.assertTrue(pipeState.getValue(InventoryCableBlock.EAST), "Pipe did not connect to connector");
+        context.assertTrue(!pipeState.getValue(InventoryCableBlock.SOUTH), "Pipe connected to a dead side branch");
+        context.assertTrue(!pipeState.getValue(InventoryCableBlock.NORTH), "Pipe connected to air");
+
+        Set<BlockPos> nodes = StorageNetworkTopology.connectedNodes(context.getLevel(), context.absolutePos(controllerPos));
+        context.assertTrue(nodes.contains(context.absolutePos(connectorPos)), "Main pipe network did not reach connector");
+        context.assertTrue(!nodes.contains(context.absolutePos(deadBranchPos)), "Pipe network included a dead side branch");
         context.succeed();
     }
 

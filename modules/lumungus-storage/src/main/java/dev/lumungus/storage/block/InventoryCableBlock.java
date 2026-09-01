@@ -2,6 +2,9 @@ package dev.lumungus.storage.block;
 
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -36,6 +39,7 @@ public final class InventoryCableBlock extends Block {
     private static final VoxelShape EAST_SHAPE = Block.box(10.0D, 6.0D, 6.0D, 16.0D, 10.0D, 10.0D);
     private static final VoxelShape UP_SHAPE = Block.box(6.0D, 10.0D, 6.0D, 10.0D, 16.0D, 10.0D);
     private static final VoxelShape DOWN_SHAPE = Block.box(6.0D, 0.0D, 6.0D, 10.0D, 6.0D, 10.0D);
+    private static final int MAX_RENDER_SEARCH_NODES = 2_048;
 
     public InventoryCableBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -54,7 +58,7 @@ public final class InventoryCableBlock extends Block {
         BlockPos pos = context.getClickedPos();
         Level level = context.getLevel();
         for (Direction direction : Direction.values()) {
-            state = state.setValue(propertyFor(direction), connectsTo(level, pos.relative(direction)));
+            state = state.setValue(propertyFor(direction), connectsTo(level, pos, direction));
         }
         return state;
     }
@@ -99,7 +103,7 @@ public final class InventoryCableBlock extends Block {
             BlockState neighborState,
             RandomSource random
     ) {
-        return state.setValue(propertyFor(direction), connectsTo(neighborState));
+        return state.setValue(propertyFor(direction), connectsTo(level, pos, direction));
     }
 
     @Override
@@ -145,6 +149,46 @@ public final class InventoryCableBlock extends Block {
         return isPipe(state) || StorageNetworkTopology.isDeviceNode(state.getBlock());
     }
 
+    private static boolean connectsTo(BlockGetter level, BlockPos pos, Direction direction) {
+        BlockPos neighbor = pos.relative(direction);
+        BlockState neighborState = level.getBlockState(neighbor);
+        if (StorageNetworkTopology.isDeviceNode(neighborState.getBlock())) {
+            return true;
+        }
+        if (!isPipe(neighborState)) {
+            return false;
+        }
+        return pipeRouteReachesDevice(level, neighbor, pos);
+    }
+
+    private static boolean pipeRouteReachesDevice(BlockGetter level, BlockPos start, BlockPos blocked) {
+        ArrayDeque<BlockPos> pending = new ArrayDeque<>();
+        Set<BlockPos> visited = new HashSet<>();
+        pending.add(start.immutable());
+        visited.add(blocked.immutable());
+
+        while (!pending.isEmpty() && visited.size() < MAX_RENDER_SEARCH_NODES) {
+            BlockPos current = pending.removeFirst();
+            if (!visited.add(current)) {
+                continue;
+            }
+            for (Direction direction : Direction.values()) {
+                BlockPos neighbor = current.relative(direction);
+                if (visited.contains(neighbor)) {
+                    continue;
+                }
+                BlockState neighborState = level.getBlockState(neighbor);
+                if (StorageNetworkTopology.isDeviceNode(neighborState.getBlock())) {
+                    return true;
+                }
+                if (isPipe(neighborState)) {
+                    pending.addLast(neighbor.immutable());
+                }
+            }
+        }
+        return false;
+    }
+
     private static BooleanProperty propertyFor(Direction direction) {
         return switch (direction) {
             case NORTH -> NORTH;
@@ -161,7 +205,7 @@ public final class InventoryCableBlock extends Block {
         for (Direction direction : Direction.values()) {
             connectedState = connectedState.setValue(
                     propertyFor(direction),
-                    connectsTo(level, pos.relative(direction))
+                    connectsTo(level, pos, direction)
             );
         }
         return connectedState;
