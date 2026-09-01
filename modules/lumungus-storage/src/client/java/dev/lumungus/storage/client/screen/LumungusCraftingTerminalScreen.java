@@ -103,6 +103,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         searchBox.setTextColorUneditable(COLOR_GREEN_DIM);
         searchBox.setHint(Component.translatable("gui.lumungus_storage.crafting_terminal.search"));
         searchBox.setResponder(value -> page = 0);
+        searchBox.setCanLoseFocus(false);
         addRenderableWidget(searchBox);
         setInitialFocus(searchBox);
         searchBox.setFocused(true);
@@ -261,7 +262,8 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
 
     @Override
     public boolean charTyped(CharacterEvent event) {
-        if (searchBox != null && searchBox.isFocused() && searchBox.charTyped(event)) {
+        if (searchBox != null && searchBox.isFocused()) {
+            searchBox.charTyped(event);
             return true;
         }
         return super.charTyped(event);
