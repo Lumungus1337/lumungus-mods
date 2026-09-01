@@ -46,6 +46,13 @@ public final class PortableStorageInterfaceItem extends Item {
     ) {
         textConsumer.accept(Component.translatable("tooltip.lumungus_storage.portable_interface"));
         textConsumer.accept(Component.translatable("tooltip.lumungus_storage.portable_interface." + tier.label()));
+        BoundStorageController bound = stack.get(LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER);
+        textConsumer.accept(bound == null
+                ? Component.translatable("tooltip.lumungus_storage.portable_interface.unbound")
+                : Component.translatable(
+                        "tooltip.lumungus_storage.portable_interface.bound",
+                        bound.dimension().toString(),
+                        describePosition(bound.pos())));
     }
 
     @Override
@@ -150,6 +157,10 @@ public final class PortableStorageInterfaceItem extends Item {
                 .map(StorageControllerBlockEntity.class::cast)
                 .min(Comparator.comparingDouble(controller -> player.blockPosition().distSqr(controller.getBlockPos())))
                 .orElse(null);
+    }
+
+    private static Component describePosition(BlockPos pos) {
+        return Component.literal(pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
     }
 
     private static final class PortableMenuProvider implements ExtendedMenuProvider<BlockPos> {

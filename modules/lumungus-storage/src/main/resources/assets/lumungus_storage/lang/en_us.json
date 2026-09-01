@@ -30,6 +30,8 @@
   "tooltip.lumungus_storage.portable_interface.short": "Range: short distance.",
   "tooltip.lumungus_storage.portable_interface.dimension": "Range: same dimension.",
   "tooltip.lumungus_storage.portable_interface.multidimensional": "Range: cross-dimensional.",
+  "tooltip.lumungus_storage.portable_interface.unbound": "Status: unbound.",
+  "tooltip.lumungus_storage.portable_interface.bound": "Bound: %1$s at %2$s.",
   "message.lumungus_storage.storage_controller.status": "Storage network %1$s: %2$s terminal(s), %3$s Drive Bay(s), %4$s inventory connector(s), %5$s / %6$s items.",
   "block.lumungus_storage.inventory_connector": "Inventory Port",
   "block.lumungus_storage.inventory_trim": "Pneumatic Trim",

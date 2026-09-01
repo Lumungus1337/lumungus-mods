@@ -30,6 +30,8 @@
   "tooltip.lumungus_storage.portable_interface.short": "Reichweite: kurze Distanz.",
   "tooltip.lumungus_storage.portable_interface.dimension": "Reichweite: gleiche Dimension.",
   "tooltip.lumungus_storage.portable_interface.multidimensional": "Reichweite: dimensionsuebergreifend.",
+  "tooltip.lumungus_storage.portable_interface.unbound": "Status: nicht gebunden.",
+  "tooltip.lumungus_storage.portable_interface.bound": "Gebunden: %1$s bei %2$s.",
   "message.lumungus_storage.storage_controller.status": "Storage-Netzwerk %1$s: %2$s Terminal(s), %3$s Drive Bay(s), %4$s Inventar-Connector(en), %5$s / %6$s Items.",
   "block.lumungus_storage.inventory_connector": "Inventaranschluss",
   "block.lumungus_storage.inventory_trim": "Rohrpostblende",
