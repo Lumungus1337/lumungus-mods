@@ -252,10 +252,29 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
             }
         }
 
-        if (placement == null) {
+        RecursiveCraftingPlanner.Plan recursivePlan = null;
+        if (placement == null && player.level() instanceof ServerLevel serverLevel) {
+            recursivePlan = RecursiveCraftingPlanner.plan(
+                    serverLevel,
+                    recipe,
+                    pool.stream()
+                            .map(resource -> new RecursiveCraftingPlanner.AvailableResource(
+                                    resource.stack(),
+                                    resource.amount()
+                            ))
+                            .toList()
+            ).orElse(null);
+        }
+
+        if (placement == null && recursivePlan == null) {
             player.sendSystemMessage(Component.translatable(
                     "message.lumungus_storage.crafting_terminal.missing_ingredients"
             ));
+            return;
+        }
+
+        if (recursivePlan != null) {
+            executeRecursivePlan(controller, recursivePlan, previousGrid);
             return;
         }
 
@@ -286,6 +305,115 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         }
         slotsChanged(craftSlots);
         broadcastChanges();
+    }
+
+    private void executeRecursivePlan(
+            StorageControllerBlockEntity controller,
+            RecursiveCraftingPlanner.Plan plan,
+            List<ItemStack> previousGrid
+    ) {
+        returnCraftGridItems(controller);
+        List<PoolEntry> crafted = new ArrayList<>();
+        List<AcquiredSlot> acquired = new ArrayList<>();
+
+        for (RecursiveCraftingPlanner.CraftStep step : plan.steps()) {
+            if (!acquirePlannedStacks(controller, step.inputs(), crafted, acquired)) {
+                rollbackRecursiveTransfer(controller, acquired, crafted, previousGrid);
+                return;
+            }
+            CraftingInput input = RecursiveCraftingPlanner.input(step.inputs());
+            ItemStack output = step.recipe().assemble(input);
+            output.onCraftedBySystem(player.level());
+            addToPool(crafted, output, output.getCount());
+            step.recipe().getRemainingItems(input).stream()
+                    .filter(stack -> !stack.isEmpty())
+                    .forEach(stack -> addToPool(crafted, stack, stack.getCount()));
+        }
+
+        if (!acquirePlannedStacks(controller, plan.finalSlots(), crafted, acquired)) {
+            rollbackRecursiveTransfer(controller, acquired, crafted, previousGrid);
+            return;
+        }
+        for (RecursiveCraftingPlanner.SelectedSlot slot : plan.finalSlots()) {
+            craftSlots.setItem(slot.slot(), slot.stack());
+        }
+        returnCraftedSurplus(controller, crafted);
+        slotsChanged(craftSlots);
+        broadcastChanges();
+    }
+
+    private boolean acquirePlannedStacks(
+            StorageControllerBlockEntity controller,
+            List<RecursiveCraftingPlanner.SelectedSlot> slots,
+            List<PoolEntry> crafted,
+            List<AcquiredSlot> acquired
+    ) {
+        for (RecursiveCraftingPlanner.SelectedSlot slot : slots) {
+            ItemStack template = slot.stack();
+            int remaining = removeFromPool(crafted, template, template.getCount());
+            if (remaining == 0) {
+                continue;
+            }
+            int afterPlayer = removeFromPlayerInventory(template, remaining);
+            int fromPlayer = remaining - afterPlayer;
+            ItemStack fromNetwork = afterPlayer == 0
+                    ? ItemStack.EMPTY
+                    : controller.extract(template, afterPlayer, TransferMode.EXECUTE);
+            acquired.add(new AcquiredSlot(template, fromPlayer, fromNetwork.getCount()));
+            if (fromNetwork.getCount() != afterPlayer) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void rollbackRecursiveTransfer(
+            StorageControllerBlockEntity controller,
+            List<AcquiredSlot> acquired,
+            List<PoolEntry> crafted,
+            List<ItemStack> previousGrid
+    ) {
+        rollbackAcquiredIngredients(controller, acquired);
+        crafted.clear();
+        restoreCraftGrid(controller, previousGrid);
+        player.sendSystemMessage(Component.translatable(
+                "message.lumungus_storage.crafting_terminal.missing_ingredients"
+        ));
+        slotsChanged(craftSlots);
+        broadcastChanges();
+    }
+
+    private void returnCraftedSurplus(StorageControllerBlockEntity controller, List<PoolEntry> crafted) {
+        for (PoolEntry entry : crafted) {
+            if (entry.amount() <= 0) {
+                continue;
+            }
+            long remaining = entry.amount();
+            while (remaining > 0) {
+                int batch = (int) Math.min(remaining, entry.stack().getMaxStackSize());
+                ItemStack remainder = controller.insert(
+                        entry.stack().copyWithCount(batch),
+                        TransferMode.EXECUTE
+                );
+                player.getInventory().placeItemBackInInventory(remainder);
+                remaining -= batch;
+            }
+        }
+        crafted.clear();
+    }
+
+    private static int removeFromPool(List<PoolEntry> pool, ItemStack template, int amount) {
+        int remaining = amount;
+        for (int index = 0; index < pool.size() && remaining > 0; index++) {
+            PoolEntry entry = pool.get(index);
+            if (!ItemStack.isSameItemSameComponents(entry.stack(), template)) {
+                continue;
+            }
+            int removed = (int) Math.min(remaining, entry.amount());
+            pool.set(index, new PoolEntry(entry.stack(), entry.amount() - removed));
+            remaining -= removed;
+        }
+        return remaining;
     }
 
     @Override

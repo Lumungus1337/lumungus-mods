@@ -1160,6 +1160,43 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
+    @GameTest(padding = 32)
+    public void craftingTerminalRecursivelyPreparesBarrelIngredientsFromLogs(GameTestHelper context) {
+        context.setBlock(FIRST_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        context.setBlock(CRAFTING_TERMINAL, LumungusStorageBlocks.CRAFTING_TERMINAL);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(DRIVE_BAY, DriveBayBlockEntity.class);
+        driveBay.insertCell(
+                new ItemStack(LumungusStorageItems.STORAGE_CELL_16K),
+                TransferMode.EXECUTE
+        );
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                FIRST_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        controller.insert(new ItemStack(Items.OAK_LOG, 3), TransferMode.EXECUTE);
+
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        BlockPos playerPos = context.absolutePos(new BlockPos(2, 2, 2));
+        player.setPos(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5);
+        BlockPos terminalPos = context.absolutePos(CRAFTING_TERMINAL);
+        LumungusCraftingMenu menu = new LumungusCraftingMenu(
+                3,
+                player.getInventory(),
+                ContainerLevelAccess.create(context.getLevel(), terminalPos),
+                terminalPos
+        );
+
+        menu.placeRecipeFromNetwork(Identifier.parse("minecraft:barrel"), false);
+
+        context.assertTrue(menu.getResultSlot().getItem().is(Items.BARREL), "Recursive barrel result");
+        context.assertValueEqual(controller.count(new ItemStack(Items.OAK_LOG)), 0L, "Consumed oak logs");
+        context.assertValueEqual(controller.count(new ItemStack(Items.OAK_PLANKS)), 3L, "Surplus oak planks");
+        context.assertValueEqual(controller.count(new ItemStack(Items.OAK_SLAB)), 4L, "Surplus oak slabs");
+        context.succeed();
+    }
+
     @GameTest
     public void controllerAndTerminalPreserveHorizontalDisplayFacing(GameTestHelper context) {
         BlockState controller = LumungusStorageBlocks.STORAGE_CONTROLLER.defaultBlockState()
