@@ -44,11 +44,13 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
@@ -571,7 +573,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeedWhen(() -> {
             context.assertTrue(
                     connector.autoSendAttempts() > 0,
-                    "Wireless connector ticker did not attempt auto-send"
+                    "Wireless connector did not attempt auto-send after enabling"
             );
             context.assertTrue(chest.isEmpty(), "Wireless tick auto-send left items in its chest");
             context.assertValueEqual(driveBay.count(new ItemStack(Items.AMETHYST_SHARD)), 27L, "Wireless Drive Bay count");
@@ -596,6 +598,43 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
                 elapsedMillis < 2_000L,
                 "Wireless connector refresh exceeded 2 seconds: " + elapsedMillis + " ms"
         );
+        context.succeed();
+    }
+
+    @GameTest
+    public void multidimensionalWirelessControllerUsesBoundOverworldStorageFromNether(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 1);
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                controllerPos,
+                StorageControllerBlockEntity.class
+        );
+
+        ServerLevel nether = context.getLevel().getServer().getLevel(Level.NETHER);
+        context.assertTrue(nether != null, "Nether level was unavailable");
+        BlockPos testOrigin = context.absolutePos(new BlockPos(3, 1, 1));
+        BlockPos wirelessPos = new BlockPos(testOrigin.getX(), 64, testOrigin.getZ());
+        nether.getChunkAt(wirelessPos);
+        nether.setBlockAndUpdate(
+                wirelessPos,
+                LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL.defaultBlockState()
+        );
+        context.assertTrue(
+                nether.getBlockEntity(wirelessPos) instanceof WirelessStorageControllerBlockEntity,
+                "Nether wireless controller block entity was unavailable"
+        );
+        WirelessStorageControllerBlockEntity wireless = (WirelessStorageControllerBlockEntity) nether.getBlockEntity(
+                wirelessPos
+        );
+        BoundStorageController bound = new BoundStorageController(
+                context.getLevel().dimension().identifier(),
+                context.absolutePos(controllerPos),
+                controller.getNetworkId()
+        );
+
+        context.assertTrue(wireless.bindTo(bound), "Nether wireless controller rejected multidimensional binding");
+        context.assertTrue(wireless.linkedController() == controller, "Nether wireless controller did not resolve Overworld storage");
+        nether.setBlockAndUpdate(wirelessPos, Blocks.AIR.defaultBlockState());
         context.succeed();
     }
 

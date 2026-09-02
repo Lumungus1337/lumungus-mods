@@ -39,19 +39,22 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
     private UUID networkId;
     private boolean autoSendToDriveBays;
     private long autoSendAttempts;
+    private int maintenanceCooldown;
 
     public WirelessInventoryConnectorBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusStorageBlockEntities.WIRELESS_INVENTORY_CONNECTOR, pos, state);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, WirelessInventoryConnectorBlockEntity connector) {
-        if (level.getGameTime() % AUTO_SEND_INTERVAL_TICKS == 0) {
-            WirelessInventoryConnectorRegistry.register(level, pos);
-            connector.refreshControllerLink();
-            if (connector.autoSendToDriveBays) {
-                connector.autoSendAttempts++;
-                connector.sendToDriveBays();
-            }
+        if (connector.maintenanceCooldown > 0) {
+            connector.maintenanceCooldown--;
+            return;
+        }
+        connector.maintenanceCooldown = AUTO_SEND_INTERVAL_TICKS - 1;
+        WirelessInventoryConnectorRegistry.register(level, pos);
+        connector.refreshControllerLink();
+        if (connector.autoSendToDriveBays) {
+            connector.runAutoSendCycle();
         }
     }
 
@@ -65,8 +68,17 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
 
     public boolean toggleAutoSendToDriveBays() {
         autoSendToDriveBays = !autoSendToDriveBays;
+        if (autoSendToDriveBays && level != null && !level.isClientSide()) {
+            maintenanceCooldown = AUTO_SEND_INTERVAL_TICKS - 1;
+            runAutoSendCycle();
+        }
         setChanged();
         return autoSendToDriveBays;
+    }
+
+    private void runAutoSendCycle() {
+        autoSendAttempts++;
+        sendToDriveBays();
     }
 
     public StorageControllerBlockEntity.BayMoveResult sendToDriveBays() {

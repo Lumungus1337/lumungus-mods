@@ -85,6 +85,7 @@
   "message.lumungus_storage.crafting_terminal.shulker_inventory_full": "No inventory slot is free for a filled shulker box.",
   "message.lumungus_storage.wireless_controller.connected": "Wireless Storage Controller %1$s is connected to controller at %2$s.",
   "message.lumungus_storage.wireless_controller.unlinked": "No Storage Controller was found for this Wireless Controller.",
+  "message.lumungus_storage.wireless_controller.bound_from_module": "Wireless Storage Controller %1$s permanently linked to network %2$s.",
   "message.lumungus_storage.wireless_inventory_connector.connected": "Wireless Inventory Port %1$s connected: %2$s inventory/inventories, controller at %3$s.",
   "message.lumungus_storage.wireless_inventory_connector.no_wireless_controller": "Wireless Inventory Port %1$s found no linked Wireless Storage Controller; %2$s adjacent inventory/inventories.",
   "message.lumungus_storage.portable_interface.bound": "Portable Storage Interface %1$s bound to network %2$s.",
