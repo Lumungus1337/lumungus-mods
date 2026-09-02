@@ -11,6 +11,7 @@ import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.network.WirelessInventoryConnectorRegistry;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import dev.lumungus.storage.storage.ShulkerBoxTransfer;
+import dev.lumungus.storage.inventory.PhysicalInventoryEndpoint;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -193,20 +194,45 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
 
     public BayMoveResult movePhysicalInventoriesIntoDriveBays() {
         NetworkStorageAccesses networkAccesses = storageAccesses();
-        if (networkAccesses.driveBays().isEmpty() || networkAccesses.physicalInventories().isEmpty()) {
-            return new BayMoveResult(0, 0, networkAccesses.physicalInventories().size(), networkAccesses.driveBays().size(), false);
+        return moveInventoriesIntoDriveBays(
+                networkAccesses.driveBays(),
+                networkAccesses.physicalInventories(),
+                MAX_BAY_MOVE_STACKS_PER_ACTION
+        );
+    }
+
+    public BayMoveResult moveInventoriesIntoDriveBays(
+            List<PhysicalInventoryEndpoint> endpoints,
+            int maxStacks
+    ) {
+        Map<BlockPos, StorageAccess> uniqueSources = new LinkedHashMap<>();
+        endpoints.forEach(endpoint -> uniqueSources.putIfAbsent(endpoint.key(), endpoint.access()));
+        return moveInventoriesIntoDriveBays(
+                storageAccesses().driveBays(),
+                List.copyOf(uniqueSources.values()),
+                Math.max(1, maxStacks)
+        );
+    }
+
+    private BayMoveResult moveInventoriesIntoDriveBays(
+            List<StorageAccess> driveBays,
+            List<StorageAccess> physicalInventories,
+            int maxStacks
+    ) {
+        if (driveBays.isEmpty() || physicalInventories.isEmpty()) {
+            return new BayMoveResult(0, 0, physicalInventories.size(), driveBays.size(), false);
         }
 
         long moved = 0;
         long remaining = 0;
         int movedStacks = 0;
         boolean paused = false;
-        for (StorageAccess physicalInventory : networkAccesses.physicalInventories()) {
+        for (StorageAccess physicalInventory : physicalInventories) {
             for (ResourceAmount resource : physicalInventory.storedResources()) {
                 ItemStack template = resource.stack();
                 long sourceRemaining = resource.amount();
                 while (sourceRemaining > 0) {
-                    if (movedStacks >= MAX_BAY_MOVE_STACKS_PER_ACTION) {
+                    if (movedStacks >= maxStacks) {
                         paused = true;
                         remaining += sourceRemaining;
                         break;
@@ -219,7 +245,7 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
                     }
 
                     ItemStack simulatedRemainder = insertIntoDriveBays(
-                            networkAccesses.driveBays(),
+                            driveBays,
                             extractable,
                             TransferMode.SIMULATE
                     );
@@ -234,7 +260,7 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
                         break;
                     }
 
-                    ItemStack insertRemainder = insertIntoDriveBays(networkAccesses.driveBays(), extracted, TransferMode.EXECUTE);
+                    ItemStack insertRemainder = insertIntoDriveBays(driveBays, extracted, TransferMode.EXECUTE);
                     int inserted = extracted.getCount() - insertRemainder.getCount();
                     if (!insertRemainder.isEmpty()) {
                         physicalInventory.insert(insertRemainder, TransferMode.EXECUTE);
@@ -267,8 +293,8 @@ public final class StorageControllerBlockEntity extends BlockEntity implements S
         return new BayMoveResult(
                 moved,
                 remaining,
-                networkAccesses.physicalInventories().size(),
-                networkAccesses.driveBays().size(),
+                physicalInventories.size(),
+                driveBays.size(),
                 paused
         );
     }

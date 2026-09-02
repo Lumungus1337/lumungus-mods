@@ -7,6 +7,7 @@ import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import com.mojang.serialization.Codec;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -14,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
@@ -23,12 +25,39 @@ import net.minecraft.world.level.storage.ValueOutput;
 public final class InventoryConnectorBlockEntity extends BlockEntity {
     private static final String CONTROLLER_POS_KEY = "controller_pos";
     private static final String NETWORK_ID_KEY = "network_id";
+    private static final String AUTO_SEND_KEY = "auto_send_to_drive_bays";
+    private static final int AUTO_SEND_INTERVAL_TICKS = 20;
+    private static final int AUTO_SEND_STACKS_PER_CYCLE = 64;
 
     private BlockPos controllerPos;
     private UUID networkId;
+    private boolean autoSendToDriveBays;
 
     public InventoryConnectorBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusStorageBlockEntities.INVENTORY_CONNECTOR, pos, state);
+    }
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, InventoryConnectorBlockEntity connector) {
+        if (connector.autoSendToDriveBays && level.getGameTime() % AUTO_SEND_INTERVAL_TICKS == 0) {
+            connector.sendToDriveBays();
+        }
+    }
+
+    public boolean autoSendToDriveBays() {
+        return autoSendToDriveBays;
+    }
+
+    public boolean toggleAutoSendToDriveBays() {
+        autoSendToDriveBays = !autoSendToDriveBays;
+        setChanged();
+        return autoSendToDriveBays;
+    }
+
+    public StorageControllerBlockEntity.BayMoveResult sendToDriveBays() {
+        StorageControllerBlockEntity controller = linkedController();
+        return controller == null
+                ? new StorageControllerBlockEntity.BayMoveResult(0, 0, endpoints().size(), 0, false)
+                : controller.moveInventoriesIntoDriveBays(endpoints(), AUTO_SEND_STACKS_PER_CYCLE);
     }
 
     public boolean refreshControllerLink() {
@@ -72,7 +101,8 @@ public final class InventoryConnectorBlockEntity extends BlockEntity {
         List<PhysicalInventoryEndpoint> endpoints = new ArrayList<>();
         for (Direction direction : Direction.values()) {
             BlockPos inventoryPos = worldPosition.relative(direction);
-            if (!level.isLoaded(inventoryPos)) {
+            if (!level.isLoaded(inventoryPos)
+                    || StorageNetworkTopology.isDeviceNode(level.getBlockState(inventoryPos).getBlock())) {
                 continue;
             }
             Storage<ItemVariant> storage = ItemStorage.SIDED.find(
@@ -112,6 +142,14 @@ public final class InventoryConnectorBlockEntity extends BlockEntity {
                 );
     }
 
+    private StorageControllerBlockEntity linkedController() {
+        if (!refreshControllerLink() || controllerPos == null
+                || !(level.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller)) {
+            return null;
+        }
+        return isLinkedTo(controller) ? controller : null;
+    }
+
     private void linkTo(StorageControllerBlockEntity controller) {
         BlockPos newControllerPos = controller.getBlockPos().immutable();
         UUID newNetworkId = controller.getNetworkId();
@@ -135,6 +173,7 @@ public final class InventoryConnectorBlockEntity extends BlockEntity {
         super.loadAdditional(input);
         controllerPos = input.read(CONTROLLER_POS_KEY, BlockPos.CODEC).orElse(null);
         networkId = input.read(NETWORK_ID_KEY, UUIDUtil.CODEC).orElse(null);
+        autoSendToDriveBays = input.read(AUTO_SEND_KEY, Codec.BOOL).orElse(false);
     }
 
     @Override
@@ -142,5 +181,6 @@ public final class InventoryConnectorBlockEntity extends BlockEntity {
         super.saveAdditional(output);
         output.storeNullable(CONTROLLER_POS_KEY, BlockPos.CODEC, controllerPos);
         output.storeNullable(NETWORK_ID_KEY, UUIDUtil.CODEC, networkId);
+        output.store(AUTO_SEND_KEY, Codec.BOOL, autoSendToDriveBays);
     }
 }

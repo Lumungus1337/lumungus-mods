@@ -141,6 +141,15 @@ public final class WirelessInventoryConnectorBlock extends BaseEntityBlock {
         if (!level.isClientSide()
                 && level.getBlockEntity(pos) instanceof WirelessInventoryConnectorBlockEntity connector) {
             WirelessInventoryConnectorRegistry.register(level, pos);
+            if (player.isSecondaryUseActive()) {
+                boolean enabled = connector.toggleAutoSendToDriveBays();
+                player.sendSystemMessage(Component.translatable(
+                        enabled
+                                ? "message.lumungus_storage.inventory_connector.auto_send_enabled"
+                                : "message.lumungus_storage.inventory_connector.auto_send_disabled"
+                ));
+                return InteractionResult.SUCCESS;
+            }
             int inventories = connector.endpoints().size();
             BlockPos controllerPos = connector.linkedControllerPosition();
             boolean linked = controllerPos != null;

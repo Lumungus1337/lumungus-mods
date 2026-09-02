@@ -502,6 +502,82 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
+    @GameTest(padding = 32)
+    public void wiredInventoryConnectorAutoSendsOnlyItsInventoryToDriveBays(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 24);
+        BlockPos driveBayPos = new BlockPos(2, 1, 24);
+        BlockPos connectorPos = new BlockPos(3, 1, 24);
+        BlockPos chestPos = new BlockPos(4, 1, 24);
+        BlockPos otherConnectorPos = new BlockPos(2, 1, 25);
+        BlockPos otherChestPos = new BlockPos(2, 1, 26);
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(driveBayPos, LumungusStorageBlocks.DRIVE_BAY);
+        context.setBlock(connectorPos, LumungusStorageBlocks.INVENTORY_CONNECTOR);
+        context.setBlock(chestPos, Blocks.CHEST);
+        context.setBlock(otherConnectorPos, LumungusStorageBlocks.INVENTORY_CONNECTOR);
+        context.setBlock(otherChestPos, Blocks.CHEST);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(driveBayPos, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        InventoryConnectorBlockEntity connector = context.getBlockEntity(
+                connectorPos,
+                InventoryConnectorBlockEntity.class
+        );
+        ChestBlockEntity chest = context.getBlockEntity(chestPos, ChestBlockEntity.class);
+        chest.setItem(0, new ItemStack(Items.COPPER_INGOT, 48));
+        ChestBlockEntity otherChest = context.getBlockEntity(otherChestPos, ChestBlockEntity.class);
+        otherChest.setItem(0, new ItemStack(Items.DIAMOND, 12));
+
+        context.assertTrue(!connector.autoSendToDriveBays(), "Wired auto-send was enabled by default");
+        context.assertTrue(connector.toggleAutoSendToDriveBays(), "Wired auto-send did not enable");
+        StorageControllerBlockEntity.BayMoveResult result = connector.sendToDriveBays();
+
+        context.assertValueEqual(result.movedItems(), 48L, "Wired auto-send moved items");
+        context.assertTrue(chest.isEmpty(), "Wired auto-send left items in its chest");
+        context.assertValueEqual(driveBay.count(new ItemStack(Items.COPPER_INGOT)), 48L, "Wired Drive Bay count");
+        context.assertValueEqual(otherChest.getItem(0).getCount(), 12, "Auto-send emptied another connector");
+        context.assertTrue(!connector.toggleAutoSendToDriveBays(), "Wired auto-send did not disable");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void wirelessInventoryConnectorAutoSendsItsInventoryToDriveBays(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 30);
+        BlockPos driveBayPos = new BlockPos(2, 1, 30);
+        BlockPos wirelessControllerPos = new BlockPos(8, 1, 30);
+        BlockPos wirelessConnectorPos = new BlockPos(14, 1, 30);
+        BlockPos chestPos = new BlockPos(15, 1, 30);
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(driveBayPos, LumungusStorageBlocks.DRIVE_BAY);
+        context.setBlock(wirelessControllerPos, LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT);
+        context.setBlock(wirelessConnectorPos, LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_SHORT);
+        context.setBlock(chestPos, Blocks.CHEST);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(driveBayPos, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        WirelessStorageControllerBlockEntity wirelessController = context.getBlockEntity(
+                wirelessControllerPos,
+                WirelessStorageControllerBlockEntity.class
+        );
+        WirelessInventoryConnectorBlockEntity connector = context.getBlockEntity(
+                wirelessConnectorPos,
+                WirelessInventoryConnectorBlockEntity.class
+        );
+        ChestBlockEntity chest = context.getBlockEntity(chestPos, ChestBlockEntity.class);
+        chest.setItem(0, new ItemStack(Items.AMETHYST_SHARD, 27));
+
+        context.assertTrue(wirelessController.refreshControllerLink(), "Wireless auto-send controller did not link");
+        context.assertTrue(connector.refreshControllerLink(), "Wireless auto-send connector did not link");
+        context.assertTrue(!connector.autoSendToDriveBays(), "Wireless auto-send was enabled by default");
+        context.assertTrue(connector.toggleAutoSendToDriveBays(), "Wireless auto-send did not enable");
+        StorageControllerBlockEntity.BayMoveResult result = connector.sendToDriveBays();
+
+        context.assertValueEqual(result.movedItems(), 27L, "Wireless auto-send moved items");
+        context.assertTrue(chest.isEmpty(), "Wireless auto-send left items in its chest");
+        context.assertValueEqual(driveBay.count(new ItemStack(Items.AMETHYST_SHARD)), 27L, "Wireless Drive Bay count");
+        context.succeed();
+    }
+
     @GameTest
     public void multidimensionalWirelessInventoryConnectorRefreshIsBounded(GameTestHelper context) {
         BlockPos connectorPos = new BlockPos(1, 1, 1);

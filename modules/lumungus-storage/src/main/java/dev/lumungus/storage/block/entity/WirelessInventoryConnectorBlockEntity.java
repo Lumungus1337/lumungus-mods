@@ -10,6 +10,7 @@ import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import com.mojang.serialization.Codec;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -29,20 +30,44 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
     private static final String CONTROLLER_DIMENSION_KEY = "controller_dimension";
     private static final String CONTROLLER_POS_KEY = "controller_pos";
     private static final String NETWORK_ID_KEY = "network_id";
+    private static final String AUTO_SEND_KEY = "auto_send_to_drive_bays";
+    private static final int AUTO_SEND_INTERVAL_TICKS = 20;
+    private static final int AUTO_SEND_STACKS_PER_CYCLE = 64;
 
     private Identifier controllerDimension;
     private BlockPos controllerPos;
     private UUID networkId;
+    private boolean autoSendToDriveBays;
 
     public WirelessInventoryConnectorBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusStorageBlockEntities.WIRELESS_INVENTORY_CONNECTOR, pos, state);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, WirelessInventoryConnectorBlockEntity connector) {
-        if (level.getGameTime() % 40 == 0) {
+        if (level.getGameTime() % AUTO_SEND_INTERVAL_TICKS == 0) {
             WirelessInventoryConnectorRegistry.register(level, pos);
             connector.refreshControllerLink();
+            if (connector.autoSendToDriveBays) {
+                connector.sendToDriveBays();
+            }
         }
+    }
+
+    public boolean autoSendToDriveBays() {
+        return autoSendToDriveBays;
+    }
+
+    public boolean toggleAutoSendToDriveBays() {
+        autoSendToDriveBays = !autoSendToDriveBays;
+        setChanged();
+        return autoSendToDriveBays;
+    }
+
+    public StorageControllerBlockEntity.BayMoveResult sendToDriveBays() {
+        StorageControllerBlockEntity controller = linkedControllerBlockEntity();
+        return controller == null || !isLinkedTo(controller)
+                ? new StorageControllerBlockEntity.BayMoveResult(0, 0, endpoints().size(), 0, false)
+                : controller.moveInventoriesIntoDriveBays(endpoints(), AUTO_SEND_STACKS_PER_CYCLE);
     }
 
     public boolean refreshControllerLink() {
@@ -210,6 +235,7 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
         controllerDimension = input.read(CONTROLLER_DIMENSION_KEY, Identifier.CODEC).orElse(null);
         controllerPos = input.read(CONTROLLER_POS_KEY, BlockPos.CODEC).orElse(null);
         networkId = input.read(NETWORK_ID_KEY, UUIDUtil.CODEC).orElse(null);
+        autoSendToDriveBays = input.read(AUTO_SEND_KEY, Codec.BOOL).orElse(false);
     }
 
     @Override
@@ -218,5 +244,6 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
         output.storeNullable(CONTROLLER_DIMENSION_KEY, Identifier.CODEC, controllerDimension);
         output.storeNullable(CONTROLLER_POS_KEY, BlockPos.CODEC, controllerPos);
         output.storeNullable(NETWORK_ID_KEY, UUIDUtil.CODEC, networkId);
+        output.store(AUTO_SEND_KEY, Codec.BOOL, autoSendToDriveBays);
     }
 }

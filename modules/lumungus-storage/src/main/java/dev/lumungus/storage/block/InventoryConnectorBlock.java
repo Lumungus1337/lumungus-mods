@@ -19,6 +19,8 @@ import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -43,6 +45,21 @@ public final class InventoryConnectorBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new InventoryConnectorBlockEntity(pos, state);
+    }
+
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            Level level,
+            BlockState state,
+            BlockEntityType<T> blockEntityType
+    ) {
+        return level.isClientSide()
+                ? null
+                : createTickerHelper(
+                        blockEntityType,
+                        dev.lumungus.storage.registry.LumungusStorageBlockEntities.INVENTORY_CONNECTOR,
+                        InventoryConnectorBlockEntity::serverTick
+                );
     }
 
     @Override
@@ -116,6 +133,15 @@ public final class InventoryConnectorBlock extends BaseEntityBlock {
     ) {
         if (!level.isClientSide()
                 && level.getBlockEntity(pos) instanceof InventoryConnectorBlockEntity connector) {
+            if (player.isSecondaryUseActive()) {
+                boolean enabled = connector.toggleAutoSendToDriveBays();
+                player.sendSystemMessage(Component.translatable(
+                        enabled
+                                ? "message.lumungus_storage.inventory_connector.auto_send_enabled"
+                                : "message.lumungus_storage.inventory_connector.auto_send_disabled"
+                ));
+                return InteractionResult.SUCCESS;
+            }
             int inventories = connector.endpoints().size();
             player.sendSystemMessage(Component.translatable(
                     connector.refreshControllerLink()
