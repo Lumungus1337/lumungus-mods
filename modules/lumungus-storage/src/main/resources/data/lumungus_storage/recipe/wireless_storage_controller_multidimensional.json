@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": "minecraft:weathered_copper",
+    "C": "#lumungus_core:copper_blocks",
     "E": "minecraft:ender_eye",
     "N": "minecraft:netherite_scrap",
     "T": "lumungus_storage:wireless_storage_controller_dimension"

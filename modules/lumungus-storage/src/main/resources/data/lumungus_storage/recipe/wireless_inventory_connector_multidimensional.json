@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": "minecraft:oxidized_copper",
+    "C": "#lumungus_core:copper_blocks",
     "E": "minecraft:ender_eye",
     "R": "minecraft:redstone_block",
     "T": "lumungus_storage:wireless_inventory_connector_dimension"

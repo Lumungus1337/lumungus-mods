@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": "minecraft:copper_block",
+    "C": "#lumungus_core:copper_blocks",
     "G": "minecraft:glass_pane",
     "P": "lumungus_storage:inventory_connector",
     "R": "minecraft:redstone",
