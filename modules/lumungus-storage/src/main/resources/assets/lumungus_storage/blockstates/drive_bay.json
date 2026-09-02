@@ -1,7 +1,8 @@
 {
   "variants": {
-    "": {
-      "model": "lumungus_storage:block/drive_bay"
-    }
+    "facing=north": { "model": "lumungus_storage:block/drive_bay" },
+    "facing=east": { "model": "lumungus_storage:block/drive_bay", "y": 90 },
+    "facing=south": { "model": "lumungus_storage:block/drive_bay", "y": 180 },
+    "facing=west": { "model": "lumungus_storage:block/drive_bay", "y": 270 }
   }
 }

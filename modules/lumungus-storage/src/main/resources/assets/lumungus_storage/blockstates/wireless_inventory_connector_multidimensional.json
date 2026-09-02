@@ -1,7 +1,8 @@
 {
   "variants": {
-    "": {
-      "model": "lumungus_storage:block/wireless_inventory_connector_multidimensional"
-    }
+    "facing=north": { "model": "lumungus_storage:block/wireless_inventory_connector_multidimensional" },
+    "facing=east": { "model": "lumungus_storage:block/wireless_inventory_connector_multidimensional", "y": 90 },
+    "facing=south": { "model": "lumungus_storage:block/wireless_inventory_connector_multidimensional", "y": 180 },
+    "facing=west": { "model": "lumungus_storage:block/wireless_inventory_connector_multidimensional", "y": 270 }
   }
 }

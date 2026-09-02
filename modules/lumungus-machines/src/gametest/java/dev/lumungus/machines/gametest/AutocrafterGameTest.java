@@ -2,6 +2,7 @@ package dev.lumungus.machines.gametest;
 
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.machines.block.entity.AutocrafterBlockEntity;
+import dev.lumungus.machines.block.AutocrafterBlock;
 import dev.lumungus.machines.production.AutocrafterState;
 import dev.lumungus.machines.registry.LumungusMachinesBlocks;
 import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
@@ -14,9 +15,12 @@ import java.lang.reflect.Method;
 import net.fabricmc.fabric.api.gametest.v1.CustomTestMethodInvoker;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
 
 public final class AutocrafterGameTest implements CustomTestMethodInvoker {
     @GameTest(padding = 16)
@@ -110,6 +114,20 @@ public final class AutocrafterGameTest implements CustomTestMethodInvoker {
         context.assertTrue(controller.count(new ItemStack(Items.OAK_PLANKS)) == 4, "Restarted machine should store result");
         context.assertTrue(autocrafter.completedAmount() == 4, "Edited target amount should be respected");
         context.assertTrue(autocrafter.state() == AutocrafterState.COMPLETE, "Machine should complete edited target");
+        context.succeed();
+    }
+
+    @GameTest
+    public void autocrafterPreservesHorizontalFrontFacing(GameTestHelper context) {
+        BlockState autocrafter = LumungusMachinesBlocks.AUTOCRAFTER.defaultBlockState()
+                .setValue(AutocrafterBlock.FACING, Direction.NORTH)
+                .rotate(Rotation.CLOCKWISE_90);
+
+        context.assertValueEqual(
+                autocrafter.getValue(AutocrafterBlock.FACING),
+                Direction.EAST,
+                "Autocrafter front"
+        );
         context.succeed();
     }
 

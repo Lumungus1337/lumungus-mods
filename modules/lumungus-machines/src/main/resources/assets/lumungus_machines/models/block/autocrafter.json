@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:block/cube",
   "textures": {
-    "particle": "minecraft:block/copper_block",
-    "down": "minecraft:block/copper_block",
-    "up": "minecraft:block/crafter_top",
-    "north": "minecraft:block/crafter_north",
-    "south": "minecraft:block/copper_block",
-    "west": "minecraft:block/exposed_copper",
-    "east": "minecraft:block/exposed_copper"
+    "particle": "lumungus_machines:block/autocrafter_side",
+    "down": "lumungus_machines:block/autocrafter_bottom",
+    "up": "lumungus_machines:block/autocrafter_top",
+    "north": "lumungus_machines:block/autocrafter_front",
+    "south": "lumungus_machines:block/autocrafter_back",
+    "west": "lumungus_machines:block/autocrafter_side",
+    "east": "lumungus_machines:block/autocrafter_side"
   }
 }

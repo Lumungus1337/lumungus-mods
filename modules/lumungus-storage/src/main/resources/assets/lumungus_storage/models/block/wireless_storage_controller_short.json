@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:block/cube",
   "textures": {
-    "particle": "lumungus_storage:block/case_warm_metal",
-    "down": "lumungus_storage:block/case_warm_metal",
-    "up": "lumungus_storage:block/crt_green_scan",
-    "north": "lumungus_storage:block/wireless_short_front",
-    "south": "lumungus_storage:block/case_warm_metal",
-    "west": "lumungus_storage:block/pipe_port",
-    "east": "lumungus_storage:block/pipe_port"
+    "particle": "lumungus_storage:block/wireless_storage_controller_short_side",
+    "down": "lumungus_storage:block/wireless_storage_controller_short_bottom",
+    "up": "lumungus_storage:block/wireless_storage_controller_short_top",
+    "north": "lumungus_storage:block/wireless_storage_controller_short_front",
+    "south": "lumungus_storage:block/wireless_storage_controller_short_back",
+    "west": "lumungus_storage:block/wireless_storage_controller_short_side",
+    "east": "lumungus_storage:block/wireless_storage_controller_short_side"
   }
 }

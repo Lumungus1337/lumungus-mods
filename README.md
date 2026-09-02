@@ -33,10 +33,10 @@ Die Gameplay-Module haengen von Core ab, aber Core soll nicht von den Gameplay-M
 | Modul | Rolle | Status |
 |---|---|---|
 | `lumungus-core` | Gemeinsame APIs, Basistypen und technische Infrastruktur | Produktionsauftraege, Fortschritt und Maschinenvertrag implementiert |
-| `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Rohrpostverbindungen, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.41` UAT Candidate; Designer-Texturen und ausrichtbare Fronten fuer Controller und Crafting Terminal |
+| `lumungus-storage` | Physisches Kisten-/Fass-Netzwerk, Rohrpostverbindungen, Terminals, optionale Cells, Import/Export und spaeter Autocrafting | `0.1.0-uat.42` UAT Candidate; vollstaendiges Designer-Blockset, gerichtete Fronten und neue Rohrpostgeometrie |
 | `lumungus-backpack` | Modularer Rucksack mit Upgrade-Slots und spaeter Jetpack-Upgrade | angelegt |
-| `lumungus-machines` | Maschinen- und Automationsmodule | Phase 3; Autocrafter verarbeitet einfache Crafting-Rezepte gegen das gebundene Lager und besitzt ein synchronisiertes Bedienmenue |
-| `lumungus-autotrader` | Automatisierte Handelsablaeufe, Trading-Terminals und spaetere Storage-Anbindung | angelegt |
+| `lumungus-machines` | Maschinen- und Automationsmodule | Phase 3; Autocrafter verarbeitet einfache Crafting-Rezepte gegen das gebundene Lager, besitzt ein synchronisiertes Bedienmenue und das finale gerichtete Blockdesign |
+| `lumungus-autotrader` | Automatisierte Handelsablaeufe, Trading-Terminals und spaetere Storage-Anbindung | Modul angelegt; finales Blocktexturset fuer die spaetere Implementierung vorbereitet |
 | `lumungus-integration` | Cross-Mod-Integration zwischen Lumungus-Modulen und optional externen Mods | Tom's-2.11.3-Nur-Lese-Scanner fuer den Migrations-UAT |
 
 RailQuarry wird noch nicht migriert. Es ist als zukuenftiges Modul oder Feature innerhalb `lumungus-machines` dokumentiert, sobald die Core-APIs stabil genug sind.

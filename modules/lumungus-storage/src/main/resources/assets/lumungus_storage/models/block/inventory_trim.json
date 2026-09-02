@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:block/cube",
   "textures": {
-    "particle": "lumungus_storage:block/case_warm_metal",
-    "down": "lumungus_storage:block/case_warm_metal",
-    "up": "lumungus_storage:block/case_warm_metal",
-    "north": "lumungus_storage:block/pipe_trim_face",
-    "south": "lumungus_storage:block/pipe_trim_face",
-    "west": "lumungus_storage:block/pipe_rim",
-    "east": "lumungus_storage:block/pipe_rim"
+    "particle": "lumungus_storage:block/inventory_trim_side",
+    "down": "lumungus_storage:block/inventory_trim_bottom",
+    "up": "lumungus_storage:block/inventory_trim_top",
+    "north": "lumungus_storage:block/inventory_trim_front",
+    "south": "lumungus_storage:block/inventory_trim_back",
+    "west": "lumungus_storage:block/inventory_trim_side",
+    "east": "lumungus_storage:block/inventory_trim_side"
   }
 }

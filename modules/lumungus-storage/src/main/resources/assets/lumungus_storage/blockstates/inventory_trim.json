@@ -1,7 +1,8 @@
 {
   "variants": {
-    "": {
-      "model": "lumungus_storage:block/inventory_trim"
-    }
+    "facing=north": { "model": "lumungus_storage:block/inventory_trim" },
+    "facing=east": { "model": "lumungus_storage:block/inventory_trim", "y": 90 },
+    "facing=south": { "model": "lumungus_storage:block/inventory_trim", "y": 180 },
+    "facing=west": { "model": "lumungus_storage:block/inventory_trim", "y": 270 }
   }
 }

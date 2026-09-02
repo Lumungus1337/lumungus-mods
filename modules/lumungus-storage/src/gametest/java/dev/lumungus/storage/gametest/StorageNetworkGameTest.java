@@ -2,11 +2,15 @@ package dev.lumungus.storage.gametest;
 
 import dev.lumungus.core.api.inventory.TransferMode;
 import dev.lumungus.storage.block.CraftingTerminalBlock;
+import dev.lumungus.storage.block.DriveBayBlock;
 import dev.lumungus.storage.block.InventoryCableBlock;
+import dev.lumungus.storage.block.InventoryConnectorBlock;
 import dev.lumungus.storage.block.StorageBreakerBlock;
 import dev.lumungus.storage.block.StorageControllerBlock;
 import dev.lumungus.storage.block.StorageOutputBlock;
 import dev.lumungus.storage.block.StoragePlacerBlock;
+import dev.lumungus.storage.block.WirelessInventoryConnectorBlock;
+import dev.lumungus.storage.block.WirelessStorageControllerBlock;
 import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
 import dev.lumungus.storage.block.entity.DriveBayBlockEntity;
 import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
@@ -1156,6 +1160,50 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
                 context.getBlockState(new BlockPos(2, 1, 1)).getValue(CraftingTerminalBlock.FACING),
                 Direction.EAST,
                 "Crafting Terminal display facing"
+        );
+        context.succeed();
+    }
+
+    @GameTest
+    public void designerBlocksPreserveHorizontalFrontFacing(GameTestHelper context) {
+        BlockState driveBay = LumungusStorageBlocks.DRIVE_BAY.defaultBlockState()
+                .setValue(DriveBayBlock.FACING, Direction.NORTH)
+                .rotate(Rotation.CLOCKWISE_90);
+        BlockState inventoryConnector = LumungusStorageBlocks.INVENTORY_CONNECTOR.defaultBlockState()
+                .setValue(InventoryConnectorBlock.FACING, Direction.NORTH)
+                .rotate(Rotation.CLOCKWISE_90);
+        BlockState inventoryTrim = LumungusStorageBlocks.INVENTORY_TRIM.defaultBlockState()
+                .setValue(InventoryConnectorBlock.FACING, Direction.NORTH)
+                .rotate(Rotation.CLOCKWISE_90);
+        BlockState wirelessController = LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL
+                .defaultBlockState()
+                .setValue(WirelessStorageControllerBlock.FACING, Direction.NORTH)
+                .rotate(Rotation.CLOCKWISE_90);
+        BlockState wirelessConnector = LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_MULTIDIMENSIONAL
+                .defaultBlockState()
+                .setValue(WirelessInventoryConnectorBlock.FACING, Direction.NORTH)
+                .rotate(Rotation.CLOCKWISE_90);
+
+        context.assertValueEqual(driveBay.getValue(DriveBayBlock.FACING), Direction.EAST, "Drive Bay front");
+        context.assertValueEqual(
+                inventoryConnector.getValue(InventoryConnectorBlock.FACING),
+                Direction.EAST,
+                "Inventory Connector front"
+        );
+        context.assertValueEqual(
+                inventoryTrim.getValue(InventoryConnectorBlock.FACING),
+                Direction.EAST,
+                "Inventory Trim front"
+        );
+        context.assertValueEqual(
+                wirelessController.getValue(WirelessStorageControllerBlock.FACING),
+                Direction.EAST,
+                "Wireless Storage Controller front"
+        );
+        context.assertValueEqual(
+                wirelessConnector.getValue(WirelessInventoryConnectorBlock.FACING),
+                Direction.EAST,
+                "Wireless Inventory Connector front"
         );
         context.succeed();
     }

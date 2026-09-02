@@ -1,3 +1,12 @@
 {
-  "parent": "lumungus_storage:block/inventory_connector"
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "lumungus_storage:block/wireless_inventory_connector_multidimensional_side",
+    "down": "lumungus_storage:block/wireless_inventory_connector_multidimensional_bottom",
+    "up": "lumungus_storage:block/wireless_inventory_connector_multidimensional_top",
+    "north": "lumungus_storage:block/wireless_inventory_connector_multidimensional_front",
+    "south": "lumungus_storage:block/wireless_inventory_connector_multidimensional_back",
+    "west": "lumungus_storage:block/wireless_inventory_connector_multidimensional_side",
+    "east": "lumungus_storage:block/wireless_inventory_connector_multidimensional_side"
+  }
 }

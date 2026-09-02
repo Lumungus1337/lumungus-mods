@@ -140,6 +140,7 @@ tasks.register("storageUatBundle", Zip) {
         ":lumungus-core:check",
         ":lumungus-storage:jar",
         ":lumungus-storage:check",
+        ":lumungus-storage:runClientGameTest",
         ":lumungus-machines:jar",
         ":lumungus-machines:check",
         ":lumungus-machines:runGameTest",
