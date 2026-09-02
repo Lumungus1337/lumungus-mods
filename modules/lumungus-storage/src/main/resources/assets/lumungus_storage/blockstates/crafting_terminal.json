@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "facing=north": {
       "model": "lumungus_storage:block/crafting_terminal"
+    },
+    "facing=east": {
+      "model": "lumungus_storage:block/crafting_terminal",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "lumungus_storage:block/crafting_terminal",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "lumungus_storage:block/crafting_terminal",
+      "y": 270
     }
   }
 }

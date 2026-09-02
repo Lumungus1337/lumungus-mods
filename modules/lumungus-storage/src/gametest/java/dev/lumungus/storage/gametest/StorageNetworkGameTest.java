@@ -1,8 +1,10 @@
 package dev.lumungus.storage.gametest;
 
 import dev.lumungus.core.api.inventory.TransferMode;
+import dev.lumungus.storage.block.CraftingTerminalBlock;
 import dev.lumungus.storage.block.InventoryCableBlock;
 import dev.lumungus.storage.block.StorageBreakerBlock;
+import dev.lumungus.storage.block.StorageControllerBlock;
 import dev.lumungus.storage.block.StorageOutputBlock;
 import dev.lumungus.storage.block.StoragePlacerBlock;
 import dev.lumungus.storage.block.entity.CraftingTerminalBlockEntity;
@@ -47,6 +49,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
 
 public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     private static final BlockPos FIRST_CONTROLLER = new BlockPos(1, 1, 1);
@@ -1129,6 +1132,31 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
                     "Failed JEI transfer populated another grid slot"
             );
         }
+        context.succeed();
+    }
+
+    @GameTest
+    public void controllerAndTerminalPreserveHorizontalDisplayFacing(GameTestHelper context) {
+        BlockState controller = LumungusStorageBlocks.STORAGE_CONTROLLER.defaultBlockState()
+                .setValue(StorageControllerBlock.FACING, Direction.NORTH)
+                .rotate(Rotation.CLOCKWISE_90);
+        BlockState terminal = LumungusStorageBlocks.CRAFTING_TERMINAL.defaultBlockState()
+                .setValue(CraftingTerminalBlock.FACING, Direction.NORTH)
+                .rotate(Rotation.CLOCKWISE_90);
+
+        context.setBlock(new BlockPos(1, 1, 1), controller);
+        context.setBlock(new BlockPos(2, 1, 1), terminal);
+
+        context.assertValueEqual(
+                context.getBlockState(new BlockPos(1, 1, 1)).getValue(StorageControllerBlock.FACING),
+                Direction.EAST,
+                "Storage Controller display facing"
+        );
+        context.assertValueEqual(
+                context.getBlockState(new BlockPos(2, 1, 1)).getValue(CraftingTerminalBlock.FACING),
+                Direction.EAST,
+                "Crafting Terminal display facing"
+        );
         context.succeed();
     }
 

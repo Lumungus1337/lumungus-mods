@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "facing=north": {
       "model": "lumungus_storage:block/storage_controller"
+    },
+    "facing=east": {
+      "model": "lumungus_storage:block/storage_controller",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "lumungus_storage:block/storage_controller",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "lumungus_storage:block/storage_controller",
+      "y": 270
     }
   }
 }
