@@ -2,6 +2,7 @@ package dev.lumungus.storage.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.lumungus.storage.block.entity.InventoryConnectorBlockEntity;
+import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageItems;
@@ -133,21 +134,21 @@ public final class InventoryConnectorBlock extends BaseEntityBlock {
     ) {
         if (!level.isClientSide()
                 && level.getBlockEntity(pos) instanceof InventoryConnectorBlockEntity connector) {
-            if (player.isSecondaryUseActive()) {
-                boolean enabled = connector.toggleAutoSendToDriveBays();
-                player.sendSystemMessage(Component.translatable(
-                        enabled
-                                ? "message.lumungus_storage.inventory_connector.auto_send_enabled"
-                                : "message.lumungus_storage.inventory_connector.auto_send_disabled"
-                ));
-                return InteractionResult.SUCCESS;
-            }
-            int inventories = connector.endpoints().size();
+            boolean linked = connector.refreshControllerLink();
+            boolean enabled = connector.toggleAutoSendToDriveBays();
+            StorageControllerBlockEntity.BayMoveResult result = enabled
+                    ? connector.sendToDriveBays()
+                    : new StorageControllerBlockEntity.BayMoveResult(0, 0, connector.endpoints().size(), 0, false);
             player.sendSystemMessage(Component.translatable(
-                    connector.refreshControllerLink()
-                            ? "message.lumungus_storage.inventory_connector.connected"
-                            : "message.lumungus_storage.inventory_connector.no_controller",
-                    inventories
+                    enabled
+                            ? "message.lumungus_storage.inventory_connector.auto_send_enabled_details"
+                            : "message.lumungus_storage.inventory_connector.auto_send_disabled_details",
+                    linked
+                            ? Component.translatable("message.lumungus_storage.inventory_connector.linked")
+                            : Component.translatable("message.lumungus_storage.inventory_connector.unlinked"),
+                    result.physicalInventories(),
+                    result.driveBays(),
+                    result.movedItems()
             ));
         }
         return InteractionResult.SUCCESS;

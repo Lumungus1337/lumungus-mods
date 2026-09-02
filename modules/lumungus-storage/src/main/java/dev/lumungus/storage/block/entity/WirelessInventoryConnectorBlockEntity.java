@@ -38,6 +38,7 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
     private BlockPos controllerPos;
     private UUID networkId;
     private boolean autoSendToDriveBays;
+    private long autoSendAttempts;
 
     public WirelessInventoryConnectorBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusStorageBlockEntities.WIRELESS_INVENTORY_CONNECTOR, pos, state);
@@ -48,6 +49,7 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
             WirelessInventoryConnectorRegistry.register(level, pos);
             connector.refreshControllerLink();
             if (connector.autoSendToDriveBays) {
+                connector.autoSendAttempts++;
                 connector.sendToDriveBays();
             }
         }
@@ -55,6 +57,10 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
 
     public boolean autoSendToDriveBays() {
         return autoSendToDriveBays;
+    }
+
+    public long autoSendAttempts() {
+        return autoSendAttempts;
     }
 
     public boolean toggleAutoSendToDriveBays() {
@@ -77,10 +83,15 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
         if (hasValidControllerLink()) {
             return true;
         }
+        if (hasStoredControllerLink() && !isStoredControllerChunkLoaded()) {
+            return false;
+        }
 
         StorageControllerBlockEntity controller = findControllerViaWirelessController();
         if (controller == null) {
-            clearControllerLink();
+            if (!hasStoredControllerLink() || isStoredControllerChunkLoaded()) {
+                clearControllerLink();
+            }
             return false;
         }
         linkTo(controller);
@@ -187,6 +198,22 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
                 && networkId != null
                 && controller != null
                 && networkId.equals(controller.getNetworkId());
+    }
+
+    private boolean hasStoredControllerLink() {
+        return controllerDimension != null && controllerPos != null && networkId != null;
+    }
+
+    private boolean isStoredControllerChunkLoaded() {
+        if (level == null || level.getServer() == null || controllerDimension == null || controllerPos == null) {
+            return false;
+        }
+        for (net.minecraft.server.level.ServerLevel serverLevel : level.getServer().getAllLevels()) {
+            if (serverLevel.dimension().identifier().equals(controllerDimension)) {
+                return serverLevel.isLoaded(controllerPos);
+            }
+        }
+        return false;
     }
 
     private StorageControllerBlockEntity linkedControllerBlockEntity() {

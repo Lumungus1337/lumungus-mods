@@ -1,6 +1,7 @@
 package dev.lumungus.storage.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.block.entity.WirelessInventoryConnectorBlockEntity;
 import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.network.StorageNetworkTopology;
@@ -141,25 +142,25 @@ public final class WirelessInventoryConnectorBlock extends BaseEntityBlock {
         if (!level.isClientSide()
                 && level.getBlockEntity(pos) instanceof WirelessInventoryConnectorBlockEntity connector) {
             WirelessInventoryConnectorRegistry.register(level, pos);
-            if (player.isSecondaryUseActive()) {
-                boolean enabled = connector.toggleAutoSendToDriveBays();
-                player.sendSystemMessage(Component.translatable(
-                        enabled
-                                ? "message.lumungus_storage.inventory_connector.auto_send_enabled"
-                                : "message.lumungus_storage.inventory_connector.auto_send_disabled"
-                ));
-                return InteractionResult.SUCCESS;
-            }
-            int inventories = connector.endpoints().size();
+            boolean linked = connector.refreshControllerLink();
+            boolean enabled = connector.toggleAutoSendToDriveBays();
+            StorageControllerBlockEntity.BayMoveResult result = enabled
+                    ? connector.sendToDriveBays()
+                    : new StorageControllerBlockEntity.BayMoveResult(0, 0, connector.endpoints().size(), 0, false);
             BlockPos controllerPos = connector.linkedControllerPosition();
-            boolean linked = controllerPos != null;
             player.sendSystemMessage(Component.translatable(
-                    linked
-                            ? "message.lumungus_storage.wireless_inventory_connector.connected"
-                            : "message.lumungus_storage.wireless_inventory_connector.no_wireless_controller",
-                    tier.label(),
-                    inventories,
-                    controllerPos == null ? Component.empty() : WirelessStatusText.position(controllerPos)
+                    enabled
+                            ? "message.lumungus_storage.inventory_connector.auto_send_enabled_details"
+                            : "message.lumungus_storage.inventory_connector.auto_send_disabled_details",
+                    linked && controllerPos != null
+                            ? Component.translatable(
+                                    "message.lumungus_storage.inventory_connector.linked_at",
+                                    WirelessStatusText.position(controllerPos)
+                            )
+                            : Component.translatable("message.lumungus_storage.inventory_connector.unlinked"),
+                    result.physicalInventories(),
+                    result.driveBays(),
+                    result.movedItems()
             ));
         }
         return InteractionResult.SUCCESS;

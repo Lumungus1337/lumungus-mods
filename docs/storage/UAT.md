@@ -4,13 +4,13 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.46`
+- Version: `0.1.0-uat.47`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.46.zip`
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.47.zip`
 - Abnahmestatus: `AUTOMATED_CLIENT_AND_SERVER_PASS`; Arbeitszyklen mit und ohne Filter, feste Funkmodul-Bindung, Autocrafter-Lagerzugriff und -Bedienmenue, gerichtete Arbeitsseiten, Redstone-Pause, Breaker-Schutz, Tooltips, feste Bindung tragbarer Storage Interfaces, Wireless Inventory Connectoren, Wireless-Reichweiten jenseits der Kurzdistanz, Terminal-Suchfeld-Hotkeys und Rohrpost-Sackgassen sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core`, `lumungus-storage` und `lumungus-machines` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
@@ -27,8 +27,8 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | Netzwerk-Crafting | `PASS` | Ein Rezept nutzt einen Stamm aus dem Netzwerk und erzeugt vier Bretter. |
 | JEI-Transfer | `PASS` | Der Lumungus-Transferknopf befuellt das 3x3-Raster serverseitig aus dem Netzwerk. |
 | Automatisierte Logiktests | `PASS` | JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
-| Server-GameTests | `PASS uat.46` | 39 Storage-Tests, 4 Machines-Tests und 3 Integrationstests pruefen einschliesslich Auto-Send kabelgebundener und drahtloser Inventaranschluesse. |
-| Client-GameTest | `PASS uat.46` | Storage- und Machines-Clients laden Designer-Texturen, Tablet-Icons, JEI, Blockstates und gerichtete Modellvarianten ohne fehlende Ressourcen. |
+| Server-GameTests | `PASS uat.47` | 39 Storage-Tests und 4 Machines-Tests bestanden; kabelgebundenes und drahtloses Auto-Send werden ueber den echten Block-Ticker geprueft. |
+| Client-GameTest | `PASS uat.47` | Storage- und Machines-Clients laden Sprachressourcen, Designer-Texturen, JEI und gerichtete Modelle fehlerfrei. |
 | Rezepte und Werkzeug | `PASS` | Die Phase-1-Bloecke und Werkzeuge sind registriert, craftbar, per Spitzhacke abbaubar und im Schraubenschluessel-Tag enthalten. |
 
 ## Testaufbau
@@ -95,7 +95,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-16ad Designer-Rohrpost:** Das Rohrpostnetz nutzt zentralen Kupferknoten, gruene Rohrarme und Anschlussmanschetten aus dem finalen Designset. Nicht verbundene Richtungen bleiben geschlossen und erzeugen weder Vollblockflaechen noch X-Ray-Effekte.
 - [ ] **UAT-16ae Designer-Tablets:** Tragbares Storage Interface I/II/III verwenden die gelieferten, klar unterscheidbaren Tablet-Icons im Inventar und in JEI. Alle drei Stufen behalten Bindung, Reichweite und verzogerungsfreies Verhalten im ungebundenen Zustand bei.
 - [ ] **UAT-16af Ungebundener Wireless Inventaranschluss:** Rechtsklick auf einen Wireless Inventaranschluss ohne erreichbaren Wireless Storage Controller antwortet sofort mit einer Statusmeldung und verursacht weder Standbild noch Tick-Lag.
-- [ ] **UAT-16ag Auto-Send:** Shift-Rechtsklick schaltet Auto-Send an kabelgebundenen und Wireless-Inventaranschluessen ein oder aus. Aktiv verschiebt jeder Anschluss hoechstens 64 Stacks pro Sekunde aus seinen eigenen angrenzenden Inventaren in Drive Bays; andere Anschluesse bleiben unberuehrt und der Zustand bleibt nach einem Neustart erhalten.
+- [ ] **UAT-16ag Auto-Send:** Normaler Rechtsklick schaltet Auto-Send an kabelgebundenen und Wireless-Inventaranschluessen ein oder aus und zeigt Verbindung, Inventare, Drive Bays sowie die sofort verschobene Menge. Aktiv verschiebt jeder Anschluss hoechstens 64 Stacks pro Sekunde aus seinen eigenen angrenzenden Inventaren in Drive Bays; andere Anschluesse bleiben unberuehrt und der Zustand bleibt nach einem Neustart erhalten.
 
 ## Multiplayer und Grenzfaelle
 
