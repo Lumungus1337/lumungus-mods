@@ -502,6 +502,27 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
+    @GameTest
+    public void multidimensionalWirelessInventoryConnectorRefreshIsBounded(GameTestHelper context) {
+        BlockPos connectorPos = new BlockPos(1, 1, 1);
+        context.setBlock(connectorPos, LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_MULTIDIMENSIONAL);
+
+        WirelessInventoryConnectorBlockEntity connector = context.getBlockEntity(
+                connectorPos,
+                WirelessInventoryConnectorBlockEntity.class
+        );
+
+        long startedAt = System.nanoTime();
+        connector.refreshControllerLink();
+        long elapsedMillis = (System.nanoTime() - startedAt) / 1_000_000L;
+
+        context.assertTrue(
+                elapsedMillis < 2_000L,
+                "Wireless connector refresh exceeded 2 seconds: " + elapsedMillis + " ms"
+        );
+        context.succeed();
+    }
+
     @GameTest(padding = 128)
     public void dimensionWirelessInventoryConnectorIgnoresShortRangeLimit(GameTestHelper context) {
         BlockPos controllerPos = new BlockPos(1, 1, 64);

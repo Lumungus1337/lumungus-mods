@@ -101,11 +101,10 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
 
     private StorageControllerBlockEntity findControllerViaWirelessController() {
         WirelessInventoryConnectorBlock.WirelessConnectorTier tier = tier();
-        int radius = tier.searchRadius();
         StorageControllerBlockEntity nearestController = null;
         double nearestDistance = Double.MAX_VALUE;
 
-        for (BlockPos candidate : StorageNetworkTopology.reachableNodes(level, worldPosition, radius)) {
+        for (BlockPos candidate : StorageNetworkTopology.connectedNodes(level, worldPosition)) {
             if (level.getBlockEntity(candidate) instanceof WirelessStorageControllerBlockEntity wireless
                     && tier.canReach(true, worldPosition, candidate)) {
                 StorageControllerBlockEntity controller = wireless.linkedController();

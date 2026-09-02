@@ -119,8 +119,7 @@ public final class WirelessStorageControllerBlockEntity extends BlockEntity impl
     private StorageControllerBlockEntity nearestLocalController() {
         StorageControllerBlockEntity nearestController = null;
         double nearestDistance = Double.MAX_VALUE;
-        int radius = tier().searchRadius();
-        for (BlockPos candidate : StorageNetworkTopology.reachableControllers(level, worldPosition, radius)) {
+        for (BlockPos candidate : StorageNetworkTopology.connectedNodes(level, worldPosition)) {
             if (level.getBlockEntity(candidate) instanceof StorageControllerBlockEntity controller
                     && tier().canReach(true, worldPosition, candidate)) {
                 double distance = worldPosition.distSqr(candidate);

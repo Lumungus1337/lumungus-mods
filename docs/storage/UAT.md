@@ -4,13 +4,13 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.43`
+- Version: `0.1.0-uat.44`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.43.zip`
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.44.zip`
 - Abnahmestatus: `AUTOMATED_CLIENT_AND_SERVER_PASS`; Arbeitszyklen mit und ohne Filter, feste Funkmodul-Bindung, Autocrafter-Lagerzugriff und -Bedienmenue, gerichtete Arbeitsseiten, Redstone-Pause, Breaker-Schutz, Tooltips, feste Bindung tragbarer Storage Interfaces, Wireless Inventory Connectoren, Wireless-Reichweiten jenseits der Kurzdistanz, Terminal-Suchfeld-Hotkeys und Rohrpost-Sackgassen sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core`, `lumungus-storage` und `lumungus-machines` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
@@ -27,8 +27,8 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | Netzwerk-Crafting | `PASS` | Ein Rezept nutzt einen Stamm aus dem Netzwerk und erzeugt vier Bretter. |
 | JEI-Transfer | `PASS` | Der Lumungus-Transferknopf befuellt das 3x3-Raster serverseitig aus dem Netzwerk. |
 | Automatisierte Logiktests | `PASS` | JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
-| Server-GameTests | `PASS uat.43` | 35 Storage-Tests, 4 Machines-Tests und 3 Integrationstests pruefen einschliesslich der neuen Frontausrichtungen und Rohrpostlogik. |
-| Client-GameTest | `PASS uat.43` | Storage- und Machines-Clients laden Designer-Texturen, Tablet-Icons, JEI, Blockstates und gerichtete Modellvarianten ohne fehlende Ressourcen. |
+| Server-GameTests | `PASS uat.44` | 36 Storage-Tests, 4 Machines-Tests und 3 Integrationstests pruefen einschliesslich verzogerungsfreier ungebundener Wireless Connectoren. |
+| Client-GameTest | `PASS uat.44` | Storage- und Machines-Clients laden Designer-Texturen, Tablet-Icons, JEI, Blockstates und gerichtete Modellvarianten ohne fehlende Ressourcen. |
 | Rezepte und Werkzeug | `PASS` | Die Phase-1-Bloecke und Werkzeuge sind registriert, craftbar, per Spitzhacke abbaubar und im Schraubenschluessel-Tag enthalten. |
 
 ## Testaufbau
@@ -93,6 +93,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-16ac Designer-Arbeitsbloecke:** Output, Breaker und Placer verwenden ihre vollstaendigen Designertexturen; die sichtbare Arbeitsfront stimmt in allen sechs moeglichen Richtungen mit der tatsaechlichen Arbeitsrichtung ueberein.
 - [ ] **UAT-16ad Designer-Rohrpost:** Das Rohrpostnetz nutzt zentralen Kupferknoten, gruene Rohrarme und Anschlussmanschetten aus dem finalen Designset. Nicht verbundene Richtungen bleiben geschlossen und erzeugen weder Vollblockflaechen noch X-Ray-Effekte.
 - [ ] **UAT-16ae Designer-Tablets:** Tragbares Storage Interface I/II/III verwenden die gelieferten, klar unterscheidbaren Tablet-Icons im Inventar und in JEI. Alle drei Stufen behalten Bindung, Reichweite und verzogerungsfreies Verhalten im ungebundenen Zustand bei.
+- [ ] **UAT-16af Ungebundener Wireless Inventaranschluss:** Rechtsklick auf einen Wireless Inventaranschluss ohne erreichbaren Wireless Storage Controller antwortet sofort mit einer Statusmeldung und verursacht weder Standbild noch Tick-Lag.
 
 ## Multiplayer und Grenzfaelle
 
@@ -103,7 +104,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 
 ## Ergebnisprotokoll
 
-RC-Version: `0.1.0-uat.43`  Tester: `________________`  Datum: `________________`
+RC-Version: `0.1.0-uat.44`  Tester: `________________`  Datum: `________________`
 
 | ID | Ergebnis | Bemerkung / Issue-Link |
 |---|---|---|
