@@ -20,6 +20,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -302,7 +303,7 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         }
 
         if (recursivePlan != null) {
-            executeRecursivePlan(controller, recursivePlan, previousGrid);
+            executeRecursivePlan(controller, recursivePlan, recipe, previousGrid);
             return;
         }
 
@@ -333,6 +334,7 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         }
         slotsChanged(craftSlots);
         broadcastChanges();
+        sendPreparedRecipeSummary(recipe, placement);
     }
 
     private CraftingInput craftingInput(RecipePlacement placement) {
@@ -362,10 +364,12 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
     private void executeRecursivePlan(
             StorageControllerBlockEntity controller,
             RecursiveCraftingPlanner.Plan plan,
+            CraftingRecipe finalRecipe,
             List<ItemStack> previousGrid
     ) {
         returnCraftGridItems(controller);
         List<PoolEntry> crafted = new ArrayList<>();
+        List<CraftingPlanStage> displayedStages = new ArrayList<>();
         List<AcquiredSlot> acquired = new ArrayList<>();
 
         for (RecursiveCraftingPlanner.CraftStep step : plan.steps()) {
@@ -377,6 +381,7 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
             ItemStack output = step.recipe().assemble(input);
             output.onCraftedBySystem(player.level());
             addToPool(crafted, output, output.getCount());
+            addDisplayedStage(displayedStages, step.inputs(), output);
             step.recipe().getRemainingItems(input).stream()
                     .filter(stack -> !stack.isEmpty())
                     .forEach(stack -> addToPool(crafted, stack, stack.getCount()));
@@ -392,6 +397,99 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         returnCraftedSurplus(controller, crafted);
         slotsChanged(craftSlots);
         broadcastChanges();
+        sendRecursiveRecipeSummary(displayedStages, finalRecipe, plan.finalSlots());
+    }
+
+    private void sendPreparedRecipeSummary(CraftingRecipe recipe, RecipePlacement placement) {
+        ItemStack output = recipe.assemble(craftingInput(placement));
+        int crafts = placement.slots().stream()
+                .mapToInt(slot -> slot.stack().getCount())
+                .min()
+                .orElse(1);
+        sendPreparedRecipeSummary(output, crafts);
+    }
+
+    private void sendRecursiveRecipeSummary(
+            List<CraftingPlanStage> displayedStages,
+            CraftingRecipe finalRecipe,
+            List<RecursiveCraftingPlanner.SelectedSlot> finalSlots
+    ) {
+        MutableComponent message = Component.translatable(
+                "message.lumungus_storage.crafting_terminal.plan_header"
+        );
+        int displayed = Math.min(12, displayedStages.size());
+        for (int index = 0; index < displayed; index++) {
+            CraftingPlanStage stage = displayedStages.get(index);
+            if (index > 0) {
+                message.append(Component.literal(" | "));
+            }
+            appendPlanInputs(message, stage.inputs());
+            message.append(Component.literal(" -> "));
+            message.append(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.plan_step",
+                    stage.outputAmount(),
+                    stage.output().getHoverName()
+            ));
+        }
+        if (displayedStages.size() > displayed) {
+            message.append(Component.literal(" | ")).append(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.plan_more",
+                    displayedStages.size() - displayed
+            ));
+        }
+        if (!displayedStages.isEmpty()) {
+            message.append(Component.literal(" | "));
+        }
+
+        ItemStack finalOutput = finalRecipe.assemble(RecursiveCraftingPlanner.input(finalSlots));
+        int crafts = finalSlots.stream()
+                .mapToInt(slot -> slot.stack().getCount())
+                .min()
+                .orElse(1);
+        message.append(Component.translatable(
+                "message.lumungus_storage.crafting_terminal.plan_ready",
+                (long) crafts * finalOutput.getCount(),
+                finalOutput.getHoverName()
+        ));
+        player.sendSystemMessage(message);
+    }
+
+    private static void addDisplayedStage(
+            List<CraftingPlanStage> stages,
+            List<RecursiveCraftingPlanner.SelectedSlot> inputs,
+            ItemStack output
+    ) {
+        CraftingPlanStage stage = stages.stream()
+                .filter(candidate -> ItemStack.isSameItemSameComponents(candidate.output(), output))
+                .findFirst()
+                .orElse(null);
+        if (stage == null) {
+            stage = new CraftingPlanStage(output);
+            stages.add(stage);
+        }
+        stage.add(inputs, output.getCount());
+    }
+
+    private static void appendPlanInputs(MutableComponent message, List<PoolEntry> inputs) {
+        for (int index = 0; index < inputs.size(); index++) {
+            if (index > 0) {
+                message.append(Component.literal(" + "));
+            }
+            PoolEntry input = inputs.get(index);
+            message.append(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.plan_step",
+                    input.amount(),
+                    input.stack().getHoverName()
+            ));
+        }
+    }
+
+    private void sendPreparedRecipeSummary(ItemStack output, int crafts) {
+        player.sendSystemMessage(Component.translatable(
+                "message.lumungus_storage.crafting_terminal.recipe_ready",
+                (long) crafts * output.getCount(),
+                output.getHoverName()
+        ));
     }
 
     private boolean acquirePlannedStacks(
@@ -1038,6 +1136,33 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
     }
 
     private record RecipePlacement(List<PlannedSlot> slots) {
+    }
+
+    private static final class CraftingPlanStage {
+        private final ItemStack output;
+        private final List<PoolEntry> inputs = new ArrayList<>();
+        private long outputAmount;
+
+        private CraftingPlanStage(ItemStack output) {
+            this.output = output.copyWithCount(1);
+        }
+
+        private void add(List<RecursiveCraftingPlanner.SelectedSlot> addedInputs, int addedOutputAmount) {
+            addedInputs.forEach(input -> addToPool(inputs, input.stack(), input.stack().getCount()));
+            outputAmount += addedOutputAmount;
+        }
+
+        private ItemStack output() {
+            return output.copy();
+        }
+
+        private List<PoolEntry> inputs() {
+            return inputs;
+        }
+
+        private long outputAmount() {
+            return outputAmount;
+        }
     }
 
     private record AcquiredSlot(ItemStack stack, int fromPlayer, int fromNetwork) {
