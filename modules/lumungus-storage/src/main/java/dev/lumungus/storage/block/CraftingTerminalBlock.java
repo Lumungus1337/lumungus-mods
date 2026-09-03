@@ -101,7 +101,7 @@ public final class CraftingTerminalBlock extends BaseEntityBlock {
                     level.setBlock(pos, state.setValue(FACING, nextFacing), 3);
                     player.sendSystemMessage(Component.translatable(
                             "message.lumungus_storage.work_block.facing",
-                            Component.translatable("direction.minecraft." + nextFacing.getName())
+                            WorkBlockFacing.displayName(nextFacing)
                     ));
                 }
                 return InteractionResult.SUCCESS;

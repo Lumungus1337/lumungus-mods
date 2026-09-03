@@ -10,6 +10,7 @@ import dev.lumungus.storage.wireless.WirelessModuleHost;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.BlockItem;
@@ -102,7 +103,9 @@ public final class StorageBreakerBlockEntity extends BlockEntity implements Wire
     }
 
     public void breakBelow() {
-        if (!(level instanceof ServerLevel serverLevel) || WorkBlockPower.isPaused(level, worldPosition)) {
+        Direction facing = getBlockState().getValue(StorageBreakerBlock.FACING);
+        if (!(level instanceof ServerLevel serverLevel)
+                || WorkBlockPower.isPaused(level, worldPosition, facing.getOpposite())) {
             return;
         }
         StorageControllerBlockEntity controller = linkedController();
@@ -110,7 +113,7 @@ public final class StorageBreakerBlockEntity extends BlockEntity implements Wire
             return;
         }
 
-        BlockPos targetPos = worldPosition.relative(getBlockState().getValue(StorageBreakerBlock.FACING));
+        BlockPos targetPos = worldPosition.relative(facing);
         BlockState targetState = level.getBlockState(targetPos);
         if (targetState.isAir()
                 || StorageNetworkTopology.isDeviceNode(targetState.getBlock())

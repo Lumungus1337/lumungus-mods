@@ -11,6 +11,7 @@ import dev.lumungus.storage.wireless.WirelessModuleHost;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -99,11 +100,12 @@ public final class StoragePlacerBlockEntity extends BlockEntity implements Wirel
 
     public void placeBelow() {
         StorageControllerBlockEntity controller = linkedController();
-        if (controller == null || WorkBlockPower.isPaused(level, worldPosition)) {
+        Direction facing = getBlockState().getValue(StoragePlacerBlock.FACING);
+        if (controller == null || WorkBlockPower.isPaused(level, worldPosition, facing.getOpposite())) {
             return;
         }
 
-        BlockPos targetPos = worldPosition.relative(getBlockState().getValue(StoragePlacerBlock.FACING));
+        BlockPos targetPos = worldPosition.relative(facing);
         if (!level.getBlockState(targetPos).canBeReplaced()) {
             return;
         }

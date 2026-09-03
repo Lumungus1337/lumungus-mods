@@ -117,7 +117,7 @@ public final class StoragePlacerBlock extends BaseEntityBlock {
                     level.setBlock(pos, state.setValue(FACING, nextFacing), 3);
                     player.sendSystemMessage(Component.translatable(
                             "message.lumungus_storage.work_block.facing",
-                            Component.translatable("direction.minecraft." + nextFacing.getName())
+                            WorkBlockFacing.displayName(nextFacing)
                     ));
                 }
                 return InteractionResult.SUCCESS;
@@ -161,14 +161,19 @@ public final class StoragePlacerBlock extends BaseEntityBlock {
             boolean linked = placer.refreshControllerLink();
             ItemStack filter = placer.filter();
             Direction facing = state.getValue(FACING);
-            Component status = WorkBlockStatus.describe(level, pos, linked);
+            BlockState targetState = level.getBlockState(pos.relative(facing));
+            Component target = targetState.isAir()
+                    ? Component.translatable("message.lumungus_storage.work_block.target_air")
+                    : targetState.getBlock().getName();
+            Component status = WorkBlockStatus.describe(level, pos, facing.getOpposite(), linked);
             player.sendSystemMessage(Component.translatable(
                     filter.isEmpty()
                             ? "message.lumungus_storage.placer.active_unfiltered"
                             : "message.lumungus_storage.placer.active_filtered",
                     filter.getHoverName(),
-                    Component.translatable("direction.minecraft." + facing.getName()),
-                    status
+                    WorkBlockFacing.displayName(facing),
+                    status,
+                    target
             ));
         }
         return InteractionResult.SUCCESS;

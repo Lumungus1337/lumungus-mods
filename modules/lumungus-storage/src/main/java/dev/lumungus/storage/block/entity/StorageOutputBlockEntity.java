@@ -103,7 +103,8 @@ public final class StorageOutputBlockEntity extends BlockEntity implements Wirel
 
     public void exportOneStack() {
         StorageControllerBlockEntity controller = linkedController();
-        if (controller == null || WorkBlockPower.isPaused(level, worldPosition)) {
+        Direction direction = getBlockState().getValue(StorageOutputBlock.FACING);
+        if (controller == null || WorkBlockPower.isPaused(level, worldPosition, direction.getOpposite())) {
             return;
         }
 
@@ -112,7 +113,6 @@ public final class StorageOutputBlockEntity extends BlockEntity implements Wirel
             return;
         }
 
-        Direction direction = getBlockState().getValue(StorageOutputBlock.FACING);
         BlockPos targetPos = worldPosition.relative(direction);
         if (!level.isLoaded(targetPos)
                 || StorageNetworkTopology.isDeviceNode(level.getBlockState(targetPos).getBlock())) {

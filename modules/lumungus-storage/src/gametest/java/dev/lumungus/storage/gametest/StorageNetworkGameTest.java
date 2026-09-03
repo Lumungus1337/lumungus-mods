@@ -263,24 +263,24 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         controller.insert(new ItemStack(Items.COPPER_INGOT, 32), TransferMode.EXECUTE);
         controller.insert(new ItemStack(Items.DIRT, 3), TransferMode.EXECUTE);
 
-        BlockPos outputPos = new BlockPos(3, 1, 18);
+        BlockPos outputPos = new BlockPos(4, 1, 18);
         BlockPos outputChestPos = outputPos.east();
         context.setBlock(outputPos, LumungusStorageBlocks.STORAGE_OUTPUT.defaultBlockState()
                 .setValue(StorageOutputBlock.FACING, Direction.EAST));
         context.setBlock(outputChestPos, Blocks.CHEST);
-        context.setBlock(outputPos.above(), Blocks.REDSTONE_BLOCK);
+        context.setBlock(outputPos.west(), Blocks.REDSTONE_BLOCK);
         StorageOutputBlockEntity output = context.getBlockEntity(outputPos, StorageOutputBlockEntity.class);
         output.setFilter(new ItemStack(Items.COPPER_INGOT));
         output.exportOneStack();
         ChestBlockEntity outputChest = context.getBlockEntity(outputChestPos, ChestBlockEntity.class);
         context.assertTrue(outputChest.isEmpty(), "Powered Output exported items");
 
-        BlockPos breakerPos = new BlockPos(6, 2, 18);
+        BlockPos breakerPos = new BlockPos(7, 2, 18);
         BlockPos breakerTargetPos = breakerPos.east();
         context.setBlock(breakerPos, LumungusStorageBlocks.STORAGE_BREAKER.defaultBlockState()
                 .setValue(StorageBreakerBlock.FACING, Direction.EAST));
         context.setBlock(breakerTargetPos, Blocks.DIRT);
-        context.setBlock(breakerPos.above(), Blocks.REDSTONE_BLOCK);
+        context.setBlock(breakerPos.west(), Blocks.REDSTONE_BLOCK);
         StorageBreakerBlockEntity breaker = context.getBlockEntity(breakerPos, StorageBreakerBlockEntity.class);
         breaker.breakBelow();
         context.assertTrue(
@@ -288,11 +288,11 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
                 "Powered Breaker removed its target"
         );
 
-        BlockPos placerPos = new BlockPos(9, 2, 18);
+        BlockPos placerPos = new BlockPos(10, 2, 18);
         BlockPos placerTargetPos = placerPos.east();
         context.setBlock(placerPos, LumungusStorageBlocks.STORAGE_PLACER.defaultBlockState()
                 .setValue(StoragePlacerBlock.FACING, Direction.EAST));
-        context.setBlock(placerPos.above(), Blocks.REDSTONE_BLOCK);
+        context.setBlock(placerPos.west(), Blocks.REDSTONE_BLOCK);
         StoragePlacerBlockEntity placer = context.getBlockEntity(placerPos, StoragePlacerBlockEntity.class);
         placer.setFilter(new ItemStack(Items.DIRT));
         placer.placeBelow();
@@ -300,6 +300,37 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
                 context.getLevel().getBlockState(context.absolutePos(placerTargetPos)).isAir(),
                 "Powered Placer placed its target"
         );
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void sideRedstoneInAConstructionDoesNotPauseDownFacingBreaker(GameTestHelper context) {
+        BlockPos controllerPos = new BlockPos(1, 1, 24);
+        BlockPos driveBayPos = new BlockPos(2, 1, 24);
+        context.setBlock(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(driveBayPos, LumungusStorageBlocks.DRIVE_BAY);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(driveBayPos, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+
+        BlockPos targetPos = new BlockPos(5, 1, 24);
+        BlockPos breakerPos = targetPos.above();
+        context.setBlock(breakerPos, LumungusStorageBlocks.STORAGE_BREAKER.defaultBlockState()
+                .setValue(StorageBreakerBlock.FACING, Direction.DOWN));
+        context.setBlock(targetPos, Blocks.DIRT);
+        context.setBlock(breakerPos.east(), Blocks.REDSTONE_BLOCK);
+
+        StorageBreakerBlockEntity breaker = context.getBlockEntity(breakerPos, StorageBreakerBlockEntity.class);
+        breaker.setFilter(new ItemStack(Items.DIRT));
+        breaker.breakBelow();
+
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                controllerPos,
+                StorageControllerBlockEntity.class
+        );
+        context.assertTrue(context.getLevel().getBlockState(context.absolutePos(targetPos)).isAir(),
+                "Side redstone paused a down-facing construction breaker");
+        context.assertValueEqual(controller.count(new ItemStack(Items.DIRT)), 1L, "Stored construction dirt drop");
         context.succeed();
     }
 

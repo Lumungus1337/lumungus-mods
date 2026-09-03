@@ -147,7 +147,7 @@ public final class StorageBreakerBlock extends BaseEntityBlock {
             if (player != null) {
                 player.sendSystemMessage(Component.translatable(
                         "message.lumungus_storage.work_block.facing",
-                        Component.translatable("direction.minecraft." + nextFacing.getName())
+                        WorkBlockFacing.displayName(nextFacing)
                 ));
             }
         }
@@ -175,14 +175,19 @@ public final class StorageBreakerBlock extends BaseEntityBlock {
             boolean linked = breaker.refreshControllerLink();
             ItemStack filter = breaker.filter();
             Direction facing = state.getValue(FACING);
-            Component status = WorkBlockStatus.describe(level, pos, linked);
+            BlockState targetState = level.getBlockState(pos.relative(facing));
+            Component target = targetState.isAir()
+                    ? Component.translatable("message.lumungus_storage.work_block.target_air")
+                    : targetState.getBlock().getName();
+            Component status = WorkBlockStatus.describe(level, pos, facing.getOpposite(), linked);
             player.sendSystemMessage(Component.translatable(
                     filter.isEmpty()
                             ? "message.lumungus_storage.breaker.active_unfiltered"
                             : "message.lumungus_storage.breaker.active_filtered",
                     filter.getHoverName(),
-                    Component.translatable("direction.minecraft." + facing.getName()),
-                    status
+                    WorkBlockFacing.displayName(facing),
+                    status,
+                    target
             ));
         }
         return InteractionResult.SUCCESS;

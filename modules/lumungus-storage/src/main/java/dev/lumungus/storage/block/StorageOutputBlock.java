@@ -117,7 +117,7 @@ public final class StorageOutputBlock extends BaseEntityBlock {
                     level.setBlock(pos, state.setValue(FACING, nextFacing), 3);
                     player.sendSystemMessage(Component.translatable(
                             "message.lumungus_storage.work_block.facing",
-                            Component.translatable("direction.minecraft." + nextFacing.getName())
+                            WorkBlockFacing.displayName(nextFacing)
                     ));
                 }
                 return InteractionResult.SUCCESS;
@@ -161,13 +161,13 @@ public final class StorageOutputBlock extends BaseEntityBlock {
             boolean linked = output.refreshControllerLink();
             ItemStack filter = output.filter();
             Direction facing = state.getValue(FACING);
-            Component status = WorkBlockStatus.describe(level, pos, linked);
+            Component status = WorkBlockStatus.describe(level, pos, facing.getOpposite(), linked);
             player.sendSystemMessage(Component.translatable(
                     filter.isEmpty()
                             ? "message.lumungus_storage.output.active_unfiltered"
                             : "message.lumungus_storage.output.active_filtered",
                     filter.getHoverName(),
-                    Component.translatable("direction.minecraft." + facing.getName()),
+                    WorkBlockFacing.displayName(facing),
                     status
             ));
         }

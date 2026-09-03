@@ -1,6 +1,7 @@
 package dev.lumungus.storage.block;
 
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 
 public final class WorkBlockFacing {
     private WorkBlockFacing() {
@@ -19,5 +20,9 @@ public final class WorkBlockFacing {
 
     public static Direction towardPlacementSupport(Direction clickedFace) {
         return clickedFace.getOpposite();
+    }
+
+    public static Component displayName(Direction direction) {
+        return Component.translatable("message.lumungus_storage.direction." + direction.getName());
     }
 }
