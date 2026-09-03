@@ -35,18 +35,46 @@ final class RecursiveCraftingPlanner {
     static Optional<Plan> plan(
             ServerLevel level,
             CraftingRecipe finalRecipe,
-            List<AvailableResource> available
+            List<AvailableResource> available,
+            int crafts
     ) {
         RecursiveCraftingPlanner planner = new RecursiveCraftingPlanner(level);
         State state = new State(available);
         List<SelectedSlot> finalSlots = new ArrayList<>();
-        if (!planner.acquireRecipeIngredients(finalRecipe, state, finalSlots, 0, new HashSet<>())) {
-            return Optional.empty();
+        for (int craft = 0; craft < crafts; craft++) {
+            List<SelectedSlot> craftSlots = new ArrayList<>();
+            if (!planner.acquireRecipeIngredients(finalRecipe, state, craftSlots, 0, new HashSet<>())
+                    || !mergeFinalSlots(finalSlots, craftSlots)) {
+                return Optional.empty();
+            }
         }
         if (!finalRecipe.matches(input(finalSlots), level)) {
             return Optional.empty();
         }
         return Optional.of(new Plan(List.copyOf(state.steps), List.copyOf(finalSlots)));
+    }
+
+    private static boolean mergeFinalSlots(List<SelectedSlot> combined, List<SelectedSlot> addition) {
+        for (SelectedSlot added : addition) {
+            SelectedSlot existing = combined.stream()
+                    .filter(slot -> slot.slot() == added.slot())
+                    .findFirst()
+                    .orElse(null);
+            if (existing == null) {
+                combined.add(added);
+                continue;
+            }
+            if (!ItemStack.isSameItemSameComponents(existing.stack(), added.stack())
+                    || existing.stack().getCount() >= existing.stack().getMaxStackSize()) {
+                return false;
+            }
+            int index = combined.indexOf(existing);
+            combined.set(index, new SelectedSlot(
+                    existing.slot(),
+                    existing.stack().copyWithCount(existing.stack().getCount() + added.stack().getCount())
+            ));
+        }
+        return true;
     }
 
     private boolean acquireRecipeIngredients(
@@ -187,7 +215,7 @@ final class RecursiveCraftingPlanner {
 
     record SelectedSlot(int slot, ItemStack stack) {
         SelectedSlot {
-            stack = stack.copyWithCount(1);
+            stack = stack.copy();
         }
 
         @Override

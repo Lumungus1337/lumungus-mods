@@ -114,6 +114,7 @@
   "gui.lumungus_storage.crafting_terminal.search": "Search...",
   "gui.lumungus_storage.crafting_terminal.search_label": "Search storage",
   "gui.lumungus_storage.crafting_terminal.crafting": "CRAFT",
+  "gui.lumungus_storage.crafting_terminal.craft_amount": "Requested result amount (Shift: steps of 10)",
   "gui.lumungus_storage.crafting_terminal.page": "%1$s / %2$s",
   "gui.lumungus_storage.crafting_terminal.status": "%1$s/%2$s items  %3$s/%4$s types",
   "gui.lumungus_storage.crafting_terminal.amount": "Stored: %1$s",

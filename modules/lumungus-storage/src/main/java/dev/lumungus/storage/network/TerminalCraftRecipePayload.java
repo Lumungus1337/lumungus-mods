@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
-public record TerminalCraftRecipePayload(int containerId, Identifier recipeId, boolean maxTransfer)
+public record TerminalCraftRecipePayload(int containerId, Identifier recipeId, int requestedResultAmount)
         implements CustomPacketPayload {
     public static final Type<TerminalCraftRecipePayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(
             LumungusStorage.MOD_ID,
@@ -16,12 +16,12 @@ public record TerminalCraftRecipePayload(int containerId, Identifier recipeId, b
             (buffer, payload) -> {
                 buffer.writeVarInt(payload.containerId());
                 Identifier.STREAM_CODEC.encode(buffer, payload.recipeId());
-                buffer.writeBoolean(payload.maxTransfer());
+                buffer.writeVarInt(payload.requestedResultAmount());
             },
             buffer -> new TerminalCraftRecipePayload(
                     buffer.readVarInt(),
                     Identifier.STREAM_CODEC.decode(buffer),
-                    buffer.readBoolean()
+                    buffer.readVarInt()
             )
     );
 

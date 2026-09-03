@@ -4,16 +4,16 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.50`
+- Version: `0.1.0-uat.51`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.50.zip`
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.51.zip`
 - Abnahmestatus: `AUTOMATED_CLIENT_AND_SERVER_PASS`; Arbeitszyklen mit und ohne Filter, feste Funkmodul-Bindung, Autocrafter-Lagerzugriff und -Bedienmenue, gerichtete Arbeitsseiten, Redstone-Pause, Breaker-Schutz, Tooltips, feste Bindung tragbarer Storage Interfaces, Wireless Inventory Connectoren, Wireless-Reichweiten jenseits der Kurzdistanz, Terminal-Suchfeld-Hotkeys und Rohrpost-Sackgassen sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
-Das Testpaket enthaelt `lumungus-core`, `lumungus-storage` und `lumungus-machines` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
+Das Testpaket enthaelt `lumungus-core`, `lumungus-storage`, `lumungus-machines` und `lumungus-integration` als gemeinsam versionierte, getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API, Tom's Storage und optional JEI werden separat installiert.
 
 ## Entwickler-Preflight
 
@@ -27,8 +27,8 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | Netzwerk-Crafting | `PASS` | Ein Rezept nutzt einen Stamm aus dem Netzwerk und erzeugt vier Bretter. |
 | JEI-Transfer | `PASS` | Der Lumungus-Transferknopf befuellt das 3x3-Raster serverseitig aus dem Netzwerk. |
 | Automatisierte Logiktests | `PASS` | JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
-| Server-GameTests | `PASS uat.50` | Alle 43 Storage-, 4 Machines- und 3 Integration-Tests bestanden; Kartenpflicht, Slot-Transfer und beide Dimensionsrichtungen sind geprueft. |
-| Client-GameTest | `PASS uat.50` | Storage- und Machines-Clientstart, Karten-Slot, Sprachressourcen und Oberflaechen bestanden. |
+| Server-GameTests | `PASS uat.51` | Alle 45 Storage-Tests bestanden; frei waehlbare Ergebnisanzahl, Rezept-Ausgaberundung und rekursive Mehrfachplaene sind geprueft. |
+| Client-GameTest | `PASS uat.51` | Storage-Clientstart, Sprachressourcen und Oberflaechen bestanden. |
 | Rezepte und Werkzeug | `PASS` | Die Phase-1-Bloecke und Werkzeuge sind registriert, craftbar, per Spitzhacke abbaubar und im Schraubenschluessel-Tag enthalten. |
 
 ## Testaufbau
@@ -60,6 +60,7 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-16 JEI-Transfer:** Der JEI-Transfer befuellt das Rezept aus Spieler- und Netzwerkbestand, meldet fehlende Zutaten korrekt und verbraucht beim reinen Transfer noch keine Zutaten; die Gesamtmenge aus Grid, Inventar und Netzwerk bleibt gleich.
 - [ ] **UAT-16a Terminal-Suche:** Das Crafting-Terminal fokussiert die Suche beim Oeffnen; Suchbegriffe finden Items ueber Anzeigenamen und Item-ID.
 - [ ] **UAT-16aa Rekursives Crafting:** Fehlen Zwischenprodukte fuer ein ueber JEI gewaehltes Rezept, stellt das Terminal sie aus vorhandenen Grundmaterialien her. Beispiel: Drei Eichenstaemme reichen fuer Bretter und Stufen des Fass-Rezepts; Ueberschuesse landen wieder im Lager.
+- [ ] **UAT-16ab Crafting-Menge:** Die Zahl unter dem Craftingraster bestimmt die gewuenschte Ergebnisanzahl des naechsten JEI-Transfers. Direkte und rekursive Rezepte werden auf volle Rezeptausgaben aufgerundet und bis zu 64 Rezeptdurchlaeufe vorbereitet.
 
 ## Rezepte und Werkzeug
 

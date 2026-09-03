@@ -55,6 +55,7 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
     private static final int PLAYER_INVENTORY_SLOT_END = PLAYER_INVENTORY_SLOT_START
             + PLAYER_INVENTORY_SLOT_COUNT;
     private static final int MAX_RECIPE_TRANSFER = 64;
+    public static final int MAX_REQUESTED_RESULT_AMOUNT = 4096;
 
     private final ContainerLevelAccess access;
     private final Player player;
@@ -219,7 +220,21 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         broadcastChanges();
     }
 
+    private int requestedCraftResultAmount = 1;
+
+    public int requestedCraftResultAmount() {
+        return requestedCraftResultAmount;
+    }
+
+    public void setRequestedCraftResultAmount(int amount) {
+        requestedCraftResultAmount = Math.clamp(amount, 1, MAX_REQUESTED_RESULT_AMOUNT);
+    }
+
     public void placeRecipeFromNetwork(Identifier recipeId, boolean maxTransfer) {
+        placeRecipeFromNetwork(recipeId, maxTransfer ? MAX_RECIPE_TRANSFER : 1);
+    }
+
+    public void placeRecipeFromNetwork(Identifier recipeId, int requestedResultAmount) {
         if (!(player instanceof ServerPlayer serverPlayer) || !stillValid(player)) {
             return;
         }
@@ -243,27 +258,40 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
                 addToPool(pool, stack, stack.getCount());
             }
         }
+        RecipePlacement singlePlacement = planRecipe(recipe, pool, 1);
+        int resultPerCraft = singlePlacement == null
+                ? recursiveResultCount(recipe, (ServerLevel) serverPlayer.level())
+                : recipe.assemble(craftingInput(singlePlacement)).getCount();
+        int clampedResultAmount = Math.clamp(requestedResultAmount, 1, MAX_REQUESTED_RESULT_AMOUNT);
+        int requestedCrafts = Math.min(
+                MAX_RECIPE_TRANSFER,
+                Math.max(1, (clampedResultAmount + Math.max(1, resultPerCraft) - 1) / Math.max(1, resultPerCraft))
+        );
+
+        List<RecursiveCraftingPlanner.AvailableResource> recursiveResources = pool.stream()
+                .map(resource -> new RecursiveCraftingPlanner.AvailableResource(
+                        resource.stack(),
+                        resource.amount()
+                ))
+                .toList();
         RecipePlacement placement = null;
-        int requestedCrafts = maxTransfer ? MAX_RECIPE_TRANSFER : 1;
+        RecursiveCraftingPlanner.Plan recursivePlan = null;
         for (int crafts = requestedCrafts; crafts >= 1; crafts--) {
             placement = planRecipe(recipe, pool, crafts);
             if (placement != null) {
                 break;
             }
-        }
-
-        RecursiveCraftingPlanner.Plan recursivePlan = null;
-        if (placement == null && player.level() instanceof ServerLevel serverLevel) {
-            recursivePlan = RecursiveCraftingPlanner.plan(
-                    serverLevel,
-                    recipe,
-                    pool.stream()
-                            .map(resource -> new RecursiveCraftingPlanner.AvailableResource(
-                                    resource.stack(),
-                                    resource.amount()
-                            ))
-                            .toList()
-            ).orElse(null);
+            if (player.level() instanceof ServerLevel serverLevel) {
+                recursivePlan = RecursiveCraftingPlanner.plan(
+                        serverLevel,
+                        recipe,
+                        recursiveResources,
+                        crafts
+                ).orElse(null);
+                if (recursivePlan != null) {
+                    break;
+                }
+            }
         }
 
         if (placement == null && recursivePlan == null) {
@@ -305,6 +333,30 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         }
         slotsChanged(craftSlots);
         broadcastChanges();
+    }
+
+    private CraftingInput craftingInput(RecipePlacement placement) {
+        List<ItemStack> grid = new ArrayList<>(RECIPE_SLOT_COUNT);
+        for (int index = 0; index < RECIPE_SLOT_COUNT; index++) {
+            grid.add(ItemStack.EMPTY);
+        }
+        for (PlannedSlot slot : placement.slots()) {
+            grid.set(slot.slot(), slot.stack());
+        }
+        return CraftingInput.of(3, 3, grid);
+    }
+
+    private int recursiveResultCount(CraftingRecipe recipe, ServerLevel level) {
+        List<RecursiveCraftingPlanner.AvailableResource> samples = recipeIngredients(recipe).stream()
+                .map(ingredient -> ingredient.ingredient().items()
+                        .findFirst()
+                        .map(item -> new RecursiveCraftingPlanner.AvailableResource(new ItemStack(item), 1))
+                        .orElse(null))
+                .filter(java.util.Objects::nonNull)
+                .toList();
+        return RecursiveCraftingPlanner.plan(level, recipe, samples, 1)
+                .map(plan -> recipe.assemble(RecursiveCraftingPlanner.input(plan.finalSlots())).getCount())
+                .orElse(1);
     }
 
     private void executeRecursivePlan(

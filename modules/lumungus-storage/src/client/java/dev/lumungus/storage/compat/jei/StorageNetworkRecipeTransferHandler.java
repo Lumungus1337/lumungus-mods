@@ -61,7 +61,7 @@ public final class StorageNetworkRecipeTransferHandler implements IRecipeTransfe
             ClientPlayNetworking.send(new TerminalCraftRecipePayload(
                     menu.containerId,
                     recipe.id().identifier(),
-                    maxTransfer
+                  menu.requestedCraftResultAmount()
             ));
         }
         return null;

@@ -48,6 +48,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -1400,6 +1401,81 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.assertValueEqual(controller.count(new ItemStack(Items.OAK_LOG)), 0L, "Consumed oak logs");
         context.assertValueEqual(controller.count(new ItemStack(Items.OAK_PLANKS)), 3L, "Surplus oak planks");
         context.assertValueEqual(controller.count(new ItemStack(Items.OAK_SLAB)), 4L, "Surplus oak slabs");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void craftingTerminalUsesRequestedResultAmountForJeiTransfer(GameTestHelper context) {
+        context.setBlock(FIRST_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        context.setBlock(CRAFTING_TERMINAL, LumungusStorageBlocks.CRAFTING_TERMINAL);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(DRIVE_BAY, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                FIRST_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        controller.insert(new ItemStack(Items.OAK_LOG, 3), TransferMode.EXECUTE);
+
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        BlockPos playerPos = context.absolutePos(new BlockPos(2, 2, 2));
+        player.setPos(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5);
+        BlockPos terminalPos = context.absolutePos(CRAFTING_TERMINAL);
+        LumungusCraftingMenu menu = new LumungusCraftingMenu(
+                4,
+                player.getInventory(),
+                ContainerLevelAccess.create(context.getLevel(), terminalPos),
+                terminalPos
+        );
+
+        menu.placeRecipeFromNetwork(Identifier.parse("minecraft:oak_planks"), 10);
+
+        context.assertValueEqual(
+                menu.getInputGridSlots().getFirst().getItem().getCount(),
+                3,
+                "Ten requested planks require three log crafts"
+        );
+        context.assertValueEqual(menu.getResultSlot().getItem().getCount(), 4, "Recipe batch output remains four planks");
+        context.succeed();
+    }
+
+    @GameTest(padding = 32)
+    public void craftingTerminalRecursivelyPreparesRequestedBarrelAmount(GameTestHelper context) {
+        context.setBlock(FIRST_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        context.setBlock(CRAFTING_TERMINAL, LumungusStorageBlocks.CRAFTING_TERMINAL);
+
+        DriveBayBlockEntity driveBay = context.getBlockEntity(DRIVE_BAY, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                FIRST_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        controller.insert(new ItemStack(Items.OAK_LOG, 4), TransferMode.EXECUTE);
+
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        BlockPos playerPos = context.absolutePos(new BlockPos(2, 2, 2));
+        player.setPos(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5);
+        BlockPos terminalPos = context.absolutePos(CRAFTING_TERMINAL);
+        LumungusCraftingMenu menu = new LumungusCraftingMenu(
+                5,
+                player.getInventory(),
+                ContainerLevelAccess.create(context.getLevel(), terminalPos),
+                terminalPos
+        );
+
+        menu.placeRecipeFromNetwork(Identifier.parse("minecraft:barrel"), 2);
+
+        context.assertTrue(menu.getResultSlot().getItem().is(Items.BARREL), "Recursive barrel result");
+        for (Slot slot : menu.getInputGridSlots()) {
+            if (!slot.getItem().isEmpty()) {
+                context.assertValueEqual(slot.getItem().getCount(), 2, "Two barrel ingredient sets");
+            }
+        }
+        context.assertValueEqual(controller.count(new ItemStack(Items.OAK_LOG)), 0L, "Consumed oak logs");
+        context.assertValueEqual(controller.count(new ItemStack(Items.OAK_PLANKS)), 1L, "Surplus oak plank");
+        context.assertValueEqual(controller.count(new ItemStack(Items.OAK_SLAB)), 2L, "Surplus oak slabs");
         context.succeed();
     }
 

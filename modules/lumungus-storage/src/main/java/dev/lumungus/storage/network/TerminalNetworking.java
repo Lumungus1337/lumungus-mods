@@ -31,7 +31,7 @@ public final class TerminalNetworking {
         ServerPlayNetworking.registerGlobalReceiver(TerminalCraftRecipePayload.TYPE, (payload, context) -> {
             if (context.player().containerMenu instanceof LumungusCraftingMenu menu
                     && menu.containerId == payload.containerId()) {
-                menu.placeRecipeFromNetwork(payload.recipeId(), payload.maxTransfer());
+                menu.placeRecipeFromNetwork(payload.recipeId(), payload.requestedResultAmount());
             }
         });
     }
