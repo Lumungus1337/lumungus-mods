@@ -3,6 +3,7 @@ package dev.lumungus.storage.client.screen;
 import dev.lumungus.core.api.resource.ResourceAmount;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
 import dev.lumungus.storage.network.TerminalActionPayload;
+import dev.lumungus.storage.network.TerminalCraftingPlanPayload;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -57,6 +58,17 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
     private static final int PLAYER_INV_Y = 147;
     private static final int PLAYER_INV_WIDTH = 168;
     private static final int PLAYER_INV_HEIGHT = 81;
+    private static final int PLAN_X = 34;
+    private static final int PLAN_Y = 20;
+    private static final int PLAN_WIDTH = 268;
+    private static final int PLAN_HEIGHT = 196;
+    private static final int PLAN_LIST_Y = 70;
+    private static final int PLAN_ROW_HEIGHT = 18;
+    private static final int PLAN_VISIBLE_ROWS = 6;
+    private static final int PLAN_BACK_X = 48;
+    private static final int PLAN_CRAFT_X = 172;
+    private static final int PLAN_BUTTON_Y = 188;
+    private static final int PLAN_BUTTON_WIDTH = 116;
 
     private static final int COLOR_FRAME = 0xFF222629;
     private static final int COLOR_SHELL = 0xFFD1D6D2;
@@ -81,6 +93,9 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
     private SortMode sortMode = SortMode.NAME;
     private boolean shulkerExtractMode;
     private int page;
+    private boolean craftingPlanOpen;
+    private int craftingPlanScroll;
+    private int seenCraftingPlanRevision;
 
     public LumungusCraftingTerminalScreen(
             LumungusCraftingMenu menu,
@@ -138,6 +153,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
 
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        syncCraftingPlan();
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
         int left = leftPos;
         int top = topPos;
@@ -201,10 +217,25 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         drawPageAndResources(graphics);
         graphics.text(font, compactStatus(), NETWORK_X, 132, COLOR_GREEN, false);
         graphics.text(font, compactTypeStatus(), NETWORK_X + 82, 132, COLOR_GREEN_DIM, false);
+        if (craftingPlanOpen) {
+            drawCraftingPlan(graphics, mouseX - leftPos, mouseY - topPos);
+        }
     }
 
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (craftingPlanOpen) {
+            TerminalCraftingPlanPayload.Stage stage = craftingPlanStageAt(mouseX, mouseY);
+            if (stage != null) {
+                graphics.setComponentTooltipForNextFrame(
+                        font,
+                        getTooltipFromContainerItem(stage.output()),
+                        mouseX,
+                        mouseY
+                );
+            }
+            return;
+        }
         super.extractTooltip(graphics, mouseX, mouseY);
         ResourceAmount hovered = resourceAt(mouseX, mouseY);
         if (hovered != null) {
@@ -248,6 +279,32 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         double mouseX = event.x();
         double mouseY = event.y();
+        if (craftingPlanOpen) {
+            if (isPointInside(
+                    mouseX,
+                    mouseY,
+                    leftPos + PLAN_BACK_X,
+                    topPos + PLAN_BUTTON_Y,
+                    PLAN_BUTTON_WIDTH,
+                    20
+            )) {
+                setCraftingPlanOpen(false);
+                return true;
+            }
+            if (isPointInside(
+                    mouseX,
+                    mouseY,
+                    leftPos + PLAN_CRAFT_X,
+                    topPos + PLAN_BUTTON_Y,
+                    PLAN_BUTTON_WIDTH,
+                    20
+            )) {
+                sendAction(TerminalActionPayload.Action.CRAFT_PREPARED, ItemStack.EMPTY);
+                setCraftingPlanOpen(false);
+                return true;
+            }
+            return true;
+        }
         if (craftAmountBox != null && craftAmountBox.isMouseOver(mouseX, mouseY)) {
             searchBox.setFocused(false);
             craftAmountBox.setFocused(true);
@@ -310,6 +367,12 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
 
     @Override
     public boolean keyPressed(KeyEvent event) {
+        if (craftingPlanOpen) {
+            if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
+                setCraftingPlanOpen(false);
+            }
+            return true;
+        }
         if (craftAmountBox != null && craftAmountBox.isFocused()) {
             if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
                 return super.keyPressed(event);
@@ -329,6 +392,9 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
 
     @Override
     public boolean charTyped(CharacterEvent event) {
+        if (craftingPlanOpen) {
+            return true;
+        }
         if (craftAmountBox != null && craftAmountBox.isFocused()) {
             craftAmountBox.charTyped(event);
             return true;
@@ -347,6 +413,16 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             double horizontalAmount,
             double verticalAmount
     ) {
+        if (craftingPlanOpen) {
+            TerminalCraftingPlanPayload plan = menu.clientCraftingPlan();
+            int maximum = plan == null ? 0 : Math.max(0, plan.stages().size() - PLAN_VISIBLE_ROWS);
+            if (verticalAmount < 0) {
+                craftingPlanScroll = Math.min(maximum, craftingPlanScroll + 1);
+            } else if (verticalAmount > 0) {
+                craftingPlanScroll = Math.max(0, craftingPlanScroll - 1);
+            }
+            return true;
+        }
         if (isPointInside(
                 mouseX,
                 mouseY,
@@ -364,6 +440,146 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    private void syncCraftingPlan() {
+        if (seenCraftingPlanRevision == menu.clientCraftingPlanRevision()) {
+            return;
+        }
+        seenCraftingPlanRevision = menu.clientCraftingPlanRevision();
+        craftingPlanScroll = 0;
+        setCraftingPlanOpen(menu.clientCraftingPlan() != null);
+    }
+
+    private void setCraftingPlanOpen(boolean open) {
+        craftingPlanOpen = open;
+        if (searchBox != null) {
+            searchBox.visible = !open;
+            searchBox.setFocused(!open);
+        }
+        if (craftAmountBox != null) {
+            craftAmountBox.visible = !open;
+            craftAmountBox.setFocused(false);
+        }
+    }
+
+    private void drawCraftingPlan(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        TerminalCraftingPlanPayload plan = menu.clientCraftingPlan();
+        if (plan == null) {
+            return;
+        }
+
+        graphics.fill(0, 0, imageWidth, imageHeight, 0xB0000000);
+        drawPanel(graphics, PLAN_X, PLAN_Y, PLAN_WIDTH, PLAN_HEIGHT, COLOR_PANEL);
+        graphics.text(
+                font,
+                Component.translatable("gui.lumungus_storage.crafting_plan.title"),
+                PLAN_X + 10,
+                PLAN_Y + 9,
+                COLOR_TEXT,
+                false
+        );
+        graphics.item(plan.result(), PLAN_X + 11, PLAN_Y + 27);
+        graphics.itemDecorations(font, plan.result(), PLAN_X + 11, PLAN_Y + 27, formatAmount(plan.resultAmount()));
+        String target = plan.resultAmount() + " x " + plan.result().getHoverName().getString();
+        graphics.text(font, fitText(target, PLAN_WIDTH - 48), PLAN_X + 34, PLAN_Y + 31, COLOR_TEXT, false);
+        graphics.text(
+                font,
+                Component.translatable("gui.lumungus_storage.crafting_plan.steps"),
+                PLAN_X + 10,
+                PLAN_Y + 51,
+                COLOR_TEXT_DIM,
+                false
+        );
+
+        int end = Math.min(plan.stages().size(), craftingPlanScroll + PLAN_VISIBLE_ROWS);
+        for (int index = craftingPlanScroll; index < end; index++) {
+            TerminalCraftingPlanPayload.Stage stage = plan.stages().get(index);
+            int row = index - craftingPlanScroll;
+            int y = PLAN_LIST_Y + row * PLAN_ROW_HEIGHT;
+            boolean hovered = isPointInside(mouseX, mouseY, PLAN_X + 8, y, PLAN_WIDTH - 16, 17);
+            graphics.fill(
+                    PLAN_X + 8,
+                    y,
+                    PLAN_X + PLAN_WIDTH - 8,
+                    y + 17,
+                    hovered ? 0xFFD9E2DA : COLOR_SHELL_LIGHT
+            );
+            graphics.item(stage.output(), PLAN_X + 10, y);
+            graphics.itemDecorations(font, stage.output(), PLAN_X + 10, y, formatAmount(stage.outputAmount()));
+            String text = stageInputs(stage) + "  >  " + stage.outputAmount() + " x "
+                    + stage.output().getHoverName().getString();
+            graphics.text(font, fitText(text, PLAN_WIDTH - 48), PLAN_X + 31, y + 4, COLOR_TEXT, false);
+        }
+        if (plan.stages().size() > PLAN_VISIBLE_ROWS) {
+            graphics.text(
+                    font,
+                    Component.literal((craftingPlanScroll + 1) + "-" + end + "/" + plan.stages().size()),
+                    PLAN_X + PLAN_WIDTH - 47,
+                    PLAN_Y + 53,
+                    COLOR_TEXT_DIM,
+                    false
+            );
+        }
+
+        drawPlanButton(graphics, PLAN_BACK_X, PLAN_BUTTON_Y, false);
+        drawPlanButton(graphics, PLAN_CRAFT_X, PLAN_BUTTON_Y, true);
+        graphics.centeredText(
+                font,
+                Component.translatable("gui.lumungus_storage.crafting_plan.back"),
+                PLAN_BACK_X + PLAN_BUTTON_WIDTH / 2,
+                PLAN_BUTTON_Y + 6,
+                COLOR_TEXT
+        );
+        graphics.centeredText(
+                font,
+                Component.translatable("gui.lumungus_storage.crafting_plan.craft"),
+                PLAN_CRAFT_X + PLAN_BUTTON_WIDTH / 2,
+                PLAN_BUTTON_Y + 6,
+                COLOR_SCREEN
+        );
+    }
+
+    private void drawPlanButton(GuiGraphicsExtractor graphics, int x, int y, boolean primary) {
+        graphics.fill(x, y, x + PLAN_BUTTON_WIDTH, y + 20, primary ? COLOR_GREEN : COLOR_SHELL_LIGHT);
+        graphics.outline(x, y, PLAN_BUTTON_WIDTH, 20, primary ? COLOR_GREEN_DARK : COLOR_TEXT_DIM);
+    }
+
+    private TerminalCraftingPlanPayload.Stage craftingPlanStageAt(double mouseX, double mouseY) {
+        TerminalCraftingPlanPayload plan = menu.clientCraftingPlan();
+        int relativeY = (int) mouseY - topPos - PLAN_LIST_Y;
+        if (plan == null
+                || relativeY < 0
+                || relativeY >= PLAN_VISIBLE_ROWS * PLAN_ROW_HEIGHT
+                || !isPointInside(mouseX, mouseY, leftPos + PLAN_X + 8, topPos + PLAN_LIST_Y, PLAN_WIDTH - 16,
+                PLAN_VISIBLE_ROWS * PLAN_ROW_HEIGHT)) {
+            return null;
+        }
+        int index = craftingPlanScroll + relativeY / PLAN_ROW_HEIGHT;
+        return index < plan.stages().size() ? plan.stages().get(index) : null;
+    }
+
+    private String stageInputs(TerminalCraftingPlanPayload.Stage stage) {
+        if (stage.inputs().isEmpty()) {
+            return "-";
+        }
+        StringBuilder inputs = new StringBuilder();
+        for (TerminalCraftingPlanPayload.Ingredient input : stage.inputs()) {
+            if (!inputs.isEmpty()) {
+                inputs.append(" + ");
+            }
+            inputs.append(input.amount())
+                    .append(" x ")
+                    .append(input.stack().getHoverName().getString());
+        }
+        return inputs.toString();
+    }
+
+    private String fitText(String text, int width) {
+        if (font.width(text) <= width) {
+            return text;
+        }
+        return font.plainSubstrByWidth(text, Math.max(0, width - font.width("..."))) + "...";
     }
 
     public static String lastSearchValueForTests() {

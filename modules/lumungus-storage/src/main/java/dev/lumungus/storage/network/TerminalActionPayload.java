@@ -60,6 +60,7 @@ public record TerminalActionPayload(int containerId, Action action, ItemStack te
         EXTRACT_SHULKER_TO_INVENTORY,
         DEPOSIT_CARRIED_STACK,
         DEPOSIT_ONE_CARRIED,
-        MOVE_PHYSICAL_TO_DRIVE_BAYS
+        MOVE_PHYSICAL_TO_DRIVE_BAYS,
+        CRAFT_PREPARED
     }
 }

@@ -1397,7 +1397,12 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
 
         menu.placeRecipeFromNetwork(Identifier.parse("minecraft:barrel"), false);
 
-        context.assertTrue(menu.getResultSlot().getItem().is(Items.BARREL), "Recursive barrel result");
+        context.assertTrue(menu.getResultSlot().getItem().isEmpty(), "Preview changed the crafting grid");
+        context.assertValueEqual(controller.count(new ItemStack(Items.OAK_LOG)), 3L, "Preview consumed oak logs");
+
+        menu.craftPendingRecipe();
+
+        context.assertValueEqual(player.getInventory().countItem(Items.BARREL), 1, "Crafted barrel count");
         context.assertValueEqual(controller.count(new ItemStack(Items.OAK_LOG)), 0L, "Consumed oak logs");
         context.assertValueEqual(controller.count(new ItemStack(Items.OAK_PLANKS)), 3L, "Surplus oak planks");
         context.assertValueEqual(controller.count(new ItemStack(Items.OAK_SLAB)), 4L, "Surplus oak slabs");
@@ -1431,12 +1436,17 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
 
         menu.placeRecipeFromNetwork(Identifier.parse("minecraft:oak_planks"), 10);
 
+        context.assertTrue(menu.getInputGridSlots().getFirst().getItem().isEmpty(), "Preview populated the grid");
+        context.assertValueEqual(controller.count(new ItemStack(Items.OAK_LOG)), 3L, "Preview consumed logs");
+
+        menu.craftPendingRecipe();
+
         context.assertValueEqual(
-                menu.getInputGridSlots().getFirst().getItem().getCount(),
-                3,
-                "Ten requested planks require three log crafts"
+                player.getInventory().countItem(Items.OAK_PLANKS),
+                12,
+                "Ten requested planks require three four-plank crafts"
         );
-        context.assertValueEqual(menu.getResultSlot().getItem().getCount(), 4, "Recipe batch output remains four planks");
+        context.assertTrue(menu.getResultSlot().getItem().isEmpty(), "Completed order left a crafting result");
         context.succeed();
     }
 
@@ -1467,12 +1477,12 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
 
         menu.placeRecipeFromNetwork(Identifier.parse("minecraft:barrel"), 2);
 
-        context.assertTrue(menu.getResultSlot().getItem().is(Items.BARREL), "Recursive barrel result");
-        for (Slot slot : menu.getInputGridSlots()) {
-            if (!slot.getItem().isEmpty()) {
-                context.assertValueEqual(slot.getItem().getCount(), 2, "Two barrel ingredient sets");
-            }
-        }
+        context.assertTrue(menu.getResultSlot().getItem().isEmpty(), "Preview changed the crafting result");
+        context.assertValueEqual(controller.count(new ItemStack(Items.OAK_LOG)), 4L, "Preview consumed oak logs");
+
+        menu.craftPendingRecipe();
+
+        context.assertValueEqual(player.getInventory().countItem(Items.BARREL), 2, "Crafted barrel count");
         context.assertValueEqual(controller.count(new ItemStack(Items.OAK_LOG)), 0L, "Consumed oak logs");
         context.assertValueEqual(controller.count(new ItemStack(Items.OAK_PLANKS)), 1L, "Surplus oak plank");
         context.assertValueEqual(controller.count(new ItemStack(Items.OAK_SLAB)), 2L, "Surplus oak slabs");

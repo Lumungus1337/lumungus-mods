@@ -5,6 +5,7 @@ import dev.lumungus.storage.client.screen.LumungusCraftingTerminalScreen;
 import dev.lumungus.storage.client.screen.WirelessModuleScreen;
 import dev.lumungus.storage.menu.DriveBayMenu;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
+import dev.lumungus.storage.network.TerminalCraftingPlanPayload;
 import dev.lumungus.storage.network.TerminalSnapshotPayload;
 import dev.lumungus.storage.registry.LumungusStorageMenus;
 import net.fabricmc.api.ClientModInitializer;
@@ -29,6 +30,11 @@ public final class LumungusStorageClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(TerminalSnapshotPayload.TYPE, (payload, context) -> {
             if (context.player().containerMenu instanceof LumungusCraftingMenu menu) {
                 menu.applySnapshot(payload);
+            }
+        });
+        ClientPlayNetworking.registerGlobalReceiver(TerminalCraftingPlanPayload.TYPE, (payload, context) -> {
+            if (context.player().containerMenu instanceof LumungusCraftingMenu menu) {
+                menu.applyCraftingPlan(payload);
             }
         });
     }

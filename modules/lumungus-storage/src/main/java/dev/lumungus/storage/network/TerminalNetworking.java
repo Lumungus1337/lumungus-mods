@@ -13,6 +13,10 @@ public final class TerminalNetworking {
                 TerminalSnapshotPayload.TYPE,
                 TerminalSnapshotPayload.STREAM_CODEC
         );
+        PayloadTypeRegistry.clientboundPlay().register(
+                TerminalCraftingPlanPayload.TYPE,
+                TerminalCraftingPlanPayload.STREAM_CODEC
+        );
         PayloadTypeRegistry.serverboundPlay().register(
                 TerminalActionPayload.TYPE,
                 TerminalActionPayload.STREAM_CODEC
