@@ -2,10 +2,12 @@ package dev.lumungus.storage.block;
 
 import com.mojang.serialization.MapCodec;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
+import dev.lumungus.storage.data.BoundStorageController;
 import dev.lumungus.storage.item.CopperWrenchItem;
 import dev.lumungus.storage.network.StorageControllerRegistry;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageItems;
+import dev.lumungus.storage.registry.LumungusStorageDataComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -125,6 +127,21 @@ public final class StorageControllerBlock extends BaseEntityBlock {
                 return InteractionResult.SUCCESS;
             }
             return CopperWrenchItem.dismantle(heldStack, level, pos, player);
+        }
+        if (heldStack.is(LumungusStorageItems.WIRELESS_NETWORK_MODULE)) {
+            if (!level.isClientSide()
+                    && level.getBlockEntity(pos) instanceof StorageControllerBlockEntity controller) {
+                heldStack.set(LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER, new BoundStorageController(
+                        level.dimension().identifier(),
+                        pos.immutable(),
+                        controller.getNetworkId()
+                ));
+                player.sendSystemMessage(Component.translatable(
+                        "message.lumungus_storage.wireless_module.primed",
+                        controller.getNetworkLabel()
+                ));
+            }
+            return InteractionResult.SUCCESS;
         }
 
         return useWithoutItem(state, level, pos, player, hit);

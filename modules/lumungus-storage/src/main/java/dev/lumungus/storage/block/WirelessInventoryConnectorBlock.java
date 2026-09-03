@@ -4,9 +4,11 @@ import com.mojang.serialization.MapCodec;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.block.entity.WirelessInventoryConnectorBlockEntity;
 import dev.lumungus.storage.item.CopperWrenchItem;
+import dev.lumungus.storage.menu.WirelessModuleMenuProvider;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.network.WirelessInventoryConnectorRegistry;
 import dev.lumungus.storage.registry.LumungusStorageItems;
+import dev.lumungus.storage.wireless.WirelessModuleInteractions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -128,6 +130,13 @@ public final class WirelessInventoryConnectorBlock extends BaseEntityBlock {
             }
             return CopperWrenchItem.dismantle(heldStack, level, pos, player);
         }
+        if (heldStack.is(LumungusStorageItems.WIRELESS_NETWORK_MODULE)) {
+            if (!level.isClientSide()
+                    && level.getBlockEntity(pos) instanceof WirelessInventoryConnectorBlockEntity connector) {
+                WirelessModuleInteractions.tryInstall(connector, heldStack, player);
+            }
+            return InteractionResult.SUCCESS;
+        }
         return useWithoutItem(state, level, pos, player, hit);
     }
 
@@ -142,6 +151,16 @@ public final class WirelessInventoryConnectorBlock extends BaseEntityBlock {
         if (!level.isClientSide()
                 && level.getBlockEntity(pos) instanceof WirelessInventoryConnectorBlockEntity connector) {
             WirelessInventoryConnectorRegistry.register(level, pos);
+            if (player.isSecondaryUseActive()) {
+                player.openMenu(new WirelessModuleMenuProvider(connector, connector));
+                return InteractionResult.SUCCESS;
+            }
+            if (connector.wirelessModule().isEmpty()) {
+                player.sendSystemMessage(Component.translatable(
+                        "message.lumungus_storage.wireless_module.missing"
+                ));
+                return InteractionResult.SUCCESS;
+            }
             boolean linked = connector.refreshControllerLink();
             boolean enabled = connector.toggleAutoSendToDriveBays();
             StorageControllerBlockEntity.BayMoveResult result = enabled

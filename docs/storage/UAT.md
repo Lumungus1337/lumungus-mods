@@ -4,13 +4,13 @@ Diese Checkliste definiert die Abnahmekriterien fuer den Release Candidate. Ein 
 
 ## Release Candidate
 
-- Version: `0.1.0-uat.49`
+- Version: `0.1.0-uat.50`
 - Minecraft: `26.2`
 - Fabric Loader: `0.19.5`
 - Fabric API: `0.158.0+26.2`
 - Optional fuer Rezepttransfer: JEI `30.28.0.193`
 - Build: `./gradlew clean build storageUatBundle`
-- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.49.zip`
+- Testpaket: `build/uat/lumungus-storage-0.1.0-uat.50.zip`
 - Abnahmestatus: `AUTOMATED_CLIENT_AND_SERVER_PASS`; Arbeitszyklen mit und ohne Filter, feste Funkmodul-Bindung, Autocrafter-Lagerzugriff und -Bedienmenue, gerichtete Arbeitsseiten, Redstone-Pause, Breaker-Schutz, Tooltips, feste Bindung tragbarer Storage Interfaces, Wireless Inventory Connectoren, Wireless-Reichweiten jenseits der Kurzdistanz, Terminal-Suchfeld-Hotkeys und Rohrpost-Sackgassen sind automatisiert geprueft, manueller Interaktions- und Multiplayer-UAT sind weiter offen
 
 Das Testpaket enthaelt `lumungus-core`, `lumungus-storage` und `lumungus-machines` als getrennte JARs im Ordner `mods/` sowie diese Checkliste. Fabric API und optional JEI werden separat installiert.
@@ -27,8 +27,8 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 | Netzwerk-Crafting | `PASS` | Ein Rezept nutzt einen Stamm aus dem Netzwerk und erzeugt vier Bretter. |
 | JEI-Transfer | `PASS` | Der Lumungus-Transferknopf befuellt das 3x3-Raster serverseitig aus dem Netzwerk. |
 | Automatisierte Logiktests | `PASS` | JUnit-Tests pruefen Cells, Ownership, Shift-Craft-Reste und Rezept-Backtracking. |
-| Server-GameTests | `PASS uat.49` | Alle 41 Storage-, 4 Machines- und 3 Integration-Tests bestanden; multidimensionale Bindungen funktionieren in beiden Dimensionsrichtungen. |
-| Client-GameTest | `PASS uat.49` | Storage- und Machines-Clientstart, Sprachressourcen und Oberflaechen bestanden. |
+| Server-GameTests | `PASS uat.50` | Alle 43 Storage-, 4 Machines- und 3 Integration-Tests bestanden; Kartenpflicht, Slot-Transfer und beide Dimensionsrichtungen sind geprueft. |
+| Client-GameTest | `PASS uat.50` | Storage- und Machines-Clientstart, Karten-Slot, Sprachressourcen und Oberflaechen bestanden. |
 | Rezepte und Werkzeug | `PASS` | Die Phase-1-Bloecke und Werkzeuge sind registriert, craftbar, per Spitzhacke abbaubar und im Schraubenschluessel-Tag enthalten. |
 
 ## Testaufbau
@@ -81,12 +81,12 @@ Am 30.08.2026 wurde vor UAT ein lokaler Creative-Smoke-Test durchgefuehrt. Diese
 - [ ] **UAT-16q Arbeitsbloecke:** Lager-Output exportiert Items in ein Nachbarinventar, Lager-Breaker baut gefilterte Bloecke in Arbeitsrichtung ab und lagert Drops ein, Lager-Placer setzt gefilterte Bloecke aus dem Lager in Arbeitsrichtung, und Wireless Storage Controller I verbindet sich mit einem Controller in kurzer Distanz.
 - [ ] **UAT-16r Tragbare Interfaces:** Tragbares Storage Interface I/II/III erscheinen im Kreativmenue, sind craftbar, koennen per Shift-Rechtsklick an einen Storage Controller gebunden werden und oeffnen per Rechtsklick das Storage Terminal innerhalb ihrer jeweiligen Reichweite.
 - [ ] **UAT-16r.1 Ungebundenes Interface:** Ein nicht gebundenes tragbares Interface bricht beim Rechtsklick sofort mit einer Bindungsmeldung ab und durchsucht weder Chunks noch die Umgebung nach einem Lager.
-- [ ] **UAT-16s Wireless Inventory Connectoren:** Wireless Inventaranschluss I/II/III erscheinen im Kreativmenue, sind craftbar, droppen beim Abbau, reagieren auf den Kupfer-Schraubenschluessel und verbinden entfernte Kisten/Faesser ueber einen erreichbaren Wireless Storage Controller mit dem Lager.
-- [ ] **UAT-16t Wireless-Reichweite:** Wireless Storage Controller und Wireless Inventaranschluesse der Stufe II verbinden geladene Gegenstellen in derselben Dimension auch ausserhalb der Kurzdistanz; Stufe III speichert Links mit Dimensions-ID fuer dimensionsuebergreifende Gegenstellen.
+- [ ] **UAT-16s Wireless Inventory Connectoren:** Wireless Inventaranschluss I/II/III erscheinen im Kreativmenue, sind craftbar, droppen beim Abbau, reagieren auf den Kupfer-Schraubenschluessel und verbinden entfernte Kisten/Faesser ueber ihre eingesetzte Netzwerkkarte mit dem Lager.
+- [ ] **UAT-16t Wireless-Reichweite:** Wireless Storage Controller und Wireless Inventaranschluesse der Stufe II erreichen das auf ihrer Karte gespeicherte Lager dimensionsweit; Stufe III erreicht es dimensionsuebergreifend.
 - [ ] **UAT-16u Gerichtete Arbeitsseiten:** Lager-Output exportiert nur zur sichtbaren Arbeitsseite, Lager-Breaker/Placer arbeiten nur in ihrer gesetzten Richtung, und Shift-Rechtsklick mit dem Kupfer-Schraubenschluessel richtet die Arbeitsseite neu aus.
 - [ ] **UAT-16v Arbeitsblock-Sicherheit:** Output, Breaker und Placer pausieren bei Redstone-Signal; der Breaker baut keine Lumungus-Storage-Geraete oder Rohrpostknoten ab.
 - [ ] **UAT-16w Bedienhilfen:** Storage-Bloecke, Wireless-Stufen, Arbeitsbloecke, Kupfer-Schraubenschluessel und tragbare Interfaces zeigen kurze Tooltips; Arbeitsblock-Statusmeldungen nennen Filter, Arbeitsrichtung, Redstone-Status und fehlende Controller.
-- [ ] **UAT-16x Funkmodule:** Ein Wireless-Netzwerkmodul wird per Rechtsklick auf den Wireless Storage Controller auf dessen Lager gepraegt. Das gepraegte Modul laesst sich in Output, Breaker, Placer und Autocrafter einsetzen; diese Bloecke behalten exakt dieses Lager auch ohne Rohrverbindung bei. Shift-Rechtsklick mit leerer Hand entnimmt das Modul, und beim Abbau wird es mit seiner Bindung gedroppt.
+- [ ] **UAT-16x Funkmodule:** Eine Wireless-Netzwerkkarte wird per Rechtsklick direkt am Storage Controller auf dessen Lager gepraegt. Die gepraegte Karte laesst sich in Wireless Storage Controller, Wireless Inventaranschluss, Output, Breaker, Placer und Autocrafter einsetzen; diese Bloecke behalten exakt dieses Lager. Schleichen + Rechtsklick oeffnet an den Wireless-Bloecken den sichtbaren Karten-Slot. Beim Abbau wird die Karte mit ihrer Bindung gedroppt; bestehende direkte Wireless-Bindungen werden beim Laden verlustfrei in Karten migriert.
 - [ ] **UAT-16y Autocrafter:** Ein Autocrafter mit gepraegtem Funkmodul findet fuer sein Ziel ein normales Crafting-Rezept, entnimmt die Zutaten aus dem gebundenen Lager und lagert Ergebnis sowie Rezeptreste wieder ein. Er stoppt an der Zielmenge und zeigt fehlendes Modul, Controller, Rezept, Zutaten oder Ausgabekapazitaet eindeutig an.
 - [ ] **UAT-16z Autocrafter-Menue:** Rechtsklick oeffnet ein aufgeraeumtes Menue mit 3x3-Rezeptvorschau, Ergebnis, Fortschritt, Zielmenge und Start/Pause. Serverwerte werden nach dem Oeffnen synchronisiert; Eingaben im Mengenfeld loesen keine globalen Spiel-Hotkeys aus.
 - [ ] **UAT-16aa Flexible Kupferrezepte:** Rezepte mit einem vollen Kupferblock akzeptieren normale, angelaufene, verwitterte und oxidierte Kupferbloecke sowie deren vier gewachste Varianten.

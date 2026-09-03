@@ -1,12 +1,16 @@
 package dev.lumungus.storage.block.entity;
 
 import dev.lumungus.storage.block.WirelessInventoryConnectorBlock;
+import dev.lumungus.storage.data.BoundStorageController;
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
 import dev.lumungus.storage.inventory.PhysicalInventoryEndpoint;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.network.WirelessInventoryConnectorRegistry;
-import dev.lumungus.storage.network.WirelessStorageControllerRegistry;
 import dev.lumungus.storage.registry.LumungusStorageBlockEntities;
+import dev.lumungus.storage.registry.LumungusStorageDataComponents;
+import dev.lumungus.storage.registry.LumungusStorageItems;
+import dev.lumungus.storage.wireless.WirelessModuleBinding;
+import dev.lumungus.storage.wireless.WirelessModuleHost;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -18,6 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -26,11 +31,12 @@ import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
+public final class WirelessInventoryConnectorBlockEntity extends BlockEntity implements WirelessModuleHost {
     private static final String CONTROLLER_DIMENSION_KEY = "controller_dimension";
     private static final String CONTROLLER_POS_KEY = "controller_pos";
     private static final String NETWORK_ID_KEY = "network_id";
     private static final String AUTO_SEND_KEY = "auto_send_to_drive_bays";
+    private static final String WIRELESS_MODULE_KEY = "wireless_module";
     private static final int AUTO_SEND_INTERVAL_TICKS = 20;
     private static final int AUTO_SEND_STACKS_PER_CYCLE = 64;
 
@@ -38,6 +44,7 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
     private BlockPos controllerPos;
     private UUID networkId;
     private boolean autoSendToDriveBays;
+    private ItemStack wirelessModule = ItemStack.EMPTY;
     private long autoSendAttempts;
     private int maintenanceCooldown;
 
@@ -92,18 +99,13 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
         if (level == null || level.isClientSide()) {
             return false;
         }
-        if (hasValidControllerLink()) {
-            return true;
-        }
-        if (hasStoredControllerLink() && !isStoredControllerChunkLoaded()) {
-            return false;
-        }
-
-        StorageControllerBlockEntity controller = findControllerViaWirelessController();
-        if (controller == null) {
-            if (!hasStoredControllerLink() || isStoredControllerChunkLoaded()) {
-                clearControllerLink();
-            }
+        StorageControllerBlockEntity controller = WirelessModuleBinding.resolve(level, wirelessModule);
+        if (controller == null || !tier().canReach(
+                controller.getLevel().dimension().identifier().equals(level.dimension().identifier()),
+                worldPosition,
+                controller.getBlockPos()
+        )) {
+            clearControllerLink();
             return false;
         }
         linkTo(controller);
@@ -147,47 +149,6 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
         return List.copyOf(endpoints);
     }
 
-    private StorageControllerBlockEntity findControllerViaWirelessController() {
-        WirelessInventoryConnectorBlock.WirelessConnectorTier tier = tier();
-        StorageControllerBlockEntity nearestController = null;
-        double nearestDistance = Double.MAX_VALUE;
-
-        for (BlockPos candidate : StorageNetworkTopology.connectedNodes(level, worldPosition)) {
-            if (level.getBlockEntity(candidate) instanceof WirelessStorageControllerBlockEntity wireless
-                    && tier.canReach(true, worldPosition, candidate)) {
-                StorageControllerBlockEntity controller = wireless.linkedController();
-                if (controller != null) {
-                    double distance = worldPosition.distSqr(wireless.getBlockPos());
-                    if (distance < nearestDistance) {
-                        nearestController = controller;
-                        nearestDistance = distance;
-                    }
-                }
-            }
-        }
-        if (nearestController != null) {
-            return nearestController;
-        }
-
-        if (level.getServer() == null) {
-            return null;
-        }
-        for (WirelessStorageControllerBlockEntity wireless : WirelessStorageControllerRegistry.loadedControllers(level.getServer())) {
-            boolean sameDimension = wireless.getLevel().dimension().identifier().equals(level.dimension().identifier());
-            if (tier.canReach(sameDimension, worldPosition, wireless.getBlockPos())) {
-                StorageControllerBlockEntity controller = wireless.linkedController();
-                if (controller != null) {
-                    double distance = sameDimension ? worldPosition.distSqr(wireless.getBlockPos()) : Double.MAX_VALUE - 1;
-                    if (distance < nearestDistance) {
-                        nearestController = controller;
-                        nearestDistance = distance;
-                    }
-                }
-            }
-        }
-        return nearestController;
-    }
-
     private WirelessInventoryConnectorBlock.WirelessConnectorTier tier() {
         return level == null
                 ? WirelessInventoryConnectorBlock.WirelessConnectorTier.SHORT_RANGE
@@ -201,31 +162,6 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
         }
         BlockPos connectedPos = ChestBlock.getConnectedBlockPos(inventoryPos, state);
         return inventoryPos.asLong() <= connectedPos.asLong() ? inventoryPos : connectedPos;
-    }
-
-    private boolean hasValidControllerLink() {
-        StorageControllerBlockEntity controller = linkedControllerBlockEntity();
-        return controllerDimension != null
-                && controllerPos != null
-                && networkId != null
-                && controller != null
-                && networkId.equals(controller.getNetworkId());
-    }
-
-    private boolean hasStoredControllerLink() {
-        return controllerDimension != null && controllerPos != null && networkId != null;
-    }
-
-    private boolean isStoredControllerChunkLoaded() {
-        if (level == null || level.getServer() == null || controllerDimension == null || controllerPos == null) {
-            return false;
-        }
-        for (net.minecraft.server.level.ServerLevel serverLevel : level.getServer().getAllLevels()) {
-            if (serverLevel.dimension().identifier().equals(controllerDimension)) {
-                return serverLevel.isLoaded(controllerPos);
-            }
-        }
-        return false;
     }
 
     private StorageControllerBlockEntity linkedControllerBlockEntity() {
@@ -273,12 +209,47 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
     }
 
     @Override
+    public ItemStack wirelessModule() {
+        return wirelessModule.copy();
+    }
+
+    @Override
+    public boolean installWirelessModule(ItemStack module) {
+        if (!wirelessModule.isEmpty() || !WirelessModuleBinding.isPrimedModule(module)) {
+            return false;
+        }
+        wirelessModule = module.copyWithCount(1);
+        clearControllerLink();
+        setChanged();
+        return true;
+    }
+
+    @Override
+    public ItemStack removeWirelessModule() {
+        ItemStack removed = wirelessModule;
+        wirelessModule = ItemStack.EMPTY;
+        clearControllerLink();
+        setChanged();
+        return removed;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null && !level.isClientSide()) {
+            dropWirelessModule(level, pos);
+        }
+        super.preRemoveSideEffects(pos, state);
+    }
+
+    @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         controllerDimension = input.read(CONTROLLER_DIMENSION_KEY, Identifier.CODEC).orElse(null);
         controllerPos = input.read(CONTROLLER_POS_KEY, BlockPos.CODEC).orElse(null);
         networkId = input.read(NETWORK_ID_KEY, UUIDUtil.CODEC).orElse(null);
         autoSendToDriveBays = input.read(AUTO_SEND_KEY, Codec.BOOL).orElse(false);
+        wirelessModule = input.read(WIRELESS_MODULE_KEY, ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
+        migrateLegacyBindingToModule();
     }
 
     @Override
@@ -288,5 +259,17 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
         output.storeNullable(CONTROLLER_POS_KEY, BlockPos.CODEC, controllerPos);
         output.storeNullable(NETWORK_ID_KEY, UUIDUtil.CODEC, networkId);
         output.store(AUTO_SEND_KEY, Codec.BOOL, autoSendToDriveBays);
+        output.store(WIRELESS_MODULE_KEY, ItemStack.OPTIONAL_CODEC, wirelessModule);
+    }
+
+    private void migrateLegacyBindingToModule() {
+        if (!wirelessModule.isEmpty() || controllerDimension == null || controllerPos == null || networkId == null) {
+            return;
+        }
+        wirelessModule = new ItemStack(LumungusStorageItems.WIRELESS_NETWORK_MODULE);
+        wirelessModule.set(
+                LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER,
+                new BoundStorageController(controllerDimension, controllerPos.immutable(), networkId)
+        );
     }
 }

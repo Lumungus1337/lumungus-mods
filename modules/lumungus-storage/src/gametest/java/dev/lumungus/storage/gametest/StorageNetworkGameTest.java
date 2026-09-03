@@ -24,6 +24,7 @@ import dev.lumungus.storage.data.BoundStorageController;
 import dev.lumungus.storage.inventory.FabricItemStorageAccess;
 import dev.lumungus.storage.menu.DriveBayMenu;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
+import dev.lumungus.storage.menu.WirelessModuleMenu;
 import dev.lumungus.storage.network.TerminalActionPayload;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageBlocks;
@@ -376,8 +377,67 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
                 wirelessPos,
                 WirelessStorageControllerBlockEntity.class
         );
+        context.assertTrue(wireless.installWirelessModule(primedModule(controller)), "Network card was rejected");
         context.assertTrue(wireless.linkedController() == controller, "Wireless controller did not link");
         context.assertValueEqual(wireless.linkedController().count(new ItemStack(Items.DIAMOND)), 12L, "Wireless storage count");
+        context.succeed();
+    }
+
+    @GameTest
+    public void wirelessBlocksRequireAPrimedNetworkCard(GameTestHelper context) {
+        context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        BlockPos wirelessPos = new BlockPos(3, 1, 18);
+        context.setBlock(wirelessPos, LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT);
+        WirelessStorageControllerBlockEntity wireless = context.getBlockEntity(
+                wirelessPos,
+                WirelessStorageControllerBlockEntity.class
+        );
+
+        context.assertTrue(!wireless.refreshControllerLink(), "Cardless wireless controller linked automatically");
+        context.assertTrue(
+                !wireless.installWirelessModule(new ItemStack(LumungusStorageItems.WIRELESS_NETWORK_MODULE)),
+                "Unprimed network card was accepted"
+        );
+        context.succeed();
+    }
+
+    @GameTest
+    public void wirelessModuleMenuShiftMovesPrimedCard(GameTestHelper context) {
+        context.setBlock(WORK_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        BlockPos wirelessPos = new BlockPos(3, 1, 18);
+        context.setBlock(wirelessPos, LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT);
+        StorageControllerBlockEntity controller = context.getBlockEntity(
+                WORK_CONTROLLER,
+                StorageControllerBlockEntity.class
+        );
+        WirelessStorageControllerBlockEntity wireless = context.getBlockEntity(
+                wirelessPos,
+                WirelessStorageControllerBlockEntity.class
+        );
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        player.getInventory().setItem(9, primedModule(controller));
+        WirelessModuleMenu menu = new WirelessModuleMenu(
+                7,
+                player.getInventory(),
+                wireless,
+                wireless
+        );
+
+        int playerCardSlot = -1;
+        for (int index = WirelessModuleMenu.PLAYER_INVENTORY_SLOT_START; index < menu.slots.size(); index++) {
+            if (menu.slots.get(index).hasItem()) {
+                playerCardSlot = index;
+                break;
+            }
+        }
+        context.assertTrue(playerCardSlot >= 0, "Player network card slot not found");
+        menu.quickMoveStack(player, playerCardSlot);
+        context.assertTrue(!wireless.wirelessModule().isEmpty(), "Shift-click did not install network card");
+        context.assertTrue(wireless.refreshControllerLink(), "Installed card did not resolve storage");
+
+        menu.quickMoveStack(player, WirelessModuleMenu.MODULE_SLOT);
+        context.assertTrue(wireless.wirelessModule().isEmpty(), "Shift-click did not remove network card");
+        context.assertTrue(!wireless.refreshControllerLink(), "Removed card left wireless controller linked");
         context.succeed();
     }
 
@@ -493,6 +553,8 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         ChestBlockEntity chest = context.getBlockEntity(chestPos, ChestBlockEntity.class);
         chest.setItem(0, new ItemStack(Items.EMERALD, 18));
 
+        context.assertTrue(wirelessController.installWirelessModule(primedModule(controller)), "Controller card rejected");
+        context.assertTrue(wirelessConnector.installWirelessModule(primedModule(controller)), "Connector card rejected");
         context.assertTrue(wirelessController.refreshControllerLink(), "Wireless controller did not link");
         context.assertTrue(wirelessConnector.refreshControllerLink(), "Wireless inventory connector did not link");
         context.assertValueEqual(wirelessConnector.endpoints().size(), 1, "Wireless inventory endpoints");
@@ -563,9 +625,12 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
                 wirelessConnectorPos,
                 WirelessInventoryConnectorBlockEntity.class
         );
+        StorageControllerBlockEntity controller = context.getBlockEntity(controllerPos, StorageControllerBlockEntity.class);
         ChestBlockEntity chest = context.getBlockEntity(chestPos, ChestBlockEntity.class);
         chest.setItem(0, new ItemStack(Items.AMETHYST_SHARD, 27));
 
+        context.assertTrue(wirelessController.installWirelessModule(primedModule(controller)), "Controller card rejected");
+        context.assertTrue(connector.installWirelessModule(primedModule(controller)), "Connector card rejected");
         context.assertTrue(wirelessController.refreshControllerLink(), "Wireless auto-send controller did not link");
         context.assertTrue(connector.refreshControllerLink(), "Wireless auto-send connector did not link");
         context.assertTrue(!connector.autoSendToDriveBays(), "Wireless auto-send was enabled by default");
@@ -626,13 +691,7 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         WirelessStorageControllerBlockEntity wireless = (WirelessStorageControllerBlockEntity) nether.getBlockEntity(
                 wirelessPos
         );
-        BoundStorageController bound = new BoundStorageController(
-                context.getLevel().dimension().identifier(),
-                context.absolutePos(controllerPos),
-                controller.getNetworkId()
-        );
-
-        context.assertTrue(wireless.bindTo(bound), "Nether wireless controller rejected multidimensional binding");
+        context.assertTrue(wireless.installWirelessModule(primedModule(controller)), "Nether controller rejected network card");
         context.assertTrue(wireless.linkedController() == controller, "Nether wireless controller did not resolve Overworld storage");
         nether.setBlockAndUpdate(wirelessPos, Blocks.AIR.defaultBlockState());
         context.succeed();
@@ -658,13 +717,8 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
                 wirelessPos,
                 WirelessStorageControllerBlockEntity.class
         );
-        BoundStorageController bound = new BoundStorageController(
-                nether.dimension().identifier(),
-                controllerPos,
-                controller.getNetworkId()
-        );
-
-        context.assertTrue(wireless.bindTo(bound), "Overworld wireless controller rejected Nether binding");
+        context.assertTrue(wireless.installWirelessModule(primedModule(controller)), "Overworld controller rejected network card");
+        context.assertTrue(wireless.refreshControllerLink(), "Overworld wireless controller did not resolve its card");
         context.assertTrue(
                 wireless.linkedController() == controller,
                 "Overworld wireless controller did not resolve Nether storage"
@@ -699,6 +753,8 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         ChestBlockEntity chest = context.getBlockEntity(chestPos, ChestBlockEntity.class);
         chest.setItem(0, new ItemStack(Items.AMETHYST_SHARD, 27));
 
+        context.assertTrue(wirelessController.installWirelessModule(primedModule(controller)), "Controller card rejected");
+        context.assertTrue(wirelessConnector.installWirelessModule(primedModule(controller)), "Connector card rejected");
         context.assertTrue(wirelessController.refreshControllerLink(), "Dimension wireless controller did not link");
         context.assertTrue(wirelessConnector.refreshControllerLink(), "Dimension wireless connector did not link");
         context.assertValueEqual(controller.count(new ItemStack(Items.AMETHYST_SHARD)), 27L, "Dimension wireless inventory count");
@@ -1419,5 +1475,15 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     @Override
     public void invokeTestMethod(GameTestHelper context, Method method) throws ReflectiveOperationException {
         method.invoke(this, context);
+    }
+
+    private static ItemStack primedModule(StorageControllerBlockEntity controller) {
+        ItemStack module = new ItemStack(LumungusStorageItems.WIRELESS_NETWORK_MODULE);
+        module.set(LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER, new BoundStorageController(
+                controller.getLevel().dimension().identifier(),
+                controller.getBlockPos().immutable(),
+                controller.getNetworkId()
+        ));
+        return module;
     }
 }

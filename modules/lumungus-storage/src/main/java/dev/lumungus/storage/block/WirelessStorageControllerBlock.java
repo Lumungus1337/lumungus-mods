@@ -3,12 +3,12 @@ package dev.lumungus.storage.block;
 import com.mojang.serialization.MapCodec;
 import dev.lumungus.storage.block.entity.StorageControllerBlockEntity;
 import dev.lumungus.storage.block.entity.WirelessStorageControllerBlockEntity;
-import dev.lumungus.storage.data.BoundStorageController;
 import dev.lumungus.storage.item.CopperWrenchItem;
+import dev.lumungus.storage.menu.WirelessModuleMenuProvider;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.network.WirelessStorageControllerRegistry;
-import dev.lumungus.storage.registry.LumungusStorageDataComponents;
 import dev.lumungus.storage.registry.LumungusStorageItems;
+import dev.lumungus.storage.wireless.WirelessModuleInteractions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -132,31 +132,7 @@ public final class WirelessStorageControllerBlock extends BaseEntityBlock {
         }
         if (heldStack.is(LumungusStorageItems.WIRELESS_NETWORK_MODULE)) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof WirelessStorageControllerBlockEntity wireless) {
-                StorageControllerBlockEntity controller = wireless.linkedController();
-                BoundStorageController bound = heldStack.get(
-                        LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER
-                );
-                if (controller == null && bound != null && wireless.bindTo(bound)) {
-                    player.sendSystemMessage(Component.translatable(
-                            "message.lumungus_storage.wireless_controller.bound_from_module",
-                            tier.label(),
-                            bound.networkId().toString().substring(0, 8).toUpperCase()
-                    ));
-                } else if (controller == null) {
-                    player.sendSystemMessage(Component.translatable(
-                            "message.lumungus_storage.wireless_module.controller_unlinked"
-                    ));
-                } else {
-                    heldStack.set(LumungusStorageDataComponents.BOUND_STORAGE_CONTROLLER, new BoundStorageController(
-                            controller.getLevel().dimension().identifier(),
-                            controller.getBlockPos().immutable(),
-                            controller.getNetworkId()
-                    ));
-                    player.sendSystemMessage(Component.translatable(
-                            "message.lumungus_storage.wireless_module.primed",
-                            controller.getNetworkLabel()
-                    ));
-                }
+                WirelessModuleInteractions.tryInstall(wireless, heldStack, player);
             }
             return InteractionResult.SUCCESS;
         }
@@ -174,6 +150,16 @@ public final class WirelessStorageControllerBlock extends BaseEntityBlock {
         if (!level.isClientSide()) {
             if (level.getBlockEntity(pos) instanceof WirelessStorageControllerBlockEntity wireless) {
                 WirelessStorageControllerRegistry.register(level, pos);
+                if (player.isSecondaryUseActive()) {
+                    player.openMenu(new WirelessModuleMenuProvider(wireless, wireless));
+                    return InteractionResult.SUCCESS;
+                }
+                if (wireless.wirelessModule().isEmpty()) {
+                    player.sendSystemMessage(Component.translatable(
+                            "message.lumungus_storage.wireless_module.missing"
+                    ));
+                    return InteractionResult.SUCCESS;
+                }
                 StorageControllerBlockEntity controller = wireless.linkedController();
                 player.sendSystemMessage(Component.translatable(controller == null
                         ? "message.lumungus_storage.wireless_controller.unlinked"

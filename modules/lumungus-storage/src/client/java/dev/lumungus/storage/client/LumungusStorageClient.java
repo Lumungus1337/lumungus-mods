@@ -2,6 +2,7 @@ package dev.lumungus.storage.client;
 
 import dev.lumungus.storage.client.screen.DriveBayScreen;
 import dev.lumungus.storage.client.screen.LumungusCraftingTerminalScreen;
+import dev.lumungus.storage.client.screen.WirelessModuleScreen;
 import dev.lumungus.storage.menu.DriveBayMenu;
 import dev.lumungus.storage.menu.LumungusCraftingMenu;
 import dev.lumungus.storage.network.TerminalSnapshotPayload;
@@ -20,6 +21,10 @@ public final class LumungusStorageClient implements ClientModInitializer {
         MenuScreens.register(
                 LumungusStorageMenus.DRIVE_BAY,
                 DriveBayScreen::new
+        );
+        MenuScreens.register(
+                LumungusStorageMenus.WIRELESS_MODULE,
+                WirelessModuleScreen::new
         );
         ClientPlayNetworking.registerGlobalReceiver(TerminalSnapshotPayload.TYPE, (payload, context) -> {
             if (context.player().containerMenu instanceof LumungusCraftingMenu menu) {
