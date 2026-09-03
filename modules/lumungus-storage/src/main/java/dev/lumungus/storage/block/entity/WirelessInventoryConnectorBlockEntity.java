@@ -236,6 +236,10 @@ public final class WirelessInventoryConnectorBlockEntity extends BlockEntity {
             if (!serverLevel.dimension().identifier().equals(controllerDimension)) {
                 continue;
             }
+            if (!serverLevel.isLoaded(controllerPos)
+                    && tier() == WirelessInventoryConnectorBlock.WirelessConnectorTier.MULTIDIMENSIONAL) {
+                serverLevel.getChunkAt(controllerPos);
+            }
             if (serverLevel.isLoaded(controllerPos)
                     && serverLevel.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller) {
                 return controller;

@@ -131,15 +131,18 @@ public final class PortableStorageInterfaceItem extends Item {
                 continue;
             }
             ServerLevel targetLevel = server.getLevel(levelKey);
-            if (targetLevel == null || !targetLevel.isLoaded(bound.pos())) {
-                return null;
-            }
-            if (!(targetLevel.getBlockEntity(bound.pos()) instanceof StorageControllerBlockEntity controller)
-                    || !controller.getNetworkId().equals(bound.networkId())) {
+            if (targetLevel == null) {
                 return null;
             }
             boolean sameDimension = player.level().dimension().identifier().equals(bound.dimension());
             if (!tier.canReach(sameDimension, player.blockPosition(), bound.pos())) {
+                return null;
+            }
+            if (!targetLevel.isLoaded(bound.pos())) {
+                targetLevel.getChunkAt(bound.pos());
+            }
+            if (!(targetLevel.getBlockEntity(bound.pos()) instanceof StorageControllerBlockEntity controller)
+                    || !controller.getNetworkId().equals(bound.networkId())) {
                 return null;
             }
             return controller;

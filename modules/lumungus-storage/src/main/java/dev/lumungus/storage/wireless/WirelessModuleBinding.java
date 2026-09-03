@@ -26,8 +26,10 @@ public final class WirelessModuleBinding {
             if (!serverLevel.dimension().identifier().equals(bound.dimension())) {
                 continue;
             }
-            if (serverLevel.isLoaded(bound.pos())
-                    && serverLevel.getBlockEntity(bound.pos()) instanceof StorageControllerBlockEntity controller
+            if (!serverLevel.isLoaded(bound.pos())) {
+                serverLevel.getChunkAt(bound.pos());
+            }
+            if (serverLevel.getBlockEntity(bound.pos()) instanceof StorageControllerBlockEntity controller
                     && controller.getNetworkId().equals(bound.networkId())) {
                 return controller;
             }

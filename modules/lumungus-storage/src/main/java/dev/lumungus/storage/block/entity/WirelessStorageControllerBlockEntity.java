@@ -188,6 +188,10 @@ public final class WirelessStorageControllerBlockEntity extends BlockEntity impl
             if (!serverLevel.dimension().identifier().equals(controllerDimension)) {
                 continue;
             }
+            if (!serverLevel.isLoaded(controllerPos)
+                    && tier() == WirelessStorageControllerBlock.WirelessTier.MULTIDIMENSIONAL) {
+                serverLevel.getChunkAt(controllerPos);
+            }
             if (serverLevel.isLoaded(controllerPos)
                     && serverLevel.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity controller) {
                 return controller;

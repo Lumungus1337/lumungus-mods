@@ -638,6 +638,41 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
+    @GameTest
+    public void multidimensionalWirelessControllerUsesBoundNetherStorageFromOverworld(GameTestHelper context) {
+        ServerLevel nether = context.getLevel().getServer().getLevel(Level.NETHER);
+        context.assertTrue(nether != null, "Nether level was unavailable");
+        BlockPos testOrigin = context.absolutePos(new BlockPos(1, 1, 1));
+        BlockPos controllerPos = new BlockPos(testOrigin.getX(), 64, testOrigin.getZ());
+        nether.getChunkAt(controllerPos);
+        nether.setBlockAndUpdate(controllerPos, LumungusStorageBlocks.STORAGE_CONTROLLER.defaultBlockState());
+        context.assertTrue(
+                nether.getBlockEntity(controllerPos) instanceof StorageControllerBlockEntity,
+                "Nether storage controller block entity was unavailable"
+        );
+        StorageControllerBlockEntity controller = (StorageControllerBlockEntity) nether.getBlockEntity(controllerPos);
+
+        BlockPos wirelessPos = new BlockPos(3, 1, 1);
+        context.setBlock(wirelessPos, LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL);
+        WirelessStorageControllerBlockEntity wireless = context.getBlockEntity(
+                wirelessPos,
+                WirelessStorageControllerBlockEntity.class
+        );
+        BoundStorageController bound = new BoundStorageController(
+                nether.dimension().identifier(),
+                controllerPos,
+                controller.getNetworkId()
+        );
+
+        context.assertTrue(wireless.bindTo(bound), "Overworld wireless controller rejected Nether binding");
+        context.assertTrue(
+                wireless.linkedController() == controller,
+                "Overworld wireless controller did not resolve Nether storage"
+        );
+        nether.setBlockAndUpdate(controllerPos, Blocks.AIR.defaultBlockState());
+        context.succeed();
+    }
+
     @GameTest(padding = 128)
     public void dimensionWirelessInventoryConnectorIgnoresShortRangeLimit(GameTestHelper context) {
         BlockPos controllerPos = new BlockPos(1, 1, 64);

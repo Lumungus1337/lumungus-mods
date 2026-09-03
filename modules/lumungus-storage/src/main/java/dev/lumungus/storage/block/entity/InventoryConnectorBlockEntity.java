@@ -32,15 +32,22 @@ public final class InventoryConnectorBlockEntity extends BlockEntity {
     private BlockPos controllerPos;
     private UUID networkId;
     private boolean autoSendToDriveBays;
+    private int autoSendCooldown;
 
     public InventoryConnectorBlockEntity(BlockPos pos, BlockState state) {
         super(LumungusStorageBlockEntities.INVENTORY_CONNECTOR, pos, state);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, InventoryConnectorBlockEntity connector) {
-        if (connector.autoSendToDriveBays && level.getGameTime() % AUTO_SEND_INTERVAL_TICKS == 0) {
-            connector.sendToDriveBays();
+        if (!connector.autoSendToDriveBays) {
+            return;
         }
+        if (connector.autoSendCooldown > 0) {
+            connector.autoSendCooldown--;
+            return;
+        }
+        connector.autoSendCooldown = AUTO_SEND_INTERVAL_TICKS - 1;
+        connector.sendToDriveBays();
     }
 
     public boolean autoSendToDriveBays() {
@@ -49,6 +56,10 @@ public final class InventoryConnectorBlockEntity extends BlockEntity {
 
     public boolean toggleAutoSendToDriveBays() {
         autoSendToDriveBays = !autoSendToDriveBays;
+        if (autoSendToDriveBays && level != null && !level.isClientSide()) {
+            autoSendCooldown = AUTO_SEND_INTERVAL_TICKS - 1;
+            sendToDriveBays();
+        }
         setChanged();
         return autoSendToDriveBays;
     }
