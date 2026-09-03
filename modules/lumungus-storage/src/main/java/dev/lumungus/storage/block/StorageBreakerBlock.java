@@ -50,7 +50,10 @@ public final class StorageBreakerBlock extends BaseEntityBlock {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite());
+        return defaultBlockState().setValue(
+                FACING,
+                WorkBlockFacing.towardPlacementSupport(context.getClickedFace())
+        );
     }
 
     @Override
@@ -112,15 +115,7 @@ public final class StorageBreakerBlock extends BaseEntityBlock {
     ) {
         if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
             if (player.isSecondaryUseActive()) {
-                if (!level.isClientSide()) {
-                    Direction nextFacing = WorkBlockFacing.next(state.getValue(FACING));
-                    level.setBlock(pos, state.setValue(FACING, nextFacing), 3);
-                    player.sendSystemMessage(Component.translatable(
-                            "message.lumungus_storage.work_block.facing",
-                            Component.translatable("direction.minecraft." + nextFacing.getName())
-                    ));
-                }
-                return InteractionResult.SUCCESS;
+                return rotateWithWrench(state, level, pos, player);
             }
             return CopperWrenchItem.dismantle(heldStack, level, pos, player);
         }
@@ -136,6 +131,25 @@ public final class StorageBreakerBlock extends BaseEntityBlock {
                     "message.lumungus_storage.breaker.filter_set",
                     heldStack.getHoverName()
             ));
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    public static InteractionResult rotateWithWrench(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player
+    ) {
+        if (!level.isClientSide()) {
+            Direction nextFacing = WorkBlockFacing.next(state.getValue(FACING));
+            level.setBlock(pos, state.setValue(FACING, nextFacing), 3);
+            if (player != null) {
+                player.sendSystemMessage(Component.translatable(
+                        "message.lumungus_storage.work_block.facing",
+                        Component.translatable("direction.minecraft." + nextFacing.getName())
+                ));
+            }
         }
         return InteractionResult.SUCCESS;
     }

@@ -1,5 +1,6 @@
 package dev.lumungus.storage.item;
 
+import dev.lumungus.storage.block.StorageBreakerBlock;
 import dev.lumungus.storage.registry.LumungusStorageTags;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -25,6 +26,15 @@ public final class CopperWrenchItem extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
+        BlockState state = context.getLevel().getBlockState(context.getClickedPos());
+        if (context.isSecondaryUseActive() && state.getBlock() instanceof StorageBreakerBlock) {
+            return StorageBreakerBlock.rotateWithWrench(
+                    state,
+                    context.getLevel(),
+                    context.getClickedPos(),
+                    context.getPlayer()
+            );
+        }
         return dismantle(
                 context.getItemInHand(),
                 context.getLevel(),

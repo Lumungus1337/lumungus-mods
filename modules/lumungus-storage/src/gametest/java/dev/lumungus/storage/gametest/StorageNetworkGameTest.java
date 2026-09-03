@@ -47,17 +47,21 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     private static final BlockPos FIRST_CONTROLLER = new BlockPos(1, 1, 1);
@@ -77,6 +81,31 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
     private static final BlockPos DISTANT_TERMINAL = new BlockPos(10, 1, 10);
     private static final BlockPos WORK_CONTROLLER = new BlockPos(1, 1, 18);
     private static final BlockPos WORK_DRIVE_BAY = new BlockPos(2, 1, 18);
+
+    @GameTest
+    public void sneakingWrenchRotatesBreakerInsteadOfDismantling(GameTestHelper context) {
+        BlockPos breakerPos = new BlockPos(1, 1, 1);
+        context.setBlock(
+                breakerPos,
+                LumungusStorageBlocks.STORAGE_BREAKER.defaultBlockState()
+                        .setValue(StorageBreakerBlock.FACING, Direction.DOWN)
+        );
+
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(LumungusStorageItems.COPPER_WRENCH));
+        player.setShiftKeyDown(true);
+        BlockPos absolutePos = context.absolutePos(breakerPos);
+        LumungusStorageItems.COPPER_WRENCH.useOn(new UseOnContext(
+                player,
+                InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(absolutePos), Direction.UP, absolutePos, false)
+        ));
+
+        BlockState result = context.getBlockState(breakerPos);
+        context.assertTrue(result.is(LumungusStorageBlocks.STORAGE_BREAKER), "Sneaking wrench removed the breaker");
+        context.assertValueEqual(result.getValue(StorageBreakerBlock.FACING), Direction.NORTH, "Breaker facing");
+        context.succeed();
+    }
 
     @GameTest(padding = 32)
     public void inventoryTrimConnectsTouchingChestsWithoutSeparateConnectors(GameTestHelper context) {

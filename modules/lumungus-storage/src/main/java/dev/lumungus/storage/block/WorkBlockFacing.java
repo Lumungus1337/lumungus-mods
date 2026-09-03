@@ -16,4 +16,8 @@ public final class WorkBlockFacing {
             case UP -> Direction.DOWN;
         };
     }
+
+    public static Direction towardPlacementSupport(Direction clickedFace) {
+        return clickedFace.getOpposite();
+    }
 }
