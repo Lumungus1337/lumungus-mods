@@ -3,6 +3,7 @@ package dev.lumungus.storage.block;
 import com.mojang.serialization.MapCodec;
 import dev.lumungus.storage.block.entity.StoragePlacerBlockEntity;
 import dev.lumungus.storage.item.CopperWrenchItem;
+import dev.lumungus.storage.menu.WirelessModuleMenuProvider;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import dev.lumungus.storage.wireless.WirelessModuleInteractions;
@@ -13,6 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
@@ -130,6 +132,14 @@ public final class StoragePlacerBlock extends BaseEntityBlock {
             }
             return InteractionResult.SUCCESS;
         }
+        if (!(heldStack.getItem() instanceof BlockItem)) {
+            if (!level.isClientSide()) {
+                player.sendSystemMessage(Component.translatable(
+                        "message.lumungus_storage.work_block.block_filter_required"
+                ));
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StoragePlacerBlockEntity placer) {
             placer.setFilter(heldStack);
             player.sendSystemMessage(Component.translatable(
@@ -150,7 +160,8 @@ public final class StoragePlacerBlock extends BaseEntityBlock {
     ) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StoragePlacerBlockEntity placer) {
             if (player.isSecondaryUseActive()) {
-                if (WirelessModuleInteractions.tryRemove(placer, player)) {
+                if (!placer.wirelessModule().isEmpty() || placer.filter().isEmpty()) {
+                    player.openMenu(new WirelessModuleMenuProvider(placer, placer));
                     return InteractionResult.SUCCESS;
                 }
                 placer.clearFilter();

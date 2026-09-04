@@ -3,6 +3,7 @@ package dev.lumungus.storage.block;
 import com.mojang.serialization.MapCodec;
 import dev.lumungus.storage.block.entity.StorageOutputBlockEntity;
 import dev.lumungus.storage.item.CopperWrenchItem;
+import dev.lumungus.storage.menu.WirelessModuleMenuProvider;
 import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageItems;
 import dev.lumungus.storage.wireless.WirelessModuleInteractions;
@@ -150,7 +151,8 @@ public final class StorageOutputBlock extends BaseEntityBlock {
     ) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StorageOutputBlockEntity output) {
             if (player.isSecondaryUseActive()) {
-                if (WirelessModuleInteractions.tryRemove(output, player)) {
+                if (!output.wirelessModule().isEmpty() || output.filter().isEmpty()) {
+                    player.openMenu(new WirelessModuleMenuProvider(output, output));
                     return InteractionResult.SUCCESS;
                 }
                 output.clearFilter();
@@ -161,6 +163,10 @@ public final class StorageOutputBlock extends BaseEntityBlock {
             boolean linked = output.refreshControllerLink();
             ItemStack filter = output.filter();
             Direction facing = state.getValue(FACING);
+            BlockState targetState = level.getBlockState(pos.relative(facing));
+            Component target = targetState.isAir()
+                    ? Component.translatable("message.lumungus_storage.work_block.target_air")
+                    : targetState.getBlock().getName();
             Component status = WorkBlockStatus.describe(level, pos, facing.getOpposite(), linked);
             player.sendSystemMessage(Component.translatable(
                     filter.isEmpty()
@@ -168,7 +174,8 @@ public final class StorageOutputBlock extends BaseEntityBlock {
                             : "message.lumungus_storage.output.active_filtered",
                     filter.getHoverName(),
                     WorkBlockFacing.displayName(facing),
-                    status
+                    status,
+                    target
             ));
         }
         return InteractionResult.SUCCESS;

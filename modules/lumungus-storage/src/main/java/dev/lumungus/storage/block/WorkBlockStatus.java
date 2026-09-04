@@ -11,7 +11,10 @@ public final class WorkBlockStatus {
 
     public static Component describe(Level level, BlockPos pos, Direction controlSide, boolean linked) {
         if (WorkBlockPower.isPaused(level, pos, controlSide)) {
-            return Component.translatable("message.lumungus_storage.work_block.paused");
+            return Component.translatable(
+                    "message.lumungus_storage.work_block.paused",
+                    WorkBlockFacing.displayName(controlSide)
+            );
         }
         return Component.translatable(linked
                 ? "message.lumungus_storage.work_block.running"
