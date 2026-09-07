@@ -3,7 +3,9 @@ package dev.lumungus.storage.menu;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.server.level.ServerLevel;
@@ -22,6 +24,7 @@ final class RecursiveCraftingPlanner {
 
     private final ServerLevel level;
     private final List<RecipeHolder<CraftingRecipe>> recipes;
+    private final Map<CraftingRecipe, ItemStack> representativeResults = new IdentityHashMap<>();
 
     private RecursiveCraftingPlanner(ServerLevel level) {
         this.level = level;
@@ -53,6 +56,51 @@ final class RecursiveCraftingPlanner {
         }
         return Optional.of(new Plan(List.copyOf(state.steps), List.copyOf(finalSlots)));
     }
+
+    /** Plans separate recipe executions; no ingredient stack represents more than one craft. */
+    static Optional<OrderPlan> planOrder(
+            ServerLevel level, CraftingRecipe recipe, List<AvailableResource> available, int crafts
+    ) {
+        if (crafts < 1 || crafts > LumungusCraftingMenu.MAX_REQUESTED_RESULT_AMOUNT) {
+            return Optional.empty();
+        }
+        RecursiveCraftingPlanner planner = new RecursiveCraftingPlanner(level);
+        State state = new State(available);
+        List<OrderStep> steps = new ArrayList<>();
+        ItemStack result = ItemStack.EMPTY;
+        long amount = 0;
+        for (int craft = 0; craft < crafts; craft++) {
+            state.steps.clear();
+            List<SelectedSlot> selected = new ArrayList<>();
+            if (!planner.acquireRecipeIngredients(recipe, state, selected, 0, new HashSet<>())) {
+                return Optional.empty();
+            }
+            CraftingInput input = input(selected);
+            if (!recipe.matches(input, level)) {
+                return Optional.empty();
+            }
+            ItemStack output = recipe.assemble(input);
+            if (output.isEmpty() || (!result.isEmpty()
+                    && !ItemStack.isSameItemSameComponents(result, output))) {
+                return Optional.empty();
+            }
+            result = output.copyWithCount(1);
+            amount += output.getCount();
+            state.steps.forEach(step -> steps.add(new OrderStep(step, false)));
+            steps.add(new OrderStep(new CraftStep(recipe, List.copyOf(selected)), true));
+            // Keep reusable containers and surplus intermediates available to the next craft.
+            recipe.getRemainingItems(input).stream().filter(stack -> !stack.isEmpty())
+                    .forEach(stack -> state.pool.add(stack, stack.getCount()));
+            if (steps.size() > 16384) {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(new OrderPlan(List.copyOf(steps), result, amount));
+    }
+
+    record OrderPlan(List<OrderStep> steps, ItemStack result, long amount) { }
+
+    record OrderStep(CraftStep craft, boolean finalOutput) { }
 
     private static boolean mergeFinalSlots(List<SelectedSlot> combined, List<SelectedSlot> addition) {
         for (SelectedSlot added : addition) {
@@ -111,7 +159,7 @@ final class RecursiveCraftingPlanner {
             if (recipePath.contains(holder.id().toString())) {
                 continue;
             }
-            ItemStack representative = representativeResult(holder.value());
+            ItemStack representative = representativeResults.computeIfAbsent(holder.value(), this::representativeResult);
             if (representative.isEmpty() || !ingredient.test(representative)) {
                 continue;
             }

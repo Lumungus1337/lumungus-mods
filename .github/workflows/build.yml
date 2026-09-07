@@ -24,4 +24,29 @@ jobs:
       - name: Verify modules and server game tests
         run: |
           chmod +x gradlew
-          ./gradlew :lumungus-storage:test :lumungus-storage:runGameTest :lumungus-machines:runGameTest :lumungus-integration:runGameTest
+          ./gradlew clean build :lumungus-storage:runGameTest :lumungus-machines:runGameTest :lumungus-integration:runGameTest
+
+      - name: Package installable Lumungus update
+        id: package
+        shell: bash
+        run: |
+          version=$(sed -n 's/^mod_version=//p' gradle.properties)
+          test -n "$version"
+          mkdir -p build/install/mods
+          for module in core storage machines integration; do
+            cp "modules/lumungus-${module}/build/libs/lumungus-${module}-${version}.jar" build/install/mods/
+          done
+          cp docs/storage/INSTALLATION.md build/install/INSTALLATION.md
+          cp docs/storage/BULK_CRAFTING.md build/install/BULK_CRAFTING.md
+          git rev-parse HEAD > build/install/COMMIT.txt
+          cd build/install
+          sha256sum mods/*.jar > SHA256SUMS.txt
+          echo "name=lumungus-storage-${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload verified installation package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.name }}
+          path: build/install/
+          if-no-files-found: error
+          retention-days: 90

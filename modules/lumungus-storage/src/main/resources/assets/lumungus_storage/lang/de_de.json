@@ -152,5 +152,9 @@
   "message.lumungus_storage.drive_bay.inserted": "%1$s Item(s) in die Storage Cell eingelagert.",
   "message.lumungus_storage.drive_bay.full": "Storage Cell ist voll; %1$s Item(s) eingelagert.",
   "message.lumungus_storage.drive_bay.empty": "Die Storage Cell ist leer.",
-  "message.lumungus_storage.drive_bay.extracted": "%1$s x %2$s aus der Storage Cell entnommen."
+  "message.lumungus_storage.drive_bay.extracted": "%1$s x %2$s aus der Storage Cell entnommen.",
+  "message.lumungus_storage.crafting_terminal.bulk_complete": "Mengenauftrag abgeschlossen: %1$s Item(s) in Shulkerboxen im Inventar.",
+  "message.lumungus_storage.crafting_terminal.bulk_paused": "Mengenauftrag pausiert (%1$s Item(s) fertig). Fehlendes nachlegen; das offene Terminal setzt automatisch fort.",
+  "message.lumungus_storage.crafting_terminal.bulk_cancelled": "Mengenauftrag beendet (%1$s Item(s) fertig). Boxen und Zwischenprodukte bleiben erhalten; bestelle die Restmenge neu.",
+  "message.lumungus_storage.crafting_terminal.order_too_complex": "Dieser Auftrag hat zu viele unterschiedliche Zwischenschritte. Bitte teile ihn in kleinere Auftraege auf."
 }

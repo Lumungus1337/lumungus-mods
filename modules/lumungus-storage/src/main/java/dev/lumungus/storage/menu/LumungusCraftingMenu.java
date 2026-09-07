@@ -65,6 +65,12 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
     private int lastSnapshotFingerprint = Integer.MIN_VALUE;
     private Identifier pendingRecipeId;
     private int pendingRequestedResultAmount;
+    private RecursiveCraftingPlanner.OrderPlan bulkOrder;
+    private int bulkStepIndex;
+    private long bulkCraftedAmount;
+    private long lastBulkTick = Long.MIN_VALUE;
+    private String bulkPauseReason;
+    private ItemStack bulkOutputBox = ItemStack.EMPTY;
 
     private List<ResourceAmount> clientResources = List.of();
     private long clientStoredAmount;
@@ -186,6 +192,7 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
 
     @Override
     public void broadcastChanges() {
+        tickBulkOrder();
         super.broadcastChanges();
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return;
@@ -268,7 +275,7 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
     }
 
     private void processRecipeRequest(Identifier recipeId, int requestedResultAmount, boolean execute) {
-        if (!(player instanceof ServerPlayer serverPlayer) || !stillValid(player)) {
+        if (bulkOrder != null || !(player instanceof ServerPlayer serverPlayer) || !stillValid(player)) {
             return;
         }
         StorageControllerBlockEntity controller = linkedController();
@@ -296,9 +303,8 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
                 ? recursiveResultCount(recipe, (ServerLevel) serverPlayer.level())
                 : recipe.assemble(craftingInput(singlePlacement)).getCount();
         int clampedResultAmount = Math.clamp(requestedResultAmount, 1, MAX_REQUESTED_RESULT_AMOUNT);
-        int requestedCrafts = Math.min(
-                MAX_RECIPE_TRANSFER,
-                Math.max(1, (clampedResultAmount + Math.max(1, resultPerCraft) - 1) / Math.max(1, resultPerCraft))
+        int requestedCrafts = Math.max(
+                1, (clampedResultAmount + Math.max(1, resultPerCraft) - 1) / Math.max(1, resultPerCraft)
         );
 
         List<RecursiveCraftingPlanner.AvailableResource> recursiveResources = pool.stream()
@@ -309,21 +315,35 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
                 .toList();
         RecipePlacement placement = null;
         RecursiveCraftingPlanner.Plan recursivePlan = null;
-        for (int crafts = requestedCrafts; crafts >= 1; crafts--) {
-            placement = planRecipe(recipe, pool, crafts);
-            if (placement != null) {
-                break;
-            }
-            if (player.level() instanceof ServerLevel serverLevel) {
+        if (requestedCrafts <= MAX_RECIPE_TRANSFER) {
+            placement = planRecipe(recipe, pool, requestedCrafts);
+            if (placement == null) {
                 recursivePlan = RecursiveCraftingPlanner.plan(
-                        serverLevel,
-                        recipe,
-                        recursiveResources,
-                        crafts
+                        serverPlayer.level(), recipe, recursiveResources, requestedCrafts
                 ).orElse(null);
-                if (recursivePlan != null) {
-                    break;
+            }
+        }
+        if (placement == null && recursivePlan == null) {
+            RecursiveCraftingPlanner.OrderPlan order = RecursiveCraftingPlanner.planOrder(
+                    serverPlayer.level(), recipe, recursiveResources, requestedCrafts
+            ).orElse(null);
+            if (order != null && order.result().getItem().canFitInsideContainerItems()) {
+                if (!execute) {
+                    pendingRecipeId = recipeId;
+                    pendingRequestedResultAmount = clampedResultAmount;
+                    sendBulkCraftingPlan(serverPlayer, order);
+                } else {
+                    returnCraftGridItems(controller);
+                    clearPendingCraftingPlan(serverPlayer);
+                    bulkOrder = order;
+                    bulkStepIndex = 0;
+                    bulkCraftedAmount = 0;
+                    bulkPauseReason = null;
+                    bulkOutputBox = ItemStack.EMPTY;
+                    lastBulkTick = Long.MIN_VALUE;
+                    broadcastChanges();
                 }
+                return;
             }
         }
 
@@ -378,6 +398,163 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
         slotsChanged(craftSlots);
         broadcastChanges();
         finishCraftingOrder(serverPlayer, recipeCraftsFromPlacement(placement.slots()));
+    }
+
+    private void sendBulkCraftingPlan(ServerPlayer serverPlayer, RecursiveCraftingPlanner.OrderPlan order) {
+        List<CraftingPlanStage> stages = new ArrayList<>();
+        for (RecursiveCraftingPlanner.OrderStep step : order.steps()) {
+            CraftingInput input = RecursiveCraftingPlanner.input(step.craft().inputs());
+            addDisplayedStage(stages, step.craft().inputs(), step.craft().recipe().assemble(input));
+        }
+        // The same bounds are enforced by the client packet decoder.
+        if (stages.size() > 64 || stages.stream().anyMatch(stage -> stage.inputs().size() > 9)) {
+            clearPendingCraftingPlan(serverPlayer);
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.order_too_complex"));
+            return;
+        }
+        ServerPlayNetworking.send(serverPlayer, new TerminalCraftingPlanPayload(
+                containerId, order.result(), order.amount(), stages.stream().map(stage ->
+                        new TerminalCraftingPlanPayload.Stage(stage.inputs().stream().map(input ->
+                                new TerminalCraftingPlanPayload.Ingredient(input.stack(), input.amount())
+                        ).toList(), stage.output(), stage.outputAmount())
+                ).toList()
+        ));
+    }
+
+    private void tickBulkOrder() {
+        if (bulkOrder == null || !(player instanceof ServerPlayer) || !stillValid(player)) {
+            return;
+        }
+        long tick = player.level().getGameTime();
+        if (lastBulkTick == tick) {
+            return;
+        }
+        lastBulkTick = tick;
+        StorageControllerBlockEntity controller = linkedController();
+        if (controller == null) {
+            return;
+        }
+        // Do bounded work. All completed outputs live in real inventories between ticks.
+        for (int budget = 0; budget < 4 && bulkOrder != null; budget++) {
+            RecursiveCraftingPlanner.OrderStep step = bulkOrder.steps().get(bulkStepIndex);
+            CraftingInput input = RecursiveCraftingPlanner.input(step.craft().inputs());
+            ItemStack output = step.craft().recipe().assemble(input);
+            if (output.isEmpty() || !step.craft().recipe().matches(input, player.level())
+                    || !output.isItemEnabled(player.level().enabledFeatures())) {
+                pauseBulkOrder("missing_ingredients");
+                return;
+            }
+            // Reserve real boxes before consuming materials, including before intermediate steps.
+            List<ItemStack> boxes = reserveBulkBoxes(controller, bulkOrder.result(),
+                    step.finalOutput() ? output.getCount() : 1);
+            if (boxes.isEmpty()) {
+                return;
+            }
+            List<AcquiredSlot> acquired = new ArrayList<>();
+            if (!acquirePlannedStacks(controller, step.craft().inputs(), new ArrayList<>(), acquired)) {
+                rollbackAcquiredIngredients(controller, acquired);
+                pauseBulkOrder("missing_ingredients");
+                return;
+            }
+            output.onCraftedBySystem(player.level());
+            if (step.finalOutput()) {
+                int remaining = output.getCount();
+                for (ItemStack box : boxes) {
+                    int stored = packedBulkAmount(box, output);
+                    int added = Math.min(remaining, ShulkerBoxTransfer.maxPackedAmount(output) - stored);
+                    box.set(net.minecraft.core.component.DataComponents.CONTAINER,
+                            net.minecraft.world.item.component.ItemContainerContents.fromItems(
+                                    ShulkerBoxTransfer.packSingleItem(output, stored + added)));
+                    remaining -= added;
+                    bulkOutputBox = box;
+                }
+                bulkCraftedAmount += output.getCount();
+                player.getInventory().setChanged();
+            } else {
+                returnBulkStack(controller, output);
+            }
+            step.craft().recipe().getRemainingItems(input).stream()
+                    .filter(stack -> !stack.isEmpty()).forEach(stack -> returnBulkStack(controller, stack));
+            bulkStepIndex++;
+            bulkPauseReason = null;
+            if (bulkStepIndex == bulkOrder.steps().size()) {
+                bulkOrder = null;
+                bulkOutputBox = ItemStack.EMPTY;
+                player.sendSystemMessage(Component.translatable(
+                        "message.lumungus_storage.crafting_terminal.bulk_complete", bulkCraftedAmount));
+            }
+        }
+    }
+
+    private List<ItemStack> reserveBulkBoxes(StorageControllerBlockEntity controller, ItemStack result, int amount) {
+        List<ItemStack> boxes = new ArrayList<>();
+        Inventory inventory = player.getInventory();
+        int remaining = amount;
+        // Only reuse the actual box last written by this order, while it is still in the inventory.
+        for (int slot = 0; slot < PLAYER_INVENTORY_SLOT_COUNT; slot++) {
+            ItemStack stack = inventory.getItem(slot);
+            if (stack == bulkOutputBox && !stack.isEmpty()) {
+                int stored = packedBulkAmount(stack, result);
+                int capacity = stored < 0 ? 0 : ShulkerBoxTransfer.maxPackedAmount(result) - stored;
+                if (capacity > 0) {
+                    boxes.add(stack);
+                    remaining -= capacity;
+                }
+                break;
+            }
+        }
+        while (remaining > 0) {
+            int freeSlot = -1;
+            for (int slot = 0; slot < PLAYER_INVENTORY_SLOT_COUNT; slot++) {
+                if (inventory.getItem(slot).isEmpty()) {
+                    freeSlot = slot;
+                    break;
+                }
+            }
+            if (freeSlot < 0) {
+                pauseBulkOrder("shulker_inventory_full");
+                return List.of();
+            }
+            ItemStack template = findEmptyShulker(controller);
+            ItemStack box = template.isEmpty() ? ItemStack.EMPTY
+                    : controller.extract(template, 1, TransferMode.EXECUTE);
+            if (box.isEmpty()) {
+                pauseBulkOrder("no_empty_shulker");
+                return List.of();
+            }
+            inventory.setItem(freeSlot, box);
+            boxes.add(box);
+            bulkOutputBox = box;
+            remaining -= ShulkerBoxTransfer.maxPackedAmount(result);
+        }
+        return boxes;
+    }
+
+    private static int packedBulkAmount(ItemStack box, ItemStack result) {
+        if (!ShulkerBoxTransfer.isShulkerBox(box)) {
+            return -1;
+        }
+        List<ItemStack> contents = ShulkerBoxTransfer.unpackedContents(box);
+        if (contents.stream().anyMatch(stack -> !ItemStack.isSameItemSameComponents(stack, result))) {
+            return -1;
+        }
+        return contents.stream().mapToInt(ItemStack::getCount).sum();
+    }
+
+    private void returnBulkStack(StorageControllerBlockEntity controller, ItemStack stack) {
+        ItemStack remainder = controller.insert(stack, TransferMode.EXECUTE);
+        player.getInventory().placeItemBackInInventory(remainder);
+    }
+
+    private void pauseBulkOrder(String reason) {
+        if (!reason.equals(bulkPauseReason)) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal." + reason));
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.bulk_paused", bulkCraftedAmount));
+            bulkPauseReason = reason;
+        }
     }
 
     private CraftingInput craftingInput(RecipePlacement placement) {
@@ -631,6 +808,12 @@ public final class LumungusCraftingMenu extends AbstractCraftingMenu {
 
     @Override
     public void removed(Player player) {
+        if (bulkOrder != null) {
+            player.sendSystemMessage(Component.translatable(
+                    "message.lumungus_storage.crafting_terminal.bulk_cancelled", bulkCraftedAmount));
+            bulkOrder = null;
+            bulkOutputBox = ItemStack.EMPTY;
+        }
         super.removed(player);
         if (!player.level().isClientSide()) {
             StorageControllerBlockEntity controller = linkedController();
