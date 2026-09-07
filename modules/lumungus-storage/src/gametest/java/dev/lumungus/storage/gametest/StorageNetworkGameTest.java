@@ -1427,6 +1427,154 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         context.succeed();
     }
 
+    @GameTest(padding = 32, maxTicks = 250)
+    public void bulkCraftingProducesTwoThousandPlanksInTwoShulkers(GameTestHelper context) {
+        BulkFixture fixture = bulkFixture(context);
+        for (int batch = 0; batch < 8; batch++) {
+            fixture.controller().insert(new ItemStack(Items.OAK_LOG, batch == 7 ? 52 : 64), TransferMode.EXECUTE);
+        }
+        fixture.controller().insert(new ItemStack(Items.BLUE_SHULKER_BOX), TransferMode.EXECUTE);
+        fixture.controller().insert(new ItemStack(Items.RED_SHULKER_BOX), TransferMode.EXECUTE);
+        fixture.menu().placeRecipeFromNetwork(Identifier.parse("minecraft:oak_planks"), 1999);
+        context.assertValueEqual(fixture.controller().count(new ItemStack(Items.OAK_LOG)), 500L, "Preview consumed logs");
+        fixture.menu().craftPendingRecipe();
+        context.succeedWhen(() -> {
+            fixture.menu().broadcastChanges();
+            context.assertValueEqual(packedCount(fixture.player(), Items.OAK_PLANKS), 2000, "Rounded bulk output");
+            context.assertValueEqual(fixture.controller().count(new ItemStack(Items.OAK_LOG)), 0L, "Remaining logs");
+            context.assertValueEqual(fixture.player().getInventory().countItem(Items.OAK_PLANKS), 0, "Loose output");
+            List<Integer> amounts = new java.util.ArrayList<>();
+            for (int slot = 0; slot < 36; slot++) {
+                ItemStack box = fixture.player().getInventory().getItem(slot);
+                if (box.is(Items.BLUE_SHULKER_BOX) || box.is(Items.RED_SHULKER_BOX)) {
+                    amounts.add(box.get(DataComponents.CONTAINER).nonEmptyItemCopyStream()
+                            .mapToInt(ItemStack::getCount).sum());
+                }
+            }
+            amounts.sort(Integer::compareTo);
+            context.assertValueEqual(amounts, List.of(272, 1728), "Full and partial box contents");
+        });
+    }
+
+    @GameTest(padding = 32, maxTicks = 250)
+    public void bulkCraftingResolvesOneHundredTwentyBarrelsFromLogs(GameTestHelper context) {
+        BulkFixture fixture = bulkFixture(context);
+        for (int batch = 0; batch < 4; batch++) {
+            fixture.controller().insert(new ItemStack(Items.OAK_LOG, batch == 3 ? 18 : 64), TransferMode.EXECUTE);
+        }
+        fixture.controller().insert(new ItemStack(Items.SHULKER_BOX), TransferMode.EXECUTE);
+        fixture.menu().placeRecipeFromNetwork(Identifier.parse("minecraft:barrel"), 120);
+        fixture.menu().craftPendingRecipe();
+        context.succeedWhen(() -> {
+            fixture.menu().broadcastChanges();
+            context.assertValueEqual(packedCount(fixture.player(), Items.BARREL), 120, "Recursive bulk barrels");
+            context.assertValueEqual(fixture.controller().count(new ItemStack(Items.OAK_LOG)), 0L, "All 210 logs used");
+            context.assertValueEqual(fixture.controller().count(new ItemStack(Items.OAK_PLANKS)), 0L, "No surplus planks");
+            context.assertValueEqual(fixture.controller().count(new ItemStack(Items.OAK_SLAB)), 0L, "No surplus slabs");
+        });
+    }
+
+    @GameTest(padding = 32, maxTicks = 100)
+    public void bulkCraftingHandlesUnstackableInputsAndRecipeRemainders(GameTestHelper context) {
+        BulkFixture fixture = bulkFixture(context);
+        for (int count = 0; count < 6; count++) {
+            fixture.controller().insert(new ItemStack(Items.MILK_BUCKET), TransferMode.EXECUTE);
+        }
+        fixture.controller().insert(new ItemStack(Items.SUGAR, 4), TransferMode.EXECUTE);
+        fixture.controller().insert(new ItemStack(Items.WHEAT, 6), TransferMode.EXECUTE);
+        fixture.controller().insert(new ItemStack(Items.EGG, 2), TransferMode.EXECUTE);
+        fixture.controller().insert(new ItemStack(Items.SHULKER_BOX), TransferMode.EXECUTE);
+        fixture.menu().placeRecipeFromNetwork(Identifier.parse("minecraft:cake"), 2);
+        fixture.menu().craftPendingRecipe();
+        context.succeedWhen(() -> {
+            fixture.menu().broadcastChanges();
+            context.assertValueEqual(packedCount(fixture.player(), Items.CAKE), 2, "Cakes from multiple grids");
+            context.assertValueEqual(fixture.controller().count(new ItemStack(Items.BUCKET)), 6L, "Returned milk buckets");
+            context.assertValueEqual(fixture.controller().count(new ItemStack(Items.MILK_BUCKET)), 0L, "Consumed milk buckets");
+        });
+    }
+
+    @GameTest(padding = 32, maxTicks = 100)
+    public void bulkCraftingWaitsForABoxWithoutConsumingIngredients(GameTestHelper context) {
+        BulkFixture fixture = bulkFixture(context);
+        fixture.controller().insert(new ItemStack(Items.OAK_LOG, 64), TransferMode.EXECUTE);
+        fixture.controller().insert(new ItemStack(Items.OAK_LOG, 1), TransferMode.EXECUTE);
+        fixture.menu().placeRecipeFromNetwork(Identifier.parse("minecraft:oak_planks"), 260);
+        fixture.menu().craftPendingRecipe();
+        context.assertValueEqual(fixture.controller().count(new ItemStack(Items.OAK_LOG)), 65L, "No box consumed materials");
+        fixture.controller().insert(new ItemStack(Items.SHULKER_BOX), TransferMode.EXECUTE);
+        context.succeedWhen(() -> {
+            fixture.menu().broadcastChanges();
+            context.assertValueEqual(packedCount(fixture.player(), Items.OAK_PLANKS), 260, "Resumed bulk output");
+            context.assertValueEqual(fixture.controller().count(new ItemStack(Items.OAK_LOG)), 0L, "Resumed ingredient count");
+        });
+    }
+
+    @GameTest(padding = 32, maxTicks = 100)
+    public void bulkCraftingWaitsForInventorySpace(GameTestHelper context) {
+        BulkFixture fixture = bulkFixture(context);
+        fixture.controller().insert(new ItemStack(Items.OAK_LOG, 64), TransferMode.EXECUTE);
+        fixture.controller().insert(new ItemStack(Items.OAK_LOG, 1), TransferMode.EXECUTE);
+        fixture.controller().insert(new ItemStack(Items.SHULKER_BOX), TransferMode.EXECUTE);
+        for (int slot = 0; slot < 36; slot++) {
+            fixture.player().getInventory().setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
+        }
+        fixture.menu().placeRecipeFromNetwork(Identifier.parse("minecraft:oak_planks"), 260);
+        fixture.menu().craftPendingRecipe();
+        context.assertValueEqual(fixture.controller().count(new ItemStack(Items.OAK_LOG)), 65L, "Full inventory consumed logs");
+        context.assertValueEqual(fixture.controller().count(new ItemStack(Items.SHULKER_BOX)), 1L, "Full inventory consumed box");
+        fixture.player().getInventory().setItem(0, ItemStack.EMPTY);
+        context.succeedWhen(() -> {
+            fixture.menu().broadcastChanges();
+            context.assertValueEqual(packedCount(fixture.player(), Items.OAK_PLANKS), 260, "Resumed after freeing slot");
+        });
+    }
+
+    @GameTest(padding = 32)
+    public void closingBulkCraftingKeepsOutputsAndUnspentMaterials(GameTestHelper context) {
+        BulkFixture fixture = bulkFixture(context);
+        fixture.controller().insert(new ItemStack(Items.OAK_LOG, 64), TransferMode.EXECUTE);
+        fixture.controller().insert(new ItemStack(Items.OAK_LOG, 1), TransferMode.EXECUTE);
+        fixture.controller().insert(new ItemStack(Items.SHULKER_BOX), TransferMode.EXECUTE);
+        fixture.menu().placeRecipeFromNetwork(Identifier.parse("minecraft:oak_planks"), 260);
+        fixture.menu().craftPendingRecipe();
+        fixture.menu().removed(fixture.player());
+        int packed = packedCount(fixture.player(), Items.OAK_PLANKS);
+        long logs = fixture.controller().count(new ItemStack(Items.OAK_LOG));
+        context.assertTrue(packed > 0 && packed < 260, "Order did not yield between ticks");
+        context.assertValueEqual(logs * 4 + packed, 260L, "Closing lost or duplicated material");
+        context.succeed();
+    }
+
+    private static BulkFixture bulkFixture(GameTestHelper context) {
+        context.setBlock(FIRST_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
+        context.setBlock(DRIVE_BAY, LumungusStorageBlocks.DRIVE_BAY);
+        context.setBlock(CRAFTING_TERMINAL, LumungusStorageBlocks.CRAFTING_TERMINAL);
+        DriveBayBlockEntity driveBay = context.getBlockEntity(DRIVE_BAY, DriveBayBlockEntity.class);
+        driveBay.insertCell(new ItemStack(LumungusStorageItems.STORAGE_CELL_16K), TransferMode.EXECUTE);
+        StorageControllerBlockEntity controller = context.getBlockEntity(FIRST_CONTROLLER, StorageControllerBlockEntity.class);
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        BlockPos terminalPos = context.absolutePos(CRAFTING_TERMINAL);
+        player.setPos(terminalPos.getX() + 0.5, terminalPos.getY() + 1, terminalPos.getZ() + 0.5);
+        LumungusCraftingMenu menu = new LumungusCraftingMenu(6, player.getInventory(),
+                ContainerLevelAccess.create(context.getLevel(), terminalPos), terminalPos);
+        return new BulkFixture(controller, player, menu);
+    }
+
+    private static int packedCount(ServerPlayer player, net.minecraft.world.item.Item item) {
+        int count = 0;
+        for (int slot = 0; slot < 36; slot++) {
+            ItemContainerContents contents = player.getInventory().getItem(slot).get(DataComponents.CONTAINER);
+            if (contents != null) {
+                count += contents.nonEmptyItemCopyStream().filter(stack -> stack.is(item))
+                        .mapToInt(ItemStack::getCount).sum();
+            }
+        }
+        return count;
+    }
+
+    private record BulkFixture(StorageControllerBlockEntity controller, ServerPlayer player, LumungusCraftingMenu menu) { }
+
     @GameTest(padding = 32)
     public void craftingTerminalRecursivelyPreparesBarrelIngredientsFromLogs(GameTestHelper context) {
         context.setBlock(FIRST_CONTROLLER, LumungusStorageBlocks.STORAGE_CONTROLLER);
