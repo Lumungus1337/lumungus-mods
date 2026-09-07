@@ -1433,8 +1433,12 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
         for (int batch = 0; batch < 8; batch++) {
             fixture.controller().insert(new ItemStack(Items.OAK_LOG, batch == 7 ? 52 : 64), TransferMode.EXECUTE);
         }
-        fixture.controller().insert(new ItemStack(Items.BLUE_SHULKER_BOX), TransferMode.EXECUTE);
-        fixture.controller().insert(new ItemStack(Items.RED_SHULKER_BOX), TransferMode.EXECUTE);
+        ItemStack firstBox = new ItemStack(Items.SHULKER_BOX);
+        firstBox.set(DataComponents.CUSTOM_NAME, Component.literal("Bulk A"));
+        ItemStack secondBox = new ItemStack(Items.SHULKER_BOX);
+        secondBox.set(DataComponents.CUSTOM_NAME, Component.literal("Bulk B"));
+        fixture.controller().insert(firstBox, TransferMode.EXECUTE);
+        fixture.controller().insert(secondBox, TransferMode.EXECUTE);
         fixture.menu().placeRecipeFromNetwork(Identifier.parse("minecraft:oak_planks"), 1999);
         context.assertValueEqual(fixture.controller().count(new ItemStack(Items.OAK_LOG)), 500L, "Preview consumed logs");
         fixture.menu().craftPendingRecipe();
@@ -1446,7 +1450,8 @@ public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
             List<Integer> amounts = new java.util.ArrayList<>();
             for (int slot = 0; slot < 36; slot++) {
                 ItemStack box = fixture.player().getInventory().getItem(slot);
-                if (box.is(Items.BLUE_SHULKER_BOX) || box.is(Items.RED_SHULKER_BOX)) {
+                if (box.is(Items.SHULKER_BOX)) {
+                    context.assertTrue(box.has(DataComponents.CUSTOM_NAME), "Box name was lost");
                     amounts.add(box.get(DataComponents.CONTAINER).nonEmptyItemCopyStream()
                             .mapToInt(ItemStack::getCount).sum());
                 }
