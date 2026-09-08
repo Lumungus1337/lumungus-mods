@@ -33,6 +33,8 @@ public final class StorageClientGameTest implements FabricClientGameTest {
 
             singleplayer.getServer().runOnServer(server -> {
                 ServerPlayer player = connection.getServerPlayer();
+                player.getInventory().setItem(0, new ItemStack(LumungusStorageItems.COPPER_WRENCH));
+                player.getInventory().setItem(1, new ItemStack(LumungusStorageItems.WIRELESS_NETWORK_MODULE));
                 BlockPos controllerPos = player.blockPosition().offset(2, 0, 0);
                 BlockPos driveBayPos = controllerPos.offset(1, 0, 0);
                 BlockPos terminalPos = controllerPos.offset(0, 0, 1);
