@@ -62,9 +62,9 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
     private static final int PLAN_Y = 20;
     private static final int PLAN_WIDTH = 268;
     private static final int PLAN_HEIGHT = 196;
-    private static final int PLAN_LIST_Y = 70;
+    private static final int PLAN_LIST_Y = 82;
     private static final int PLAN_ROW_HEIGHT = 18;
-    private static final int PLAN_VISIBLE_ROWS = 6;
+    private static final int PLAN_VISIBLE_ROWS = 5;
     private static final int PLAN_BACK_X = 48;
     private static final int PLAN_CRAFT_X = 172;
     private static final int PLAN_BUTTON_Y = 188;
@@ -115,9 +115,9 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         searchBox = new EditBox(
                 font,
                 leftPos + SEARCH_X,
-                topPos + SEARCH_Y,
+                topPos + SEARCH_Y + 5,
                 SEARCH_WIDTH,
-                18,
+                10,
                 Component.translatable("gui.lumungus_storage.crafting_terminal.search")
         );
         searchBox.setMaxLength(64);
@@ -129,14 +129,14 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             page = 0;
             lastSearchValueForTests = value;
         });
-        searchBox.setCanLoseFocus(false);
+        searchBox.setCanLoseFocus(true);
         addRenderableWidget(searchBox);
         craftAmountBox = new EditBox(
                 font,
                 leftPos + CRAFT_AMOUNT_X,
-                topPos + CRAFT_AMOUNT_Y,
+                topPos + CRAFT_AMOUNT_Y + 4,
                 CRAFT_AMOUNT_WIDTH,
-                16,
+                10,
                 Component.translatable("gui.lumungus_storage.crafting_terminal.craft_amount")
         );
         craftAmountBox.setMaxLength(4);
@@ -190,7 +190,6 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         graphics.text(font, Component.literal("Lumungus Terminal"), titleLabelX, titleLabelY, COLOR_TEXT, false);
-        graphics.text(font, Component.literal("LAGER"), LEFT_PANEL_X + 7, LEFT_PANEL_Y + 27, COLOR_GREEN_DIM, false);
         graphics.centeredText(font, sortMode.label(), SORT_X + SORT_WIDTH / 2, SORT_Y + 5, COLOR_GREEN);
         graphics.centeredText(font, "<", NETWORK_X + 10, PAGE_Y + 2, COLOR_GREEN);
         graphics.centeredText(font, ">", NETWORK_X + 122, PAGE_Y + 2, COLOR_GREEN);
@@ -215,8 +214,8 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         );
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, COLOR_TEXT, false);
         drawPageAndResources(graphics);
-        graphics.text(font, compactStatus(), NETWORK_X, 132, COLOR_GREEN, false);
-        graphics.text(font, compactTypeStatus(), NETWORK_X + 82, 132, COLOR_GREEN_DIM, false);
+        graphics.text(font, fitText(compactStatus().getString(), CRAFT_PANEL_WIDTH - 12), CRAFT_PANEL_X + 6, 128, COLOR_TEXT, false);
+        graphics.text(font, fitText(compactTypeStatus().getString(), CRAFT_PANEL_WIDTH - 12), CRAFT_PANEL_X + 6, 138, COLOR_TEXT_DIM, false);
         if (craftingPlanOpen) {
             drawCraftingPlan(graphics, mouseX - leftPos, mouseY - topPos);
         }
@@ -229,7 +228,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             if (stage != null) {
                 graphics.setComponentTooltipForNextFrame(
                         font,
-                        getTooltipFromContainerItem(stage.output()),
+                        craftingStageTooltip(stage),
                         mouseX,
                         mouseY
                 );
@@ -305,15 +304,17 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             }
             return true;
         }
-        if (craftAmountBox != null && craftAmountBox.isMouseOver(mouseX, mouseY)) {
-            searchBox.setFocused(false);
-            craftAmountBox.setFocused(true);
-            return super.mouseClicked(event, doubleClick);
+        if (craftAmountBox != null && isPointInside(mouseX, mouseY, leftPos + CRAFT_AMOUNT_X,
+                topPos + CRAFT_AMOUNT_Y, CRAFT_AMOUNT_WIDTH, 16)) {
+            craftAmountBox.mouseClicked(event, doubleClick);
+            focusTextInput(craftAmountBox);
+            return true;
         }
-        if (searchBox != null && searchBox.isMouseOver(mouseX, mouseY)) {
-            craftAmountBox.setFocused(false);
-            searchBox.setFocused(true);
-            return super.mouseClicked(event, doubleClick);
+        if (searchBox != null && isPointInside(mouseX, mouseY, leftPos + SEARCH_X,
+                topPos + SEARCH_Y, SEARCH_WIDTH, 18)) {
+            searchBox.mouseClicked(event, doubleClick);
+            focusTextInput(searchBox);
+            return true;
         }
         if (isPointInside(mouseX, mouseY, leftPos + CRAFT_AMOUNT_MINUS_X, topPos + CRAFT_AMOUNT_Y - 1, 20, 18)) {
             adjustCraftAmount(event.hasShiftDown() ? -10 : -1);
@@ -323,8 +324,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             adjustCraftAmount(event.hasShiftDown() ? 10 : 1);
             return true;
         }
-        craftAmountBox.setFocused(false);
-        searchBox.setFocused(true);
+        focusTextInput(searchBox);
         if (isPointInside(mouseX, mouseY, leftPos + SORT_X, topPos + SORT_Y, SORT_WIDTH, 18)) {
             sortMode = sortMode.next();
             page = 0;
@@ -362,7 +362,20 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             sendAction(actionForResourceClick(event), clicked.stack());
             return true;
         }
-        return super.mouseClicked(event, doubleClick);
+        boolean handled = super.mouseClicked(event, doubleClick);
+        focusTextInput(searchBox);
+        return handled;
+    }
+
+    private void focusTextInput(EditBox input) {
+        EditBox other = input == searchBox ? craftAmountBox : searchBox;
+        if (other.isFocused()) {
+            other.setFocused(false);
+        }
+        setFocused(input);
+        if (!input.isFocused()) {
+            input.setFocused(true);
+        }
     }
 
     @Override
@@ -373,21 +386,18 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             }
             return true;
         }
-        if (craftAmountBox != null && craftAmountBox.isFocused()) {
-            if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
-                return super.keyPressed(event);
-            }
-            craftAmountBox.keyPressed(event);
+        if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
+            onClose();
             return true;
         }
-        if (searchBox != null && searchBox.isFocused()) {
-            if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
-                return super.keyPressed(event);
-            }
-            searchBox.keyPressed(event);
+        if (event.key() == GLFW.GLFW_KEY_TAB) {
+            focusTextInput(craftAmountBox.isFocused() ? searchBox : craftAmountBox);
             return true;
         }
-        return super.keyPressed(event);
+        EditBox input = craftAmountBox.isFocused() ? craftAmountBox : searchBox;
+        focusTextInput(input);
+        input.keyPressed(event);
+        return true;
     }
 
     @Override
@@ -461,6 +471,9 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             craftAmountBox.visible = !open;
             craftAmountBox.setFocused(false);
         }
+        if (!open) {
+            focusTextInput(searchBox);
+        }
     }
 
     private void drawCraftingPlan(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
@@ -507,7 +520,7 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
             );
             graphics.item(stage.output(), PLAN_X + 10, y);
             graphics.itemDecorations(font, stage.output(), PLAN_X + 10, y, formatAmount(stage.outputAmount()));
-            String text = stageInputs(stage) + "  >  " + stage.outputAmount() + " x "
+            String text = (index + 1) + ". " + stage.outputAmount() + " x "
                     + stage.output().getHoverName().getString();
             graphics.text(font, fitText(text, PLAN_WIDTH - 48), PLAN_X + 31, y + 4, COLOR_TEXT, false);
         }
@@ -559,20 +572,12 @@ public final class LumungusCraftingTerminalScreen extends AbstractContainerScree
         return index < plan.stages().size() ? plan.stages().get(index) : null;
     }
 
-    private String stageInputs(TerminalCraftingPlanPayload.Stage stage) {
-        if (stage.inputs().isEmpty()) {
-            return "-";
-        }
-        StringBuilder inputs = new StringBuilder();
+    private List<Component> craftingStageTooltip(TerminalCraftingPlanPayload.Stage stage) {
+        List<Component> tooltip = new ArrayList<>(getTooltipFromContainerItem(stage.output()));
         for (TerminalCraftingPlanPayload.Ingredient input : stage.inputs()) {
-            if (!inputs.isEmpty()) {
-                inputs.append(" + ");
-            }
-            inputs.append(input.amount())
-                    .append(" x ")
-                    .append(input.stack().getHoverName().getString());
+            tooltip.add(Component.literal(input.amount() + " x " + input.stack().getHoverName().getString()));
         }
-        return inputs.toString();
+        return tooltip;
     }
 
     private String fitText(String text, int width) {
