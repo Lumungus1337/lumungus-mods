@@ -1,0 +1,7 @@
+{
+  "block.railquarry.quarry": "Rail Quarry – Bucket-Wheel Excavator",
+  "container.railquarry.quarry": "Rail Quarry",
+  "gui.railquarry.height": "Mining height",
+  "gui.railquarry.height_range": "Mining height: 1–64 blocks",
+  "gui.railquarry.apply": "Apply"
+}

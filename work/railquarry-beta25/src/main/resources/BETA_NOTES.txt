@@ -1,0 +1,30 @@
+0.7.0-beta.27: Integrated the final Lumungus copper/anthracite designer textures into the existing 3D Quarry chassis. The front now shows four distinct fuel/rail readiness combinations while dedicated back, side, top and bottom textures complete the housing. Requires Lumungus Core and Storage 0.1.0-uat.42 or newer.
+0.7.0-beta.26: Added direct Lumungus Storage integration. Slot 51 accepts one primed Wireless Network Module; mined block drops and collected fluid buckets are sent to its bound Storage Controller across dimensions. Shulker storage remains the fallback when no usable link exists. The status message reports the link state. Requires Lumungus Core and Storage 0.1.0-uat.40 or newer.
+0.7.0-beta.23: Fix manual Quarry pickup. Replaced the component-copying block loot entry with a simple standard block-item loot table so breaking the Quarry reliably drops railquarry:quarry instead of disappearing. beta.22 end-of-track behavior and beta.20 persistence remain unchanged. Visuals remain disabled.
+0.7.0-beta.22: Hotfix for beta.21 VerifyError. End-of-track handling now uses a safe entry guard in resolveTrackLayout: once direction is verified, a missing forward dual-track segment returns STOP immediately instead of reversing or re-running direction autodetection. Initial track detection and beta.20 restart persistence remain unchanged. Visuals remain disabled.
+0.7.0-beta.20: Restart persistence fix. saveAdditional now follows Fabric ordering: settings cleanup, 54-slot inventory, movement/settings fields, then super.saveAdditional LAST. All BlockEntity setChanged calls explicitly dirty the active chunk, and self-movement dirties both old/new controller chunks so inventory, facing/rail offset and the controller rail position survive world/game restarts. Visuals remain disabled.
+0.7.0-beta.19: Performance emergency mode. The BlockDisplay gantry and all quarry animations are completely disabled. On the first quarry tick in each loaded dimension, legacy RailQuarry visual entities (rqv_ tags) from beta.7-beta.18 are removed once, then the visual layer becomes a no-op. Mining, movement, inventory persistence, Fortune/Silk settings and beta.16 fluid draining are unchanged.
+0.7.0-beta.18: Performance pass for the gantry visual. The frame now uses a sparse industrial portal structure instead of per-block display spam; only 13 moving displays are animated, at 5 updates/s instead of 20. Hot reflection methods/fields are cached, target-scanning was removed from the renderer, normal movement cleanup no longer performs repeated world-wide entity scans, and orphan sweeps run only once per 60 seconds. Mining, inventory, settings and beta.16 fluid handling are unchanged.
+0.7.0-beta.17: Visual overhaul. Replaced the travelling excavator with a large industrial-iron-style gantry frame spanning the detected quarry width. A moving carriage, vertical spindle and rotating milling head now track the next block in the quarry mining order. Visual cleanup is reinforced so all tagged display entities are discarded when the controller moves or is broken; old beta.7-beta.16 rigs are swept as orphans.
+0.7.0-beta.16: Reworked fluid handling. A detected water/lava source now drains a connected local fluid cluster (sources + flowing fluid) instead of deleting only one source. This prevents infinite-water regeneration from trapping the quarry on the same coordinate. Bucket mode collects source blocks while removing flowing liquid; destroy mode removes the entire processed cluster.
+0.7.0-beta.15: Fixed infinite-water stall. Fluid source removal now uses client-only block updates (flag 2, no immediate neighbor updates) in both DESTROY and FILL BUCKETS modes, preventing the quarry itself from instantly recreating an infinite water source.
+0.7.0-beta.14: Fuel recognition rebuilt: coal/charcoal are detected by singleton identity, description id (item.minecraft.coal / item.minecraft.charcoal), and ItemStack string fallback.
+0.7.0-beta.13: Fix fuel detection: coal/charcoal in the Quarry input is recognized reliably even when Minecraft returns a registry/proxy Item instance instead of the exact Items singleton.
+0.7.0-beta.12: Fix quarry startup/movement after restart or upgrade: stale saved rail direction no longer hard-stops the machine; dual-track layout is automatically re-detected.
+0.7.0-beta.11: Settings buttons are virtual menu entries, not real Quarry inventory items. They can no longer persist, be seen by automation, or drop when the controller is broken. Legacy shulkers in reserved slots 52/53 remain protected.
+0.7.0-beta.10: Fix travelling visual rig: explicit old-rig cleanup during controller movement, immediate visual rebuild at new controller position, and self-recovery instead of permanently disabling visuals after a transient render/reflection error.
+0.7.0-beta.9: Fix persistent quarry inventory across world/game restarts using ContainerHelper save/load.
+Rail Quarry 0.7.0-beta.8
+
+NEW: Internal machine settings in the existing 6x9 Quarry inventory.
+- Bottom-right slot 52: Mining mode button — Silk Touch <-> Fortune III.
+- Bottom-right slot 53: Fluid mode button — Fill Buckets <-> Destroy.
+- Fortune III is applied to the virtual Netherite pickaxe for normal loot-table drops.
+- Fill Buckets keeps the previous behavior: source water/lava consumes empty buckets and stores filled buckets in the active shulker.
+- Destroy removes fluid source blocks without consuming buckets or generating filled buckets.
+- Both settings persist per Quarry and are copied when the moving Quarry advances.
+- Shift-right-click remains a shortcut for Silk Touch <-> Fortune III.
+- Slots 52/53 are reserved for settings, reducing finished-shulker output slots by two.
+- Upgrade safety: an existing shulker in slot 52/53 is not overwritten; remove it and reopen the Quarry menu to reveal the setting button.
+
+Base: beta.7 Create-inspired excavator visual overhaul.

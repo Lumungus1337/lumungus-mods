@@ -25,11 +25,14 @@ Thumbs.db
 local.properties
 .env
 .env.*
-work/
+work/*
+# The existing Quarry remains a standalone build, but its maintained source is versioned.
+!work/railquarry-beta25/
 
 # Packaged outputs
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
+!work/railquarry-beta25/gradle/wrapper/gradle-wrapper.jar
 *.zip
 *.tar
 *.tar.gz

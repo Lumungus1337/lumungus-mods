@@ -1,0 +1,7 @@
+{
+  "block.railquarry.quarry": "Schienen-Quarry – Schaufelradbagger",
+  "container.railquarry.quarry": "Rail Quarry",
+  "gui.railquarry.height": "Abbauhöhe",
+  "gui.railquarry.height_range": "Abbauhöhe: 1–64 Blöcke",
+  "gui.railquarry.apply": "Übernehmen"
+}

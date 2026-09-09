@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "railquarry_gametest",
+  "version": "1.0.0",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": ["de.djdaddy.railquarry.QuarryHeightGameTest"],
+    "fabric-client-gametest": ["de.djdaddy.railquarry.QuarryHeightClientTest"]
+  }
+}

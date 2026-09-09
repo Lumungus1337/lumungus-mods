@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "coal_ok=false,rail_ok=false": {
+      "model": "railquarry:block/quarry_rr"
+    },
+    "coal_ok=false,rail_ok=true": {
+      "model": "railquarry:block/quarry_rg"
+    },
+    "coal_ok=true,rail_ok=false": {
+      "model": "railquarry:block/quarry_gr"
+    },
+    "coal_ok=true,rail_ok=true": {
+      "model": "railquarry:block/quarry_gg"
+    }
+  }
+}
