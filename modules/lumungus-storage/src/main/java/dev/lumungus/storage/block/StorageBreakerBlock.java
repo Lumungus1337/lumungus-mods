@@ -116,10 +116,7 @@ public final class StorageBreakerBlock extends BaseEntityBlock {
             BlockHitResult hit
     ) {
         if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
-            if (player.isSecondaryUseActive()) {
-                return rotateWithWrench(state, level, pos, player);
-            }
-            return CopperWrenchItem.dismantle(heldStack, level, pos, player);
+            return CopperWrenchItem.interact(heldStack, level, pos, player, player.isSecondaryUseActive());
         }
         if (heldStack.is(LumungusStorageItems.WIRELESS_NETWORK_MODULE)) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StorageBreakerBlockEntity breaker) {

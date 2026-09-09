@@ -38,7 +38,7 @@
   "tooltip.lumungus_storage.storage_output": "Exports stored items in its working direction; shift-right-click opens the wireless module slot.",
   "tooltip.lumungus_storage.storage_breaker": "Breaks blocks in its working direction; block-item filters only, shift-right-click opens the wireless module slot.",
   "tooltip.lumungus_storage.storage_placer": "Places stored blocks in its working direction; block-item filters only, shift-right-click opens the wireless module slot.",
-  "tooltip.lumungus_storage.copper_wrench": "Instantly removes Lumungus blocks; shift-right-click rotates work blocks. Redstone on the rear side pauses them.",
+  "tooltip.lumungus_storage.copper_wrench": "Right-click: dismantle. Shift-right-click: rotate Lumungus devices. Pipes connect automatically.",
   "tooltip.lumungus_storage.portable_interface": "Shift-right-click a Storage Controller to bind this interface.",
   "tooltip.lumungus_storage.portable_interface.short": "Range: short distance.",
   "tooltip.lumungus_storage.portable_interface.dimension": "Range: same dimension.",

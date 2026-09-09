@@ -121,14 +121,7 @@ public final class WirelessInventoryConnectorBlock extends BaseEntityBlock {
             BlockHitResult hit
     ) {
         if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
-            if (player.isSecondaryUseActive()) {
-                if (!level.isClientSide()) {
-                    Direction nextFacing = state.getValue(FACING).getClockWise();
-                    level.setBlock(pos, state.setValue(FACING, nextFacing), 3);
-                }
-                return InteractionResult.SUCCESS;
-            }
-            return CopperWrenchItem.dismantle(heldStack, level, pos, player);
+            return CopperWrenchItem.interact(heldStack, level, pos, player, player.isSecondaryUseActive());
         }
         if (heldStack.is(LumungusStorageItems.WIRELESS_NETWORK_MODULE)) {
             if (!level.isClientSide()

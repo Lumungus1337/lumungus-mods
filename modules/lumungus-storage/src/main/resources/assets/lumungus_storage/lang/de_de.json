@@ -38,7 +38,7 @@
   "tooltip.lumungus_storage.storage_output": "Exportiert gelagerte Items in Arbeitsrichtung; Shift-Rechtsklick oeffnet das Wireless-Modulfach.",
   "tooltip.lumungus_storage.storage_breaker": "Baut Bloecke in Arbeitsrichtung ab; Filter nur mit Block-Items, Shift-Rechtsklick oeffnet das Wireless-Modulfach.",
   "tooltip.lumungus_storage.storage_placer": "Setzt Bloecke aus dem Lager in Arbeitsrichtung; Filter nur mit Block-Items, Shift-Rechtsklick oeffnet das Wireless-Modulfach.",
-  "tooltip.lumungus_storage.copper_wrench": "Baut Lumungus-Bloecke sofort ab; Shift-Rechtsklick rotiert Arbeitsbloecke. Redstone an der Rueckseite pausiert sie.",
+  "tooltip.lumungus_storage.copper_wrench": "Rechtsklick: abbauen. Shift-Rechtsklick: Lumungus-Geraete drehen. Rohre richten sich automatisch aus.",
   "tooltip.lumungus_storage.portable_interface": "Shift-Rechtsklick auf einen Storage Controller bindet das Interface.",
   "tooltip.lumungus_storage.portable_interface.short": "Reichweite: kurze Distanz.",
   "tooltip.lumungus_storage.portable_interface.dimension": "Reichweite: gleiche Dimension.",

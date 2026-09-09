@@ -133,6 +133,44 @@ public final class StorageClientGameTest implements FabricClientGameTest {
             context.takeScreenshot("lumungus-storage-crafting-plan-uat58");
             context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
             context.waitForScreen(LumungusCraftingTerminalScreen.class);
+            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.waitForScreen(null);
+            singleplayer.getServer().runOnServer(server -> {
+                ServerPlayer player = connection.getServerPlayer();
+                var blocks = List.of(LumungusStorageBlocks.STORAGE_CONTROLLER, LumungusStorageBlocks.CRAFTING_TERMINAL,
+                        LumungusStorageBlocks.DRIVE_BAY, LumungusStorageBlocks.INVENTORY_CONNECTOR,
+                        LumungusStorageBlocks.INVENTORY_TRIM, LumungusStorageBlocks.STORAGE_OUTPUT,
+                        LumungusStorageBlocks.STORAGE_BREAKER, LumungusStorageBlocks.STORAGE_PLACER,
+                        LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_SHORT,
+                        LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_DIMENSION,
+                        LumungusStorageBlocks.WIRELESS_STORAGE_CONTROLLER_MULTIDIMENSIONAL,
+                        LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_SHORT,
+                        LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_DIMENSION,
+                        LumungusStorageBlocks.WIRELESS_INVENTORY_CONNECTOR_MULTIDIMENSIONAL,
+                        LumungusStorageBlocks.PNEUMATIC_PIPE);
+                for (int i = 0; i < blocks.size(); i++) {
+                    var state = blocks.get(i).defaultBlockState();
+                    if (state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING)) {
+                        state = state.setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING,
+                                net.minecraft.core.Direction.NORTH);
+                    }
+                    BlockPos position = i == 14 ? player.blockPosition().offset(2, 2, 10)
+                            : player.blockPosition().offset((i % 5 - 2) * 2, 5 - (i / 5) * 2, 10);
+                    player.level().setBlockAndUpdate(position, state);
+                }
+            });
+            connection.waitForClientboundPackets();
+            context.getInput().lookAt(context.computeOnClient(client -> client.player.blockPosition().offset(0, 3, 10)));
+            context.getInput().pressKey(GLFW.GLFW_KEY_F1);
+            context.waitTicks(20);
+            context.takeScreenshot("lumungus-block-relief-gallery-uat60");
+            context.runOnClient(client -> client.options.fov().set(35));
+            for (int row = 0; row < 3; row++) {
+                int height = 5 - row * 2;
+                context.getInput().lookAt(context.computeOnClient(client -> client.player.blockPosition().offset(0, height, 10)));
+                context.waitTicks(10);
+                context.takeScreenshot("lumungus-block-relief-detail-" + row + "-uat60");
+            }
         }
     }
 

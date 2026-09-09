@@ -51,6 +51,19 @@ public final class AutocrafterClientGameTest implements FabricClientGameTest {
             context.waitForScreen(AutocrafterScreen.class);
             context.waitTicks(10);
             context.takeScreenshot("lumungus-autocrafter-menu-uat38");
+            context.getInput().pressKey(org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE);
+            context.waitForScreen(null);
+            singleplayer.getServer().runOnServer(server -> {
+                ServerPlayer player = connection.getServerPlayer();
+                player.level().setBlockAndUpdate(player.blockPosition().offset(0, 1, 4),
+                        LumungusMachinesBlocks.AUTOCRAFTER.defaultBlockState());
+            });
+            connection.waitForClientboundPackets();
+            context.getInput().lookAt(context.computeOnClient(client -> client.player.blockPosition().offset(0, 1, 4)));
+            context.getInput().pressKey(org.lwjgl.glfw.GLFW.GLFW_KEY_F1);
+            context.runOnClient(client -> client.options.fov().set(35));
+            context.waitTicks(20);
+            context.takeScreenshot("lumungus-autocrafter-relief-uat60");
         }
     }
 }

@@ -64,6 +64,44 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public final class StorageNetworkGameTest implements CustomTestMethodInvoker {
+    @GameTest
+    public void sneakingWrenchCyclesEveryStorageDeviceWithoutLosingBlockEntity(GameTestHelper context) {
+        ServerPlayer player = context.makeMockServerPlayerInLevel();
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(LumungusStorageItems.COPPER_WRENCH));
+        player.setShiftKeyDown(true);
+        BlockPos pos = new BlockPos(1, 1, 1);
+        BlockPos absolute = context.absolutePos(pos);
+        int checked = 0;
+        for (var block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
+            BlockState original = block.defaultBlockState();
+            if (!original.is(dev.lumungus.storage.registry.LumungusStorageTags.WRENCH_REMOVABLE)) {
+                continue;
+            }
+            context.setBlock(pos, original);
+            var entity = context.getLevel().getBlockEntity(absolute);
+            var facing = original.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING)
+                    ? net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING
+                    : net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
+            int turns = original.hasProperty(facing) ? facing.getPossibleValues().size() : 1;
+            for (int i = 0; i < turns; i++) {
+                BlockState before = context.getBlockState(pos);
+                LumungusStorageItems.COPPER_WRENCH.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND,
+                        new BlockHitResult(Vec3.atCenterOf(absolute), Direction.UP, absolute, false)));
+                BlockState after = context.getBlockState(pos);
+                context.assertTrue(after.is(block), "Rotation removed " + block);
+                context.assertTrue(context.getLevel().getBlockEntity(absolute) == entity,
+                        "Rotation replaced block entity for " + block);
+                if (original.hasProperty(facing)) {
+                    context.assertTrue(before.getValue(facing) != after.getValue(facing), "Facing did not change: " + block);
+                }
+            }
+            context.assertTrue(context.getBlockState(pos).equals(original), "Full rotation did not restore " + block);
+            checked++;
+        }
+        context.assertTrue(checked >= 16, "Expected all registered Storage blocks to be tested");
+        context.succeed();
+    }
+
     private static final BlockPos FIRST_CONTROLLER = new BlockPos(1, 1, 1);
     private static final BlockPos DRIVE_BAY = new BlockPos(4, 1, 1);
     private static final BlockPos SECOND_CONTROLLER = new BlockPos(3, 1, 1);

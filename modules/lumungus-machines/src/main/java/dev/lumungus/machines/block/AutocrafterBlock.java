@@ -99,16 +99,7 @@ public final class AutocrafterBlock extends BaseEntityBlock {
         }
 
         if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
-            if (player.isSecondaryUseActive()) {
-                Direction nextFacing = state.getValue(FACING).getClockWise();
-                level.setBlock(pos, state.setValue(FACING, nextFacing), 3);
-                player.sendSystemMessage(Component.translatable(
-                        "message.lumungus_storage.work_block.facing",
-                        Component.translatable("direction.minecraft." + nextFacing.getName())
-                ));
-                return InteractionResult.SUCCESS;
-            }
-            return CopperWrenchItem.dismantle(heldStack, level, pos, player);
+            return CopperWrenchItem.interact(heldStack, level, pos, player, player.isSecondaryUseActive());
         }
 
         if (heldStack.is(LumungusStorageItems.WIRELESS_NETWORK_MODULE)) {

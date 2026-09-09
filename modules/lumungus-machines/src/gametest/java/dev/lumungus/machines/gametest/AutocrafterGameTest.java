@@ -23,6 +23,26 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class AutocrafterGameTest implements CustomTestMethodInvoker {
+    @GameTest
+    public void sneakingWrenchRotatesAutocrafterAndPreservesTarget(GameTestHelper context) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        context.setBlock(pos, LumungusMachinesBlocks.AUTOCRAFTER);
+        var entity = context.getBlockEntity(pos, AutocrafterBlockEntity.class);
+        entity.setTarget(new ItemStack(Items.OAK_PLANKS), 120);
+        var player = context.makeMockServerPlayerInLevel();
+        player.setShiftKeyDown(true);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(LumungusStorageItems.COPPER_WRENCH));
+        var absolute = context.absolutePos(pos);
+        LumungusStorageItems.COPPER_WRENCH.useOn(new net.minecraft.world.item.context.UseOnContext(
+                player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(absolute), Direction.UP, absolute, false)));
+        context.assertTrue(context.getBlockState(pos).is(LumungusMachinesBlocks.AUTOCRAFTER), "Wrench removed autocrafter");
+        context.assertValueEqual(context.getBlockState(pos).getValue(AutocrafterBlock.FACING), Direction.EAST, "Facing");
+        context.assertTrue(context.getLevel().getBlockEntity(absolute) == entity, "Block entity was replaced");
+        context.assertValueEqual(entity.targetAmount(), 120L, "Target amount changed during rotation");
+        context.succeed();
+    }
+
     @GameTest(padding = 16)
     public void autocrafterConsumesAndStoresThroughPrimedWirelessModule(GameTestHelper context) {
         BlockPos controllerPos = new BlockPos(1, 1, 1);

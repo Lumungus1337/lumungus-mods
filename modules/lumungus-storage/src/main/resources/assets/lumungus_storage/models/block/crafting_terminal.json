@@ -1,12 +1,15 @@
 {
   "parent": "minecraft:block/cube",
-  "textures": {
-    "particle": "lumungus_storage:block/storage_terminal_side",
-    "down": "lumungus_storage:block/storage_terminal_bottom",
-    "up": "lumungus_storage:block/storage_terminal_top",
-    "north": "lumungus_storage:block/storage_terminal_front",
-    "south": "lumungus_storage:block/storage_terminal_back",
-    "west": "lumungus_storage:block/storage_terminal_side",
-    "east": "lumungus_storage:block/storage_terminal_side"
-  }
+  "textures": {"particle":"lumungus_storage:block/storage_terminal_side","down":"lumungus_storage:block/storage_terminal_bottom","up":"lumungus_storage:block/storage_terminal_top","north":"lumungus_storage:block/storage_terminal_front","south":"lumungus_storage:block/storage_terminal_back","west":"lumungus_storage:block/storage_terminal_side","east":"lumungus_storage:block/storage_terminal_side","relief_copper":"minecraft:block/copper_block","relief_dark":"minecraft:block/deepslate","relief_green":"minecraft:block/oxidized_copper"},
+  "elements": [
+    {"from":[0,0,0],"faces":{"north":{"uv":[0,0,16,16],"texture":"#north","cullface":"north"},"south":{"uv":[0,0,16,16],"texture":"#south","cullface":"south"},"east":{"uv":[0,0,16,16],"texture":"#east","cullface":"east"},"west":{"uv":[0,0,16,16],"texture":"#west","cullface":"west"},"up":{"uv":[0,0,16,16],"texture":"#up","cullface":"up"},"down":{"uv":[0,0,16,16],"texture":"#down","cullface":"down"}},"to":[16,16,16]},
+    {"from":[2.0,4.0,-0.3],"faces":{"north":{"uv":[6,6,7,7],"texture":"#relief_copper"},"south":{"uv":[6,6,7,7],"texture":"#relief_copper"},"east":{"uv":[6,6,7,7],"texture":"#relief_copper"},"west":{"uv":[6,6,7,7],"texture":"#relief_copper"},"up":{"uv":[6,6,7,7],"texture":"#relief_copper"},"down":{"uv":[6,6,7,7],"texture":"#relief_copper"}},"to":[3.0,14.0,0]},
+    {"from":[13.0,4.0,-0.3],"faces":{"north":{"uv":[6,6,7,7],"texture":"#relief_copper"},"south":{"uv":[6,6,7,7],"texture":"#relief_copper"},"east":{"uv":[6,6,7,7],"texture":"#relief_copper"},"west":{"uv":[6,6,7,7],"texture":"#relief_copper"},"up":{"uv":[6,6,7,7],"texture":"#relief_copper"},"down":{"uv":[6,6,7,7],"texture":"#relief_copper"}},"to":[14.0,14.0,0]},
+    {"from":[3.0,13.0,-0.3],"faces":{"north":{"uv":[6,6,7,7],"texture":"#relief_copper"},"south":{"uv":[6,6,7,7],"texture":"#relief_copper"},"east":{"uv":[6,6,7,7],"texture":"#relief_copper"},"west":{"uv":[6,6,7,7],"texture":"#relief_copper"},"up":{"uv":[6,6,7,7],"texture":"#relief_copper"},"down":{"uv":[6,6,7,7],"texture":"#relief_copper"}},"to":[13.0,14.0,0]},
+    {"from":[3.0,4.0,-0.3],"faces":{"north":{"uv":[6,6,7,7],"texture":"#relief_copper"},"south":{"uv":[6,6,7,7],"texture":"#relief_copper"},"east":{"uv":[6,6,7,7],"texture":"#relief_copper"},"west":{"uv":[6,6,7,7],"texture":"#relief_copper"},"up":{"uv":[6,6,7,7],"texture":"#relief_copper"},"down":{"uv":[6,6,7,7],"texture":"#relief_copper"}},"to":[13.0,5.0,0]},
+    {"from":[4.0,2.0,-0.3],"faces":{"north":{"uv":[6,6,7,7],"texture":"#relief_green"},"south":{"uv":[6,6,7,7],"texture":"#relief_green"},"east":{"uv":[6,6,7,7],"texture":"#relief_green"},"west":{"uv":[6,6,7,7],"texture":"#relief_green"},"up":{"uv":[6,6,7,7],"texture":"#relief_green"},"down":{"uv":[6,6,7,7],"texture":"#relief_green"}},"to":[5.0,3.0,0]},
+    {"from":[6.0,2.0,-0.3],"faces":{"north":{"uv":[6,6,7,7],"texture":"#relief_green"},"south":{"uv":[6,6,7,7],"texture":"#relief_green"},"east":{"uv":[6,6,7,7],"texture":"#relief_green"},"west":{"uv":[6,6,7,7],"texture":"#relief_green"},"up":{"uv":[6,6,7,7],"texture":"#relief_green"},"down":{"uv":[6,6,7,7],"texture":"#relief_green"}},"to":[7.0,3.0,0]},
+    {"from":[8.0,2.0,-0.3],"faces":{"north":{"uv":[6,6,7,7],"texture":"#relief_green"},"south":{"uv":[6,6,7,7],"texture":"#relief_green"},"east":{"uv":[6,6,7,7],"texture":"#relief_green"},"west":{"uv":[6,6,7,7],"texture":"#relief_green"},"up":{"uv":[6,6,7,7],"texture":"#relief_green"},"down":{"uv":[6,6,7,7],"texture":"#relief_green"}},"to":[9.0,3.0,0]},
+    {"from":[10.0,2.0,-0.3],"faces":{"north":{"uv":[6,6,7,7],"texture":"#relief_green"},"south":{"uv":[6,6,7,7],"texture":"#relief_green"},"east":{"uv":[6,6,7,7],"texture":"#relief_green"},"west":{"uv":[6,6,7,7],"texture":"#relief_green"},"up":{"uv":[6,6,7,7],"texture":"#relief_green"},"down":{"uv":[6,6,7,7],"texture":"#relief_green"}},"to":[11.0,3.0,0]}
+  ]
 }

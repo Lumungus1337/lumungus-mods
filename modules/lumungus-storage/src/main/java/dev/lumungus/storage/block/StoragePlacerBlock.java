@@ -113,18 +113,7 @@ public final class StoragePlacerBlock extends BaseEntityBlock {
             BlockHitResult hit
     ) {
         if (heldStack.is(LumungusStorageItems.COPPER_WRENCH)) {
-            if (player.isSecondaryUseActive()) {
-                if (!level.isClientSide()) {
-                    Direction nextFacing = WorkBlockFacing.next(state.getValue(FACING));
-                    level.setBlock(pos, state.setValue(FACING, nextFacing), 3);
-                    player.sendSystemMessage(Component.translatable(
-                            "message.lumungus_storage.work_block.facing",
-                            WorkBlockFacing.displayName(nextFacing)
-                    ));
-                }
-                return InteractionResult.SUCCESS;
-            }
-            return CopperWrenchItem.dismantle(heldStack, level, pos, player);
+            return CopperWrenchItem.interact(heldStack, level, pos, player, player.isSecondaryUseActive());
         }
         if (heldStack.is(LumungusStorageItems.WIRELESS_NETWORK_MODULE)) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof StoragePlacerBlockEntity placer) {

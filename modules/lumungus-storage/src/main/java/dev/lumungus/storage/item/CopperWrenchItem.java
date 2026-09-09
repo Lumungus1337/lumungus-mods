@@ -1,9 +1,11 @@
 package dev.lumungus.storage.item;
 
-import dev.lumungus.storage.block.StorageBreakerBlock;
+import dev.lumungus.storage.block.WorkBlockFacing;
+import dev.lumungus.storage.network.StorageNetworkTopology;
 import dev.lumungus.storage.registry.LumungusStorageTags;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,6 +20,8 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 public final class CopperWrenchItem extends Item {
     public CopperWrenchItem(Properties properties) {
@@ -26,21 +30,41 @@ public final class CopperWrenchItem extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        BlockState state = context.getLevel().getBlockState(context.getClickedPos());
-        if (context.isSecondaryUseActive() && state.getBlock() instanceof StorageBreakerBlock) {
-            return StorageBreakerBlock.rotateWithWrench(
-                    state,
-                    context.getLevel(),
-                    context.getClickedPos(),
-                    context.getPlayer()
-            );
-        }
-        return dismantle(
+        return interact(
                 context.getItemInHand(),
                 context.getLevel(),
                 context.getClickedPos(),
-                context.getPlayer()
+                context.getPlayer(),
+                context.isSecondaryUseActive()
         );
+    }
+
+    public static InteractionResult interact(ItemStack wrench, Level level, BlockPos pos, Player player, boolean rotate) {
+        if (!rotate) {
+            return dismantle(wrench, level, pos, player);
+        }
+        BlockState state = level.getBlockState(pos);
+        if (!state.is(LumungusStorageTags.WRENCH_REMOVABLE)) {
+            return InteractionResult.PASS;
+        }
+        EnumProperty<Direction> facing = state.hasProperty(BlockStateProperties.FACING)
+                ? BlockStateProperties.FACING : BlockStateProperties.HORIZONTAL_FACING;
+        // Automatic pipes have no independent orientation; never dismantle them on a rotation click.
+        if (!state.hasProperty(facing)) {
+            return InteractionResult.SUCCESS;
+        }
+        if (!level.isClientSide()) {
+            Direction next = facing == BlockStateProperties.FACING
+                    ? WorkBlockFacing.next(state.getValue(facing)) : state.getValue(facing).getClockWise();
+            level.setBlock(pos, state.setValue(facing, next), 3);
+            StorageNetworkTopology.invalidateAround(level, pos);
+            level.playSound(null, pos, SoundEvents.COPPER_STEP, SoundSource.BLOCKS, 0.6F, 1.3F);
+            if (player != null) {
+                player.sendSystemMessage(Component.translatable(
+                        "message.lumungus_storage.work_block.facing", WorkBlockFacing.displayName(next)));
+            }
+        }
+        return InteractionResult.SUCCESS;
     }
 
     @Override
